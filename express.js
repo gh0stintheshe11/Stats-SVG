@@ -2,44 +2,46 @@ const express = require('express');
 const { fetchGitHubData } = require('./fetch');
 const { calculateRank } = require('./calculateRank');
 const { calculateLanguagePercentage } = require('./calculateLang');
+const { renderCard } = require('./render');
 
 const app = express();
 const port = 3001;
 
 app.get('/github-status/:username', async (req, res) => {
-  const username = req.params.username;
-  console.log(`Received request for user: ${username}`);
+    const username = req.params.username;
+    try {
+        const data = await fetchGitHubData(username);
+        
+        // Mock reviews count if not available
+        const reviews = data.reviews || 0;
+        const followers = data.followers || 0;
 
-  try {
-    const stats = await fetchGitHubData(username);
+        const rankData = calculateRank({
+            all_commits: true, // Or false based on your logic
+            commits: data.total_commits,
+            prs: data.total_prs,
+            issues: data.total_issues,
+            reviews,
+            repos: data.total_repos,
+            stars: data.total_stars,
+            followers,
+        });
 
-    const { level, percentile } = calculateRank({
-      commits: stats.total_commits,
-      prs: stats.total_prs,
-      issues: stats.total_issues,
-      reviews: 0, // Assuming no review data
-      stars: stats.total_stars,
-      followers: 0, // Assuming no follower data
-      repos: stats.total_repos,
-      all_commits: false,
-    });
+        data.ranking_percentage = rankData.percentile;
+        data.level = rankData.level;
+        data.language_percentages = calculateLanguagePercentage(data.top_languages);
 
-    const languagePercentages = calculateLanguagePercentage(stats.top_languages);
+        console.log('Final Data:', data);  // Debugging final data before rendering
 
-    stats.ranking_percentage = percentile;
-    stats.level = level;
-    stats.language_percentages = languagePercentages;
-
-    console.log('Final Data:', stats);
-
-    res.json(stats);
-
-  } catch (error) {
-    console.error('Error fetching data or rendering image:', error);
-    res.status(500).send('Error fetching data or rendering image');
-  }
+        const imageBuffer = await renderCard(data);
+        res.setHeader('Content-Type', 'image/png');
+        res.send(imageBuffer);
+    } catch (error) {
+        console.error('Error fetching data or rendering image:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);
 });
