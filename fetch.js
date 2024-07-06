@@ -32,7 +32,7 @@ const GRAPHQL_QUERY_USER_INFO = `
           }
         }
       }
-      repositoriesContributedTo(last: 100, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY]) {
+      repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100) {
         totalCount
         nodes {
           name
@@ -72,6 +72,9 @@ const GRAPHQL_QUERY_USER_INFO = `
           endCursor
         }
       }
+      pullRequests(states: MERGED) {
+        totalCount
+      }
     }
   }
 `;
@@ -87,7 +90,6 @@ async function fetchDiscussionsFromRepo(owner, repo) {
     const response = await axios.get(url, { headers });
     const discussions = response.data;
 
-    //iterates through the discussions once to count the answered discussions instead of using .filter().length
     let total_discussions_answered = 0;
     for (const discussion of discussions) {
       if (discussion.answer) total_discussions_answered++;
@@ -112,16 +114,13 @@ async function fetchDiscussionsFromRepo(owner, repo) {
 async function fetchDiscussionMetrics(repos) {
   const discussionMetrics = { total_discussions_started: 0, total_discussions_answered: 0 };
   
-  // Using p-limit to limit the number of concurrent requests
   const pLimit = (await import('p-limit')).default;
   const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 
-  // Fetch discussions for each repo concurrently
   const limitedFetchPromises = repos.map(repo =>
     limit(() => fetchDiscussionsFromRepo(repo.owner.login, repo.name))
   );
 
-  // Wait for all promises to resolve
   const results = await Promise.all(limitedFetchPromises);
 
   results.forEach(metrics => {
@@ -135,7 +134,7 @@ async function fetchDiscussionMetrics(repos) {
 async function fetchGitHubData(username) {
   const url = 'https://api.github.com/graphql';
   const headers = {
-    'Authorization': `bearer ${GITHUB_TOKEN}`,
+    'Authorization': `bearer ${process.env.GITHUB_TOKEN}`,
     'Content-Type': 'application/json'
   };
   const variables = { login: username };
@@ -146,12 +145,11 @@ async function fetchGitHubData(username) {
       variables
     }, { headers });
 
-    const user = response.data.data.user;
-
+    const user = response.data.data.user || {};
     if (!user) {
-      throw new Error('User not found');
+      throw new Error(`User ${username} not found`);
     }
-
+    
     const contributionsCollection = user.contributionsCollection || {};
     const repositories = user.repositories || {};
     const reposNodes = repositories.nodes || [];
@@ -162,7 +160,6 @@ async function fetchGitHubData(username) {
       totalMergedPRs += repo.repository.pullRequests.totalCount;
     });
 
-    // Optimized data processing part of fetchGitHubData
     const stats = {
       name: user.name || user.login,
       followers: user.followers.totalCount || 0,
@@ -170,18 +167,16 @@ async function fetchGitHubData(username) {
       total_prs: contributionsCollection.totalPullRequestContributions || 0,
       total_prs_reviewed: contributionsCollection.totalPullRequestReviewContributions || 0,
       total_issues: contributionsCollection.totalIssueContributions || 0,
-      total_merged_prs: contributionsCollection.pullRequestContributionsByRepository.reduce((sum, repo) => sum + repo.repository.pullRequests.totalCount, 0),
+      total_merged_prs: user.pullRequests.totalCount || 0,
       total_repos: repositories.totalCount || 0,
-      total_stars: 0, // Will be calculated below
+      total_stars: 0,
       top_languages: {}
     };
 
     const languageCounts = {};
     reposNodes.forEach(repo => {
-      // Aggregate stars
       stats.total_stars += repo.stargazers ? repo.stargazers.totalCount : 0;
 
-      // Aggregate languages
       if (repo.languages) {
         repo.languages.edges.forEach(({ size, node }) => {
           if (!languageCounts[node.name]) {
@@ -202,7 +197,6 @@ async function fetchGitHubData(username) {
         return result;
       }, {});
 
-    // Assuming fetchDiscussionMetrics can be optimized or is already efficient
     const discussionMetrics = await fetchDiscussionMetrics([...reposNodes, ...contributedRepos]);
     stats.total_discussions_started = discussionMetrics.total_discussions_started;
     stats.total_discussions_answered = discussionMetrics.total_discussions_answered;
@@ -213,6 +207,7 @@ async function fetchGitHubData(username) {
     console.error('Error fetching data from GitHub:', error);
     throw error;
   }
+
 }
 
 module.exports = { fetchGitHubData };

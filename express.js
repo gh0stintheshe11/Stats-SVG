@@ -2,12 +2,11 @@ const express = require('express');
 const { fetchGitHubData } = require('./fetch');
 const { calculateRank } = require('./calculateRank');
 const { calculateLanguagePercentage } = require('./calculateLang');
-const { renderCard } = require('./render');
+const { renderStatsSVG } = require('./renderStats');
 
 const app = express();
 const port = 3001;
 
-// Middleware to log the runtime of each request
 app.use((req, res, next) => {
     const startHrTime = process.hrtime();
 
@@ -25,12 +24,8 @@ app.get('/github-status/:username', async (req, res) => {
     try {
         const data = await fetchGitHubData(username);
 
-        // Mock reviews count if not available
-        const reviews = data.reviews || 0;
-        //console.log('Data:', data);  // Debugging data before calculating rank
-
         const rankData = calculateRank({
-            all_commits: true, // Or false based on your logic
+            all_commits: true,
             commits: data.total_commits,
             prs: data.total_prs,
             issues: data.total_issues,
@@ -44,11 +39,11 @@ app.get('/github-status/:username', async (req, res) => {
         data.level = rankData.level;
         data.language_percentages = calculateLanguagePercentage(data.top_languages);
 
-        console.log('Final Data:', data);  // Debugging final data before rendering
+        console.log('Final Data:', data);
 
-        const imageBuffer = await renderCard(data);
-        res.setHeader('Content-Type', 'image/png');
-        res.send(imageBuffer);
+        const svg = renderStatsSVG(data);
+        res.setHeader('Content-Type', 'image/svg+xml');
+        res.send(svg);
     } catch (error) {
         console.error('Error fetching data or rendering image:', error);
         res.status(500).send('Internal Server Error');
