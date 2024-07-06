@@ -1,72 +1,99 @@
 const { createCanvas, loadImage } = require('canvas');
 
-async function renderCard(data) {
-    const canvas = createCanvas(800, 400);
-    const ctx = canvas.getContext('2d');
+async function renderData(username) {
+    const { fetchGitHubData } = require('./fetch');
+    const { calculateRank } = require('./calculateRank');
+    const { calculateLanguagePercentage } = require('./calculateLang');
 
-    // Background
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    try {
+        const stats = await fetchGitHubData(username);
 
-    // Border
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        // Calculate rank and language percentages
+        const { level, percentile } = calculateRank({
+            all_commits: false,
+            commits: stats.total_commits,
+            prs: stats.total_prs,
+            issues: stats.total_issues,
+            reviews: stats.total_prs_reviewed,
+            repos: stats.total_repos,
+            stars: stats.total_stars,
+            followers: 0 // Placeholder, update if you have the data
+        });
 
-    // Title
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 30px Arial';
-    ctx.fillText(`${data.name}'s GitHub Stats`, 20, 40);
+        const languagePercentages = calculateLanguagePercentage(stats.top_languages);
 
-    // Stats with icons
-    const stats = [
-        { label: 'Total Stars Earned:', value: data.total_stars, icon: '⭐' },
-        { label: 'Total Commits:', value: data.total_commits, icon: '🕒' },
-        { label: 'Total PRs:', value: data.total_prs, icon: '🔀' },
-        { label: 'Total Issues:', value: data.total_issues, icon: '❗' },
-        { label: 'Contributed to (last year):', value: data.total_repos, icon: '📦' }
-    ];
+        // Create the canvas and context
+        const canvas = createCanvas(800, 400);
+        const ctx = canvas.getContext('2d');
 
-    ctx.font = '20px Arial';
-    stats.forEach((stat, index) => {
-        const y = 80 + index * 50;
-        ctx.fillText(stat.icon, 20, y);
-        ctx.fillText(stat.label, 50, y);
-        ctx.fillText(stat.value, 300, y);
-    });
+        // Background
+        ctx.fillStyle = '#0D1117';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Ranking Circle
-    const circleX = 650;
-    const circleY = 200;
-    const circleRadius = 80;
+        // Text and data
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(`${stats.name}'s GitHub Stats`, 50, 50);
 
-    ctx.beginPath();
-    ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
-    ctx.fillStyle = '#333';
-    ctx.fill();
+        ctx.font = '20px Arial';
+        ctx.fillText('⭐ Total Stars Earned:', 50, 100);
+        ctx.fillText(stats.total_stars.toString(), 350, 100);
 
-    const startAngle = -Math.PI / 2;
-    const endAngle = (Math.PI * 2 * (data.ranking_percentage || 0)) / 100 - Math.PI / 2;
+        ctx.fillText('🕒 Total Commits:', 50, 140);
+        ctx.fillText(stats.total_commits.toString(), 350, 140);
 
-    ctx.beginPath();
-    ctx.arc(circleX, circleY, circleRadius, startAngle, endAngle);
-    ctx.lineTo(circleX, circleY);
-    ctx.fillStyle = '#00ccff';
-    ctx.fill();
+        ctx.fillText('📩 Total PRs:', 50, 180);
+        ctx.fillText(stats.total_prs.toString(), 350, 180);
 
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 40px Arial';
-    const levelText = data.level || 'N/A';
-    const textWidth = ctx.measureText(levelText).width;
-    ctx.fillText(levelText, circleX - textWidth / 2, circleY + 10);
+        ctx.fillText('✔ Total PRs Merged:', 50, 220);
+        ctx.fillText(stats.total_prs_merged.toString(), 350, 220);
 
-    // Add percentage text inside the circle
-    ctx.font = '20px Arial';
-    const percentageText = `${Math.round(data.ranking_percentage)}%`;
-    const percentageTextWidth = ctx.measureText(percentageText).width;
-    ctx.fillText(percentageText, circleX - percentageTextWidth / 2, circleY + 40);
+        ctx.fillText('⏳ Merged PRs Percentage:', 50, 260);
+        ctx.fillText(`${((stats.total_prs_merged / stats.total_prs) * 100).toFixed(2)}%`, 350, 260);
 
-    return canvas.toBuffer();
+        ctx.fillText('🔍 Total PRs Reviewed:', 50, 300);
+        ctx.fillText(stats.total_prs_reviewed.toString(), 350, 300);
+
+        ctx.fillText('📝 Total Issues:', 50, 340);
+        ctx.fillText(stats.total_issues.toString(), 350, 340);
+
+        ctx.fillText('💬 Total Discussions Started:', 50, 380);
+        ctx.fillText(stats.total_discussions_started.toString(), 350, 380);
+
+        ctx.fillText('💬 Total Discussions Answered:', 50, 420);
+        ctx.fillText(stats.total_discussions_answered.toString(), 350, 420);
+
+        ctx.fillText('🏠 Contributed to (last year):', 50, 460);
+        ctx.fillText(stats.total_repos.toString(), 350, 460);
+
+        // Draw circle progress bar for ranking
+        const radius = 50;
+        const centerX = 650;
+        const centerY = 200;
+        const endAngle = (percentile / 100) * 2 * Math.PI;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#30363D';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, -0.5 * Math.PI, endAngle - 0.5 * Math.PI);
+        ctx.lineTo(centerX, centerY);
+        ctx.fillStyle = '#58A6FF';
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(level, centerX - ctx.measureText(level).width / 2, centerY - 10);
+        ctx.font = '20px Arial';
+        ctx.fillText(`${percentile.toFixed(2)}%`, centerX - ctx.measureText(`${percentile.toFixed(2)}%`).width / 2, centerY + 20);
+
+        return canvas.toBuffer();
+    } catch (error) {
+        console.error('Error rendering data:', error);
+        throw error;
+    }
 }
 
-module.exports = { renderCard };
+module.exports = { renderData };

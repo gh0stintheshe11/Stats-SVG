@@ -7,6 +7,19 @@ const { renderCard } = require('./render');
 const app = express();
 const port = 3001;
 
+// Middleware to log the runtime of each request
+app.use((req, res, next) => {
+    const startHrTime = process.hrtime();
+
+    res.on('finish', () => {
+        const elapsedHrTime = process.hrtime(startHrTime);
+        const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
+        console.log(`Request to ${req.path} took ${elapsedTimeInMs} ms`);
+    });
+
+    next();
+});
+
 app.get('/github-status/:username', async (req, res) => {
     const username = req.params.username;
     try {
