@@ -24,20 +24,20 @@ app.get('/github-status/:username', async (req, res) => {
     const username = req.params.username;
     try {
         const data = await fetchGitHubData(username);
-        
+
         // Mock reviews count if not available
         const reviews = data.reviews || 0;
-        const followers = data.followers || 0;
+        //console.log('Data:', data);  // Debugging data before calculating rank
 
         const rankData = calculateRank({
             all_commits: true, // Or false based on your logic
             commits: data.total_commits,
             prs: data.total_prs,
             issues: data.total_issues,
-            reviews,
+            reviews: data.total_prs_reviewed,
             repos: data.total_repos,
             stars: data.total_stars,
-            followers,
+            followers: data.followers,
         });
 
         data.ranking_percentage = rankData.percentile;

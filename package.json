@@ -5,6 +5,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "github-username-regex": "^1.0.0",
+    "p-limit": "^6.0.0",
     "word-wrap": "^1.2.5"
   },
   "devDependencies": {

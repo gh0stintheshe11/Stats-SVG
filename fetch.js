@@ -1,6 +1,9 @@
 const axios = require('axios');
 require('dotenv').config();
 
+const MAX_CONCURRENT_REQUESTS = 20;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
 const GRAPHQL_QUERY_USER_INFO = `
   query userInfo($login: String!, $after: String) {
     user(login: $login) {
@@ -73,42 +76,10 @@ const GRAPHQL_QUERY_USER_INFO = `
   }
 `;
 
-const GRAPHQL_QUERY_REPO_INFO = `
-  fragment RepoInfo on Repository {
-    name
-    nameWithOwner
-    isPrivate
-    isArchived
-    isTemplate
-    stargazers {
-      totalCount
-    }
-    description
-    primaryLanguage {
-      color
-      id
-      name
-    }
-    forkCount
-  }
-  query getRepo($login: String!, $repo: String!) {
-    user(login: $login) {
-      repository(name: $repo) {
-        ...RepoInfo
-      }
-    }
-    organization(login: $login) {
-      repository(name: $repo) {
-        ...RepoInfo
-      }
-    }
-  }
-`;
-
 async function fetchDiscussionsFromRepo(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}/discussions`;
   const headers = {
-    'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+    'Authorization': `token ${GITHUB_TOKEN}`,
     'Accept': 'application/vnd.github.v3+json'
   };
 
@@ -116,9 +87,15 @@ async function fetchDiscussionsFromRepo(owner, repo) {
     const response = await axios.get(url, { headers });
     const discussions = response.data;
 
+    //iterates through the discussions once to count the answered discussions instead of using .filter().length
+    let total_discussions_answered = 0;
+    for (const discussion of discussions) {
+      if (discussion.answer) total_discussions_answered++;
+    }
+
     const metrics = {
       total_discussions_started: discussions.length,
-      total_discussions_answered: discussions.filter(discussion => discussion.answer).length
+      total_discussions_answered
     };
 
     return metrics;
@@ -134,13 +111,23 @@ async function fetchDiscussionsFromRepo(owner, repo) {
 
 async function fetchDiscussionMetrics(repos) {
   const discussionMetrics = { total_discussions_started: 0, total_discussions_answered: 0 };
+  
+  // Using p-limit to limit the number of concurrent requests
+  const pLimit = (await import('p-limit')).default;
+  const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 
-  for (const repo of repos) {
-    const { owner, name } = repo;
-    const metrics = await fetchDiscussionsFromRepo(owner.login, name);
+  // Fetch discussions for each repo concurrently
+  const limitedFetchPromises = repos.map(repo =>
+    limit(() => fetchDiscussionsFromRepo(repo.owner.login, repo.name))
+  );
+
+  // Wait for all promises to resolve
+  const results = await Promise.all(limitedFetchPromises);
+
+  results.forEach(metrics => {
     discussionMetrics.total_discussions_started += metrics.total_discussions_started;
     discussionMetrics.total_discussions_answered += metrics.total_discussions_answered;
-  }
+  });
 
   return discussionMetrics;
 }
@@ -148,7 +135,7 @@ async function fetchDiscussionMetrics(repos) {
 async function fetchGitHubData(username) {
   const url = 'https://api.github.com/graphql';
   const headers = {
-    'Authorization': `bearer ${process.env.GITHUB_TOKEN}`,
+    'Authorization': `bearer ${GITHUB_TOKEN}`,
     'Content-Type': 'application/json'
   };
   const variables = { login: username };
@@ -158,8 +145,6 @@ async function fetchGitHubData(username) {
       query: GRAPHQL_QUERY_USER_INFO,
       variables
     }, { headers });
-
-    console.log('GitHub API response:', response.data);
 
     const user = response.data.data.user;
 
@@ -172,28 +157,31 @@ async function fetchGitHubData(username) {
     const reposNodes = repositories.nodes || [];
     const contributedRepos = user.repositoriesContributedTo.nodes || [];
 
-    // Calculate total merged PRs and other metrics
     let totalMergedPRs = 0;
     contributionsCollection.pullRequestContributionsByRepository.forEach(repo => {
       totalMergedPRs += repo.repository.pullRequests.totalCount;
     });
 
+    // Optimized data processing part of fetchGitHubData
     const stats = {
       name: user.name || user.login,
+      followers: user.followers.totalCount || 0,
       total_commits: contributionsCollection.totalCommitContributions || 0,
       total_prs: contributionsCollection.totalPullRequestContributions || 0,
       total_prs_reviewed: contributionsCollection.totalPullRequestReviewContributions || 0,
       total_issues: contributionsCollection.totalIssueContributions || 0,
-      total_merged_prs: totalMergedPRs,
-      merged_prs_percentage: (totalMergedPRs / contributionsCollection.totalPullRequestContributions) * 100,
+      total_merged_prs: contributionsCollection.pullRequestContributionsByRepository.reduce((sum, repo) => sum + repo.repository.pullRequests.totalCount, 0),
       total_repos: repositories.totalCount || 0,
-      total_stars: reposNodes.reduce((sum, repo) => sum + (repo.stargazers ? repo.stargazers.totalCount : 0), 0),
+      total_stars: 0, // Will be calculated below
       top_languages: {}
     };
 
-    // Calculate top languages
     const languageCounts = {};
     reposNodes.forEach(repo => {
+      // Aggregate stars
+      stats.total_stars += repo.stargazers ? repo.stargazers.totalCount : 0;
+
+      // Aggregate languages
       if (repo.languages) {
         repo.languages.edges.forEach(({ size, node }) => {
           if (!languageCounts[node.name]) {
@@ -205,6 +193,8 @@ async function fetchGitHubData(username) {
       }
     });
 
+    stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
+
     stats.top_languages = Object.keys(languageCounts)
       .sort((a, b) => languageCounts[b].size - languageCounts[a].size)
       .reduce((result, key) => {
@@ -212,11 +202,8 @@ async function fetchGitHubData(username) {
         return result;
       }, {});
 
-    // Combine owned and contributed repositories
-    const allRepos = [...reposNodes, ...contributedRepos];
-
-    // Fetching discussions metrics
-    const discussionMetrics = await fetchDiscussionMetrics(allRepos);
+    // Assuming fetchDiscussionMetrics can be optimized or is already efficient
+    const discussionMetrics = await fetchDiscussionMetrics([...reposNodes, ...contributedRepos]);
     stats.total_discussions_started = discussionMetrics.total_discussions_started;
     stats.total_discussions_answered = discussionMetrics.total_discussions_answered;
 
@@ -228,51 +215,4 @@ async function fetchGitHubData(username) {
   }
 }
 
-async function fetchRepo(username, reponame) {
-  const url = 'https://api.github.com/graphql';
-  const headers = {
-    'Authorization': `bearer ${process.env.GITHUB_TOKEN}`,
-    'Content-Type': 'application/json'
-  };
-  const variables = { login: username, repo: reponame };
-
-  try {
-    const response = await axios.post(url, {
-      query: GRAPHQL_QUERY_REPO_INFO,
-      variables
-    }, { headers });
-
-    const data = response.data.data;
-
-    if (!data.user && !data.organization) {
-      throw new Error("Not found");
-    }
-
-    const isUser = data.organization === null && data.user;
-    const isOrg = data.user === null && data.organization;
-
-    let repoData;
-    if (isUser) {
-      repoData = data.user.repository;
-    } else if (isOrg) {
-      repoData = data.organization.repository;
-    }
-
-    if (!repoData || repoData.isPrivate) {
-      throw new Error("Repository not found or is private");
-    }
-
-    const repoDetails = {
-      ...repoData,
-      starCount: repoData.stargazers.totalCount
-    };
-
-    return repoDetails;
-
-  } catch (error) {
-    console.error('Error fetching repository data from GitHub:', error);
-    throw error;
-  }
-}
-
-module.exports = { fetchGitHubData, fetchRepo };
+module.exports = { fetchGitHubData };

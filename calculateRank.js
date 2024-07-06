@@ -39,7 +39,7 @@ function calculateRank({
   prs = 0,
   issues = 0,
   reviews = 0,
-  repos = 0, // unused
+  repos = 0,
   stars = 0,
   followers = 0,
 }) {
@@ -55,6 +55,8 @@ function calculateRank({
     STARS_WEIGHT = 4;
   const FOLLOWERS_MEDIAN = 10,
     FOLLOWERS_WEIGHT = 1;
+  const REPOS_MEDIAN = 3,
+    REPOS_WEIGHT = 1;
 
   const TOTAL_WEIGHT =
     COMMITS_WEIGHT +
@@ -62,7 +64,8 @@ function calculateRank({
     ISSUES_WEIGHT +
     REVIEWS_WEIGHT +
     STARS_WEIGHT +
-    FOLLOWERS_WEIGHT;
+    FOLLOWERS_WEIGHT +
+    REPOS_WEIGHT;
 
   const THRESHOLDS = [1, 12.5, 25, 37.5, 50, 62.5, 75, 87.5, 100];
   const LEVELS = ["S", "A+", "A", "A-", "B+", "B", "B-", "C+", "C"];
@@ -74,7 +77,8 @@ function calculateRank({
       ISSUES_WEIGHT * exponential_cdf(issues / ISSUES_MEDIAN) +
       REVIEWS_WEIGHT * exponential_cdf(reviews / REVIEWS_MEDIAN) +
       STARS_WEIGHT * log_normal_cdf(stars / STARS_MEDIAN) +
-      FOLLOWERS_WEIGHT * log_normal_cdf(followers / FOLLOWERS_MEDIAN)) /
+      FOLLOWERS_WEIGHT * log_normal_cdf(followers / FOLLOWERS_MEDIAN) +
+      REPOS_WEIGHT * log_normal_cdf(repos / REPOS_MEDIAN)) /
       TOTAL_WEIGHT;
 
   const level = LEVELS[THRESHOLDS.findIndex((t) => rank * 100 <= t)];
