@@ -1,5 +1,6 @@
-const axios = require('axios');
-require('dotenv').config();
+import axios from 'axios';
+import 'dotenv/config';
+import pLimit from 'p-limit';
 
 const MAX_CONCURRENT_REQUESTS = 20;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -113,8 +114,6 @@ async function fetchDiscussionsFromRepo(owner, repo) {
 
 async function fetchDiscussionMetrics(repos) {
   const discussionMetrics = { total_discussions_started: 0, total_discussions_answered: 0 };
-  
-  const pLimit = (await import('p-limit')).default;
   const limit = pLimit(MAX_CONCURRENT_REQUESTS);
 
   const limitedFetchPromises = repos.map(repo =>
@@ -210,4 +209,4 @@ async function fetchGitHubData(username) {
 
 }
 
-module.exports = { fetchGitHubData };
+export { fetchGitHubData };

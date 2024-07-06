@@ -33,7 +33,7 @@ function log_normal_cdf(x) {
  * @param {number} params.followers The number of followers.
  * @returns {{level: string, percentile: number}}} The user's rank.
  */
-function calculateRank({
+export function calculateRank({
   all_commits,
   commits = 0,
   prs = 0,
@@ -85,5 +85,3 @@ function calculateRank({
 
   return { level, percentile: rank * 100 };
 }
-
-module.exports = { calculateRank };

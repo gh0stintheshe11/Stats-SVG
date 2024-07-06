@@ -1,8 +1,8 @@
-const express = require('express');
-const { fetchGitHubData } = require('./fetch');
-const { calculateRank } = require('./calculateRank');
-const { calculateLanguagePercentage } = require('./calculateLang');
-const { renderStatsSVG } = require('./renderStats');
+import express from 'express';
+import { fetchGitHubData } from './fetch.js';
+import { calculateRank } from './calculateRank.js';
+import { calculateLanguagePercentage } from './calculateLang.js';
+import renderStatsSVG from './renderStats.js';
 
 const app = express();
 const port = 3001;
