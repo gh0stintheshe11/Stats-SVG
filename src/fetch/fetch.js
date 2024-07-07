@@ -171,6 +171,7 @@ async function fetchGitHubData(username) {
       total_merged_prs: user.pullRequests.totalCount || 0,
       total_repos: repositories.totalCount || 0,
       total_stars: 0,
+      total_contributes_to: user.repositoriesContributedTo.totalCount || 0,
       top_languages: {}
     };
 
