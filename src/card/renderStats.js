@@ -5,7 +5,7 @@ function renderStats(stats) {
   const svg = `
     <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
       <style>
-        .background { fill: none; } 
+        .background { fill: #00000000; } 
         .text { fill: #ffffff; font-family: 'Ubuntu', sans-serif; }
         .title { fill: #00f0ff; font-size: 30px; font-weight: bold; }
         .label { fill: #00f0ff; font-size: 20px; }
