@@ -1,6 +1,8 @@
 import axios from 'axios';
 import 'dotenv/config';
 import pLimit from 'p-limit';
+import {calculateLanguagePercentage} from '../utils/calculateLang.js';
+import {calculateRank} from '../utils/calculateRank.js';
 
 const MAX_CONCURRENT_REQUESTS = 20;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -200,6 +202,9 @@ async function fetchGitHubData(username) {
     stats.total_discussions_started = discussionMetrics.total_discussions_started;
     stats.total_discussions_answered = discussionMetrics.total_discussions_answered;
 
+    stats.rank = calculateRank({commits: stats.total_commits, prs: stats.total_prs, issues: stats.total_issues, reviews: stats.total_prs_reviewed, repos: stats.total_repos, stars: stats.total_stars, followers: stats.followers});
+    stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
+
     return stats;
 
   } catch (error) {
@@ -209,4 +214,4 @@ async function fetchGitHubData(username) {
 
 }
 
-export { fetchGitHubData };
+export { fetchGitHubData as default};

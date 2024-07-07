@@ -1,0 +1,13 @@
+{
+    "version": 1,
+    "builds": [
+      {
+        "src": "api/index.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      { "src": "/api/github-status/(.*)", "dest": "/api/index.js" },
+      { "src": "/api/github-languages/(.*)", "dest": "/api/index.js" }
+    ]
+  }

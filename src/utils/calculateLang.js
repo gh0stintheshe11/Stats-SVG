@@ -24,4 +24,3 @@ export function calculateLanguagePercentage(languages) {
   
     return languagePercentages;
   }
-  
