@@ -1,18 +1,25 @@
 {
   "functions": {
-    "api/index.js": {
+    "api/*.js": {
       "memory": 128,
       "maxDuration": 10
     }
   },
   "redirects": [
     {
-      "source": "/api/github-status/*",
+      "source": "/",
+      "destination": "https://github.com/anuraghazra/github-readme-stats"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/github-status",
       "destination": "/api/index.js"
     },
     {
-      "source": "/api/github-languages/*",
+      "source": "/api/github-languages",
       "destination": "/api/index.js"
     }
   ]
-} 
+}
+
