@@ -1,5 +1,4 @@
-# readme-status
+# <i class="fa-brands fa-github"></i> Github README Stats Lite <i class="fa-solid fa-chart-pie"></i>
+*A simple and lightweight Github README stats card generator and deployer*
 
-http://localhost:3000/api/github-status?username=gh0stintheshe11
-
-https://github-readme-stats-lite.vercel.app/api/github-status?username=gh0stintheshe11
+![GitHub Readme Stats](https://github-readme-stats-lite.vercel.app/api/github-status?username=gh0stintheshe11)
