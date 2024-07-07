@@ -7,6 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const stats = await fetchGitHubData(username);
+    console.log(stats);
 
     if (req.url.includes('github-status')) {
       const svg = renderStats(stats);
