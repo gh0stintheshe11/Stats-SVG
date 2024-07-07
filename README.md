@@ -1,3 +1,3 @@
 # readme-status
 
-http://localhost:3000/api/github?username=gh0stintheshe11&github-status
+https://github-readme-stats-lite.vercel.app/api/github?username=gh0stintheshe11&github-status
