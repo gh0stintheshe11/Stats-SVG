@@ -1,8 +1,8 @@
 import express from 'express';
-import { fetchGitHubData } from './fetch.js';
-import { calculateRank } from './calculateRank.js';
-import { calculateLanguagePercentage } from './calculateLang.js';
-import renderStatsSVG from './renderStats.js';
+import { fetchGitHubData } from './src/fetch/fetch.js';
+import { calculateRank } from './src/utils/calculateRank.js';
+import { calculateLanguagePercentage } from './src/utils/calculateLang.js';
+import renderStatsSVG from './src/card/renderStats.js';
 
 const app = express();
 const port = 3001;
