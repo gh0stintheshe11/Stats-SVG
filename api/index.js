@@ -4,10 +4,10 @@ import renderLang from '../src/card/renderLang.js';
 
 export default async function handler(req, res) {
   const { username } = req.query;
-  
+
   try {
     const stats = await fetchGitHubData(username);
-    
+
     if (req.url.includes('github-status')) {
       const svg = renderStats(stats);
       res.setHeader('Content-Type', 'image/svg+xml');
