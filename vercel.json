@@ -9,5 +9,11 @@
   "routes": [
     { "src": "/api/github-status/(.*)", "dest": "/api/index.js" },
     { "src": "/api/github-languages/(.*)", "dest": "/api/index.js" }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://github.com/gh0stintheshe11/github-readme-stats-lite"
+    }
   ]
 }
