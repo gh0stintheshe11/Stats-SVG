@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/*.js": {
+      "memory": 128,
+      "maxDuration": 10
     }
-  ],
+  },
   "routes": [
     { "src": "/api/github-status/(.*)", "dest": "/api/index.js" },
     { "src": "/api/github-languages/(.*)", "dest": "/api/index.js" }
