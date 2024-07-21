@@ -31,21 +31,18 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1
 
 export default async function handler(req, res) {
   const { username } = req.query;
+  const speedInsightsConfig = {
+    debug: true, // Enable debug mode for detailed logging, if supported
+    sampleRate: 1.0, // Adjust sampling rate as needed
+    // Add other configuration properties as required
+  };
+  injectSpeedInsights(speedInsightsConfig);
 
   try {
     console.time('fetch data');
     const stats = await fetchGitHubDataWithRetry(username);
     console.log(stats);
     console.timeEnd('fetch data');
-    
-    // Decide on the URL to analyze
-    const urlToAnalyze = `https://github.com/${username}`;
-    
-    // Fetch speed insights
-    console.time('fetch speed insights');
-    const insights = await injectSpeedInsights(urlToAnalyze);
-    console.log(insights);
-    console.timeEnd('fetch speed insights');
       
     if (req.url.includes('github-status')) {
       console.time('render stats');
@@ -60,6 +57,9 @@ export default async function handler(req, res) {
     } else {
       res.status(404).send('Not Found');
     }
+
+    // Fetch speed insights
+    console.log(injectSpeedInsights());
   } catch (error) {
     console.error('Error fetching data or rendering image:', error);
     res.status(500).send('Error fetching data or rendering image');
