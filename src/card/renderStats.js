@@ -2,6 +2,23 @@
 import { Icons } from '../utils/icons.js';
 
 function renderStats(stats) {
+
+  // Calculate the end angle of the progress based on the percentile
+  // Assuming stats.rank.percentile is a value between 0 and 100
+  const endAngle = ((100-stats.rank.percentile) / 100) * 360; // Subtract 90 to adjust for the initial rotation
+  const radians = (endAngle * Math.PI) / 180;
+
+  // Calculate the position of the end cap
+  const progressBarRadius = 80;
+  const endCapX = 650 + progressBarRadius * Math.cos(radians);
+  const endCapY = 140 + progressBarRadius * Math.sin(radians);
+
+  // Add the start cap (at the top of the circle, adjusted for rotation)
+  const startCap = `<circle cx="570" cy="140" r="14" fill="#00f0ff" transform="rotate(-90 650 140)"></circle>`;
+
+  // Correctly add the end cap based on the calculated position
+  const endCap = `<circle cx="${endCapX}" cy="${endCapY}" r="14" fill="#00f0ff" transform="rotate(-90 650 140)"></circle>`;
+
   const svg = `
     <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
       <style>
@@ -21,17 +38,17 @@ function renderStats(stats) {
         }
 
         .animate-delay-1 {animation-delay: 0s, 0.1s;}
-        .animate-delay-2 {animation-delay: 0.1s, 0.2s;}
-        .animate-delay-3 {animation-delay: 0.2s, 0.3s;}
-        .animate-delay-4 {animation-delay: 0.3s, 0.4s;}
-        .animate-delay-5 {animation-delay: 0.4s, 0.5s;}
-        .animate-delay-6 {animation-delay: 0.5s, 0.6s;}
-        .animate-delay-7 {animation-delay: 0.6s, 0.7s;}
-        .animate-delay-8 {animation-delay: 0.7s, 0.8s;}
-        .animate-delay-9 {animation-delay: 0.8s, 0.9s;}
-        .animate-delay-10 {animation-delay: 0.9s, 1s;}
-        .animate-delay-11 {animation-delay: 1s, 1.1s;}
-        .animate-delay-12 {animation-delay: 1.1s, 1.2s;}
+        .animate-delay-2 {animation-delay: 0.08s, 0.18s;}
+        .animate-delay-3 {animation-delay: 0.16s, 0.26s;}
+        .animate-delay-4 {animation-delay: 0.24s, 0.34s;}
+        .animate-delay-5 {animation-delay: 0.32s, 0.42s;}
+        .animate-delay-6 {animation-delay: 0.4s, 0.5s;}
+        .animate-delay-7 {animation-delay: 0.48s, 0.58s;}
+        .animate-delay-8 {animation-delay: 0.56s, 0.66s;}
+        .animate-delay-9 {animation-delay: 0.64s, 0.74s;}
+        .animate-delay-10 {animation-delay: 0.72s, 0.82s;}
+        .animate-delay-11 {animation-delay: 0.8s, 0.9s;}
+        .animate-delay-12 {animation-delay: 0.88s, 0.98s;}
 
         .background { fill: #00000000; } 
         .text { fill: #ffffff; font-family: 'Ubuntu', sans-serif; }
@@ -117,7 +134,7 @@ function renderStats(stats) {
         <text x="320" y="0" class="text value">${stats.total_discussions_answered}</text>
       </g>
 
-      <circle class="circle-bg" cx="650" cy="140" r="80" stroke="#e6e6e6" stroke-width="20" fill="#00000000"></circle>
+      <circle class="circle-bg" cx="650" cy="140" r="80" stroke="#e6e6e6" stroke-width="28" fill="#00000000"></circle>
 
       <path class="circle-progress" d="
         M 650,140
@@ -125,10 +142,12 @@ function renderStats(stats) {
         a 80,80 0 1,0 160,0
       " transform="rotate(-90 650 140)"
         stroke-dasharray="${(100-stats.rank.percentile) * 5.042}, 314"
-        stroke="#58A6FF" stroke-width="20" fill="none"></path>
+        stroke="#00f0ff" stroke-width="28" fill="none"></path>
+        ${startCap}
+        ${endCap}
 
-      <text x="620" y="300" class="text value">${stats.rank.level}</text>
-      <text x="620" y="340" class="text value">${stats.rank.percentile.toFixed(0)}%</text>
+      <text x="650" y="140" class="text value" font-size="30">${stats.rank.level}</text>
+      <text x="650" y="180" class="text value">${stats.rank.percentile.toFixed(0)}%</text>
     </svg>
   `;
   return svg;

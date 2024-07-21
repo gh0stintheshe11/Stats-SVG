@@ -1,9 +1,9 @@
 import fetchGitHubData from '../src/fetch/fetch.js';
 import renderStats from '../src/card/renderStats.js';
 import renderLang from '../src/card/renderLang.js';
+import { withSpeedInsights } from "@vercel/speed-insights";
 
-// Add this function above or outside your handler function
-async function fetchGitHubDataWithRetry(username, maxRetries = 3, retryDelay = 1000) {
+async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
   let lastError;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -13,19 +13,23 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 3, retryDelay = 1
       console.timeEnd(`fetch data attempt ${attempt + 1}`);
       return data; // If fetch is successful, return the data
     } catch (error) {
-      console.error(`Attempt ${attempt + 1} failed:`, error);
+      if (error.response && error.response.status === 403) {
+        console.error('GitHub API rate limit exceeded:', error.message);
+        // Consider sending a custom message or handling this case specifically
+        throw new Error('Service temporarily unavailable due to GitHub API rate limits. Please try again later.');
+      } else {
+        console.error('Error fetching data from GitHub:', error.message);
+      }
       lastError = error;
-      // Wait for retryDelay milliseconds before retrying
-      await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
+    await new Promise(resolve => setTimeout(resolve, retryDelay)); // Delay before retrying
   }
 
   // After all retries have failed, throw the last error
   throw lastError;
 }
 
-// Modify your handler function to use fetchGitHubDataWithRetry
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { username } = req.query;
 
   try {
@@ -53,3 +57,5 @@ export default async function handler(req, res) {
     res.status(500).send('Error fetching data or rendering image');
   }
 }
+
+export default withSpeedInsights(handler);
