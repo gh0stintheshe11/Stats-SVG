@@ -1,5 +1,2 @@
-# .husky/pre-commit
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-npm run pre-commit
+chmod +x clean-deps.sh
+sh ./clean-deps.sh
