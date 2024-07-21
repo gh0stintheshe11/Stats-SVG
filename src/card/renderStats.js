@@ -1,12 +1,25 @@
 // Import all the icons from the utils/icons.js file
 import { Icons } from '../utils/icons.js';
 
+function darkenHexColor(hex, darkenFactor) {
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
+
+  r = Math.round(r * (darkenFactor / 100));
+  g = Math.round(g * (darkenFactor / 100));
+  b = Math.round(b * (darkenFactor / 100));
+
+  return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
 function renderStats(stats) {
 
   const rank_circle_center_x = 650;
   const rank_circle_center_y = 140;
   const rank_circle_radius = 80;
   const rank_percentile = stats.rank.percentile;
+  const dark_level = 30;
 
   // Calculate the position of the start cap
   const startCap = `<circle cx="${rank_circle_center_x}" cy="${rank_circle_center_y+rank_circle_radius}" r="14" fill="#00f0ff"></circle>`;
@@ -147,7 +160,7 @@ function renderStats(stats) {
         <text x="320" y="0" class="text value">${stats.total_discussions_answered}</text>
       </g>
 
-      <circle class="circle-bg" cx="650" cy="140" r="80" stroke="#e6e6e6" stroke-width="28" fill="#00000000"></circle>
+      <circle class="circle-bg" cx="650" cy="140" r="80" stroke="${darkenHexColor("#00f0ff",dark_level)}" stroke-width="34" fill="#00000000"></circle>
 
       <path class="circle-progress" d="
         M 650,140
@@ -161,7 +174,7 @@ function renderStats(stats) {
         ${endCap}
 
       <text x="${rank_circle_center_x}" y="${rank_circle_center_y}" class="text rank"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text value" text-anchor="middle" dx="0.2em">${stats.rank.percentile.toFixed(1)}%</text>
+      <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text value" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
     </svg>
   `;
   return svg;
