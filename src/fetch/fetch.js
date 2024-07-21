@@ -1,10 +1,10 @@
 import axios from 'axios';
 import 'dotenv/config';
 import pLimit from 'p-limit';
-import {calculateLanguagePercentage} from '../utils/calculateLang.js';
-import {calculateRank} from '../utils/calculateRank.js';
+import { calculateLanguagePercentage } from '../utils/calculateLang.js';
+import { calculateRank } from '../utils/calculateRank.js';
 
-const MAX_CONCURRENT_REQUESTS = 20;
+const MAX_CONCURRENT_REQUESTS = 10;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 const GRAPHQL_QUERY_USER_INFO = `
@@ -135,7 +135,7 @@ async function fetchDiscussionMetrics(repos) {
 async function fetchGitHubData(username) {
   const url = 'https://api.github.com/graphql';
   const headers = {
-    'Authorization': `bearer ${process.env.GITHUB_TOKEN}`,
+    'Authorization': `bearer ${GITHUB_TOKEN}`,
     'Content-Type': 'application/json'
   };
   const variables = { login: username };
@@ -212,7 +212,6 @@ async function fetchGitHubData(username) {
     console.error('Error fetching data from GitHub:', error);
     throw error;
   }
-
 }
 
 export { fetchGitHubData as default};
