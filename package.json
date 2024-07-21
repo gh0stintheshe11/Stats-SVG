@@ -6,7 +6,6 @@
         "start": "node express.js"
     },
     "dependencies": {
-        "@vercel/speed-insights": "^1.0.12",
         "axios": "^1.7.2",
         "canvas": "^2.11.2",
         "dotenv": "^16.4.5",

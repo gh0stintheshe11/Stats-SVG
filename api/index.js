@@ -1,7 +1,6 @@
 import fetchGitHubData from '../src/fetch/fetch.js';
 import renderStats from '../src/card/renderStats.js';
 import renderLang from '../src/card/renderLang.js';
-import { injectSpeedInsights } from '@vercel/speed-insights';
 
 // Add this function above or outside your handler function
 async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
@@ -24,19 +23,12 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1
       }
     }
   }
-
   // After all retries have failed, throw the last error
   throw lastError;
 }
 
 export default async function handler(req, res) {
   const { username } = req.query;
-  const speedInsightsConfig = {
-    debug: true, // Enable debug mode for detailed logging, if supported
-    sampleRate: 1.0, // Adjust sampling rate as needed
-    // Add other configuration properties as required
-  };
-  injectSpeedInsights(speedInsightsConfig);
 
   try {
     console.time('fetch data');
@@ -58,8 +50,6 @@ export default async function handler(req, res) {
       res.status(404).send('Not Found');
     }
 
-    // Fetch speed insights
-    console.log(injectSpeedInsights());
   } catch (error) {
     console.error('Error fetching data or rendering image:', error);
     res.status(500).send('Error fetching data or rendering image');
