@@ -1,12 +1,12 @@
 import axios from 'axios';
-import 'dotenv/config';
 import pLimit from 'p-limit';
+import 'dotenv/config';
 import { calculateLanguagePercentage } from '../utils/calculateLang.js';
 import { calculateRank } from '../utils/calculateRank.js';
 import pkg from 'http2-wrapper';
 const { http2Adapter } = pkg;
 
-const MAX_CONCURRENT_REQUESTS = 10;
+const MAX_CONCURRENCE = 5;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const http2Axios = axios.create({
   adapter: http2Adapter,
@@ -59,9 +59,6 @@ const GRAPHQL_QUERY_USER_INFO = `
           stargazers {
             totalCount
           }
-          pullRequests(states: [MERGED]) {
-            totalCount
-          }
           issues(states: [OPEN, CLOSED]) {
             totalCount
           }
@@ -83,59 +80,15 @@ const GRAPHQL_QUERY_USER_INFO = `
       pullRequests(states: MERGED) {
         totalCount
       }
+      repositoryDiscussions {
+        totalCount
+      }
+      repositoryDiscussionComments(onlyAnswers: true) {
+        totalCount
+      }
     }
   }
 `;
-
-async function fetchDiscussionsFromRepo(owner, repo) {
-  const url = `https://api.github.com/repos/${owner}/${repo}/discussions`;
-  const headers = {
-    'Authorization': `token ${GITHUB_TOKEN}`,
-    'Accept': 'application/vnd.github.v3+json'
-  };
-
-  try {
-    const response = await http2Axios.get(url, { headers });
-    const discussions = response.data;
-
-    let total_discussions_answered = 0;
-    for (const discussion of discussions) {
-      if (discussion.answer) total_discussions_answered++;
-    }
-
-    const metrics = {
-      total_discussions_started: discussions.length,
-      total_discussions_answered
-    };
-
-    return metrics;
-  } catch (error) {
-    if (error.response && error.response.status === 404) {
-      console.log(`No discussions found for ${owner}/${repo}`);
-    } else {
-      console.error(`Error fetching discussions from ${owner}/${repo}:`, error);
-    }
-    return { total_discussions_started: 0, total_discussions_answered: 0 };
-  }
-}
-
-async function fetchDiscussionMetrics(repos) {
-  const discussionMetrics = { total_discussions_started: 0, total_discussions_answered: 0 };
-  const limit = pLimit(MAX_CONCURRENT_REQUESTS);
-
-  const limitedFetchPromises = repos.map(repo =>
-    limit(() => fetchDiscussionsFromRepo(repo.owner.login, repo.name))
-  );
-
-  const results = await Promise.all(limitedFetchPromises);
-
-  results.forEach(metrics => {
-    discussionMetrics.total_discussions_started += metrics.total_discussions_started;
-    discussionMetrics.total_discussions_answered += metrics.total_discussions_answered;
-  });
-
-  return discussionMetrics;
-}
 
 async function fetchGitHubData(username) {
   const url = 'https://api.github.com/graphql';
@@ -151,20 +104,17 @@ async function fetchGitHubData(username) {
       variables
     }, { headers });
 
-    const user = response.data.data.user || {};
+    const data = response.data;
+    //console.log('Raw Response from GitHub:', JSON.stringify(data, null, 2)); // Debugging line
+
+    const user = data.data?.user;
     if (!user) {
       throw new Error(`User ${username} not found`);
     }
-    
+
     const contributionsCollection = user.contributionsCollection || {};
     const repositories = user.repositories || {};
     const reposNodes = repositories.nodes || [];
-    const contributedRepos = user.repositoriesContributedTo.nodes || [];
-
-    let totalMergedPRs = 0;
-    contributionsCollection.pullRequestContributionsByRepository.forEach(repo => {
-      totalMergedPRs += repo.repository.pullRequests.totalCount;
-    });
 
     const stats = {
       name: user.name || user.login,
@@ -177,23 +127,45 @@ async function fetchGitHubData(username) {
       total_repos: repositories.totalCount || 0,
       total_stars: 0,
       total_contributes_to: user.repositoriesContributedTo.totalCount || 0,
-      top_languages: {}
+      top_languages: {},
+      total_discussions_started: user.repositoryDiscussions?.totalCount || 0,
+      total_discussions_answered: user.repositoryDiscussionComments?.totalCount || 0
     };
 
     const languageCounts = {};
-    reposNodes.forEach(repo => {
-      stats.total_stars += repo.stargazers ? repo.stargazers.totalCount : 0;
+    const limit = pLimit(MAX_CONCURRENCE);
+    const languagePromises = reposNodes.map(repo => limit(() => fetchRepoLanguages(repo)));
 
-      if (repo.languages) {
-        repo.languages.edges.forEach(({ size, node }) => {
-          if (!languageCounts[node.name]) {
-            languageCounts[node.name] = { size: 0, color: node.color, count: 0 };
-          }
-          languageCounts[node.name].size += size;
-          languageCounts[node.name].count += 1;
-        });
-      }
+    async function fetchRepoLanguages(repo) {
+      let repoStars = repo.stargazers ? repo.stargazers.totalCount : 0;
+      let repoLanguages = repo.languages ? repo.languages.edges.reduce((acc, { size, node }) => {
+        acc[node.name] = acc[node.name] || { size: 0, color: node.color, count: 0 };
+        acc[node.name].size += size;
+        acc[node.name].count += 1;
+        return acc;
+      }, {}) : {};
+    
+      return { repoStars, repoLanguages };
+    }
+    
+    // Process results more efficiently
+    const results = await Promise.all(languagePromises);
+    results.forEach(({ repoStars, repoLanguages }) => {
+      stats.total_stars += repoStars;
+      Object.entries(repoLanguages).forEach(([language, { size, color, count }]) => {
+        if (!languageCounts[language]) {
+          languageCounts[language] = { size, color, count };
+        } else {
+          languageCounts[language].size += size;
+          languageCounts[language].count += count;
+        }
+      });
     });
+    
+    // Optimized data processing
+    stats.top_languages = Object.entries(languageCounts)
+      .sort(([, a], [, b]) => b.size - a.size)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
     stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
 
@@ -204,11 +176,16 @@ async function fetchGitHubData(username) {
         return result;
       }, {});
 
-    const discussionMetrics = await fetchDiscussionMetrics([...reposNodes, ...contributedRepos]);
-    stats.total_discussions_started = discussionMetrics.total_discussions_started;
-    stats.total_discussions_answered = discussionMetrics.total_discussions_answered;
+    stats.rank = calculateRank({
+      commits: stats.total_commits,
+      prs: stats.total_prs,
+      issues: stats.total_issues,
+      reviews: stats.total_prs_reviewed,
+      repos: stats.total_repos,
+      stars: stats.total_stars,
+      followers: stats.followers
+    });
 
-    stats.rank = calculateRank({commits: stats.total_commits, prs: stats.total_prs, issues: stats.total_issues, reviews: stats.total_prs_reviewed, repos: stats.total_repos, stars: stats.total_stars, followers: stats.followers});
     stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
 
     return stats;
@@ -219,4 +196,4 @@ async function fetchGitHubData(username) {
   }
 }
 
-export { fetchGitHubData as default};
+export default fetchGitHubData;
