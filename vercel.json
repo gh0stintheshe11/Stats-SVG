@@ -15,10 +15,6 @@
     {
       "source": "/api/github-status",
       "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/github-languages",
-      "destination": "/api/index.js"
     }
   ]
 }

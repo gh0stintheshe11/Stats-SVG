@@ -1,5 +1,7 @@
 // Import all the icons from the utils/icons.js file
-import { Icons } from '../utils/icons.js';
+import Icons from '../utils/icons.js';
+// Import the config
+import config from '../../config.js';
 
 function darkenHexColor(hex, darkenFactor) {
   let r = parseInt(hex.slice(1, 3), 16);
@@ -15,26 +17,66 @@ function darkenHexColor(hex, darkenFactor) {
 
 function renderStats(stats) {
 
-  const dark_level = 30;
-  const icon_color = "#00f0ff";
-  const text_title_color = "#00f0ff";
-  const text_label_color = "#00f0ff";
-  const text_value_color = "#f8e602";
-  const rank_color = "#c5003c";
-  const rank_percentage_color = "#c5003c";
-  
-  const rank_circle_center_x = 650;
-  const rank_circle_center_y = 140;
-  const rank_circle_radius = 80;
+  // SVG Config
+  const svg_width = config.svg.width;
+  const svg_height = config.svg.height;
+
+  // Elements Config
+  // Colors
+  const icon_color = config.colors.icon;
+  const text_title_color = config.colors.textTitle;
+  const text_label_color = config.colors.textLabel;
+  const text_value_color = config.colors.textValue;
+  const rank_letter_color = config.colors.rankLetter;
+  const rank_percentage_color = config.colors.rankPercentage;
+  const rank_ring_bg_dark_level = config.rank.ringBgDarkLevel;
+
+  // Rank Ring
+  const rank_ring_radius = config.rank.ringRadius;
+  const rank_ring_thickness = config.rank.ringThickness;
+  const rank_ring_center_x = svg_width/2;
+  const rank_ring_center_y = svg_height/2 - rank_ring_radius*1.5;
   const rank_percentile = stats.rank.percentile;
+
+  // Rank Progress Bar
+  const rank_progress_bar_thickness = config.rank.progressBarThickness;
+  const rank_progress_bar_color = config.colors.rankProgressBar;
+
+  // Language Ring
+  const language_ring_radius = config.language.ringRadius;
+  const language_ring_thickness = config.language.ringThickness;
+  const language_ring_center_x = svg_width/2;
+  const language_ring_center_y = svg_height/2 + language_ring_radius*1.5;
+  const language_circumference = 2 * Math.PI * language_ring_radius;
+
+  // render the language percentage ring
+  const totalSegments = Object.keys(stats.language_percentages).length;
+  let accumulatedOffset = 0;
+  const language_percentage_ring = Object.keys(stats.language_percentages).map((language, index) => {
+    const value = stats.language_percentages[language];
+    const segmentLength = (value / 100) * language_circumference;
+    const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc'; // Default color if not found
+
+    const segment = `
+      <circle cx="${language_ring_center_x}" cy="${language_ring_center_y}" r="${language_ring_radius}" 
+        stroke="${color}" stroke-width="${language_ring_thickness}" fill="none"
+        stroke-dasharray="${segmentLength} ${language_circumference - segmentLength}"
+        stroke-dashoffset="${-accumulatedOffset}"
+        transform="rotate(90 ${language_ring_center_x} ${language_ring_center_y})"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: ${(totalSegments-index)*0.15}s;" />
+    `;
+    accumulatedOffset += segmentLength;
+
+    return segment;
+  }).join('');
   
   // Calculate the length of the "filled" part of the circle
-  const circumference = 2 * Math.PI * rank_circle_radius;
+  const circumference = 2 * Math.PI * rank_ring_radius;
   const progressPercentage = (100 - rank_percentile)/100;
   const visibleLength = circumference - circumference * progressPercentage;
 
   const svg = `
-    <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+    <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
       <style>
         
         @keyframes change-opacity {
@@ -73,19 +115,15 @@ function renderStats(stats) {
           }
         }
 
-        .circle-progress {
-          animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;
-        }
-
-        .background { fill: #00000000; } 
+        .background { fill: none; } 
         .text { font-family: 'Ubuntu', sans-serif; }
-        .title { fill: ${text_title_color}; fonr-size: 30px font-weight: bold; }
+        .title { fill: ${text_title_color}; font-size: 30px font-weight: bold; }
         .label { fill: ${text_label_color}; font-size: 20px; }
         .value { fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
-        .rank { fill: ${rank_color}; font-size: 50px; font-weight: bold; }
+        .rank-letter { fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
         .rank-percentage { fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
-        .circle-bg { fill: #00000000; }
-        .circle-progress { fill: #00000000; }
+        .rank-circle-bg { fill: none; }
+        .rank-circle-progress { fill: none; }
         .icon { fill: ${icon_color} ; }
       </style>
       <rect class="background" width="100%" height="100%" />
@@ -163,20 +201,25 @@ function renderStats(stats) {
         <text x="320" y="0" class="text value">${stats.total_discussions_answered}</text>
       </g>
 
-      <circle class="circle-bg" cx="650" cy="140" r="80" stroke="${darkenHexColor("#00f0ff",dark_level)}" stroke-width="34" fill="#00000000"></circle>
+      <circle class="rank-circle-bg" cx="${rank_ring_center_x}" cy="${rank_ring_center_y}" r="${rank_ring_radius}" stroke="${darkenHexColor("#00f0ff",rank_ring_bg_dark_level)}" stroke-width="${rank_ring_thickness}" fill="none"></circle>
 
-      <path class="circle-progress" d="
-        M 650,140
-        m -80,0
-        a 80,80 0 1,0 160,0
-        a 80,80 0 1,0 -160,0
-      " transform="rotate(-90 650 140)"
+      <path class="rank-circle-progress" d="
+        M ${rank_ring_center_x},${rank_ring_center_y}
+        m ${-rank_ring_radius},0
+        a ${rank_ring_radius},${rank_ring_radius} 0 1,0 ${2*rank_ring_radius},0
+        a ${rank_ring_radius},${rank_ring_radius} 0 1,0 ${-2*rank_ring_radius},0
+      " transform="rotate(-90 ${rank_ring_center_x} ${rank_ring_center_y})"
         stroke-dasharray="${circumference}"
         stroke-dashoffset="${circumference}"
-        stroke="#00f0ff" stroke-width="28" fill="none"></path>
+        stroke="${rank_progress_bar_color}" 
+        stroke-width="${rank_progress_bar_thickness}" 
+        fill="none"
+        style="animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;"></path>
 
-      <text x="${rank_circle_center_x}" y="${rank_circle_center_y}" class="text rank"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="text rank-letter"  text-anchor="middle">${stats.rank.level}</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="text rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+
+      ${language_percentage_ring}
     </svg>
   `;
   return svg;

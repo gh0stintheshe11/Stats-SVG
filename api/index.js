@@ -1,6 +1,5 @@
 import fetchGitHubData from '../src/fetch/fetch.js';
 import renderStats from '../src/card/renderStats.js';
-import renderLang from '../src/card/renderLang.js';
 
 // Add this function above or outside your handler function
 async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
@@ -42,10 +41,6 @@ export default async function handler(req, res) {
       res.setHeader('Content-Type', 'image/svg+xml');
       res.send(svg);
       console.timeEnd('render stats');
-    } else if (req.url.includes('github-languages')) {
-      const svg = renderLang(stats);
-      res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(svg);
     } else {
       res.status(404).send('Not Found');
     }
