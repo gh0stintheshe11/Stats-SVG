@@ -15,11 +15,18 @@ function darkenHexColor(hex, darkenFactor) {
 
 function renderStats(stats) {
 
+  const dark_level = 30;
+  const icon_color = "#00f0ff";
+  const text_title_color = "#00f0ff";
+  const text_label_color = "#00f0ff";
+  const text_value_color = "#f8e602";
+  const rank_color = "#c5003c";
+  const rank_percentage_color = "#c5003c";
+  
   const rank_circle_center_x = 650;
   const rank_circle_center_y = 140;
   const rank_circle_radius = 80;
   const rank_percentile = stats.rank.percentile;
-  const dark_level = 30;
 
   // Calculate the position of the start cap
   const startCap = `<circle cx="${rank_circle_center_x}" cy="${rank_circle_center_y+rank_circle_radius}" r="14" fill="#00f0ff"></circle>`;
@@ -76,14 +83,15 @@ function renderStats(stats) {
         .animate-delay-12 {animation-delay: 0.88s, 0.98s;}
 
         .background { fill: #00000000; } 
-        .text { fill: #ffffff; font-family: 'Ubuntu', sans-serif; }
-        .title { fill: #00f0ff; fonr-size: 30px font-weight: bold; }
-        .label { fill: #00f0ff; font-size: 20px; }
-        .value { fill: #f8e602; font-size: 20px; font-weight: bold; }
-        .rank { fill: #f8e602; font-size: 50px; font-weight: bold; }
+        .text { font-family: 'Ubuntu', sans-serif; }
+        .title { fill: ${text_title_color}; fonr-size: 30px font-weight: bold; }
+        .label { fill: ${text_label_color}; font-size: 20px; }
+        .value { fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
+        .rank { fill: ${rank_color}; font-size: 50px; font-weight: bold; }
+        .rank-percentage { fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
         .circle-bg { fill: #00000000; }
         .circle-progress { fill: #00000000; }
-        .icon { fill: #00f0ff; }
+        .icon { fill: ${icon_color} ; }
       </style>
       <rect class="background" width="100%" height="100%" />
       <text x="50" y="50" class="text title animate" font-size="30">${stats.name}'s GitHub Stats</text>
@@ -174,7 +182,7 @@ function renderStats(stats) {
         ${endCap}
 
       <text x="${rank_circle_center_x}" y="${rank_circle_center_y}" class="text rank"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text value" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+      <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
     </svg>
   `;
   return svg;
