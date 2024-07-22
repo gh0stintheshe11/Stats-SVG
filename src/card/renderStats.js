@@ -27,29 +27,11 @@ function renderStats(stats) {
   const rank_circle_center_y = 140;
   const rank_circle_radius = 80;
   const rank_percentile = stats.rank.percentile;
-
-  // Calculate the position of the start cap
-  const startCap = `<circle cx="${rank_circle_center_x}" cy="${rank_circle_center_y+rank_circle_radius}" r="14" fill="#00f0ff"></circle>`;
-
-  // Calculate the position of the end cap for counterclockwise rotation
-  // Convert the percentile to an angle in radians directly, considering counterclockwise rotation from 6 o'clock
-  const progressRadians = (rank_percentile / 100) * 2 * Math.PI; // Full circle in radians
-  // Starting angle at 6 o'clock (90 degrees) in radians
-  const startRadians = Math.PI / 2;
-  // Calculate the end angle for counterclockwise rotation
-  // Subtract progressRadians from startRadians to rotate counterclockwise
-  const endRadians = startRadians - progressRadians + Math.PI;
-  // Calculate the position of the end cap for counterclockwise rotation
-  const endCapX = rank_circle_center_x + rank_circle_radius * Math.cos(endRadians);
-  const endCapY = rank_circle_center_y - rank_circle_radius * Math.sin(endRadians); // Subtract because SVG y-axis goes down
-  // Correctly add the end cap based on the calculated position
-  const endCap = `<circle cx="${endCapX}" cy="${endCapY}" r="14" fill="#00f0ff"></circle>`;
   
   // Calculate the length of the "filled" part of the circle
-  const radius = 80;
-  const circumference = 2 * Math.PI * radius;
-  const progressPercentage = (100 - stats.rank.percentile)/100;
-  const visibleLength = circumference * progressPercentage;
+  const circumference = 2 * Math.PI * rank_circle_radius;
+  const progressPercentage = (100 - rank_percentile)/100;
+  const visibleLength = circumference - circumference * progressPercentage;
 
   const svg = `
     <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
@@ -66,7 +48,7 @@ function renderStats(stats) {
 
         .animate {
           opacity: 0;
-          animation: change-opacity 0.5s ease-out forwards
+          animation: change-opacity 0.5s ease-out forwards;
         }
 
         .animate-delay-1 {animation-delay: 0s, 0.1s;}
@@ -81,6 +63,19 @@ function renderStats(stats) {
         .animate-delay-10 {animation-delay: 0.72s, 0.82s;}
         .animate-delay-11 {animation-delay: 0.8s, 0.9s;}
         .animate-delay-12 {animation-delay: 0.88s, 0.98s;}
+
+        @keyframes fillProgress {
+          from {
+            stroke-dashoffset: ${circumference};
+          }
+          to {
+            stroke-dashoffset: ${visibleLength};
+          }
+        }
+
+        .circle-progress {
+          animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;
+        }
 
         .background { fill: #00000000; } 
         .text { font-family: 'Ubuntu', sans-serif; }
@@ -176,10 +171,9 @@ function renderStats(stats) {
         a 80,80 0 1,0 160,0
         a 80,80 0 1,0 -160,0
       " transform="rotate(-90 650 140)"
-        stroke-dasharray="${visibleLength}, ${circumference}"
+        stroke-dasharray="${circumference}"
+        stroke-dashoffset="${circumference}"
         stroke="#00f0ff" stroke-width="28" fill="none"></path>
-        ${startCap}
-        ${endCap}
 
       <text x="${rank_circle_center_x}" y="${rank_circle_center_y}" class="text rank"  text-anchor="middle">${stats.rank.level}</text>
       <text x="${rank_circle_center_x}" y="${rank_circle_center_y+40}" class="text rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
