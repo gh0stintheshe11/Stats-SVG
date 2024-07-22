@@ -3,9 +3,14 @@ import 'dotenv/config';
 import pLimit from 'p-limit';
 import { calculateLanguagePercentage } from '../utils/calculateLang.js';
 import { calculateRank } from '../utils/calculateRank.js';
+import pkg from 'http2-wrapper';
+const { http2Adapter } = pkg;
 
 const MAX_CONCURRENT_REQUESTS = 10;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const http2Axios = axios.create({
+  adapter: http2Adapter,
+});
 
 const GRAPHQL_QUERY_USER_INFO = `
   query userInfo($login: String!, $after: String) {
@@ -90,7 +95,7 @@ async function fetchDiscussionsFromRepo(owner, repo) {
   };
 
   try {
-    const response = await axios.get(url, { headers });
+    const response = await http2Axios.get(url, { headers });
     const discussions = response.data;
 
     let total_discussions_answered = 0;
@@ -141,7 +146,7 @@ async function fetchGitHubData(username) {
   const variables = { login: username };
 
   try {
-    const response = await axios.post(url, {
+    const response = await http2Axios.post(url, {
       query: GRAPHQL_QUERY_USER_INFO,
       variables
     }, { headers });
