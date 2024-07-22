@@ -1,12 +1,10 @@
 import axios from 'axios';
-import pLimit from 'p-limit';
 import 'dotenv/config';
 import { calculateLanguagePercentage } from '../utils/calculateLang.js';
 import { calculateRank } from '../utils/calculateRank.js';
 import pkg from 'http2-wrapper';
 const { http2Adapter } = pkg;
 
-const MAX_CONCURRENCE = 5;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const http2Axios = axios.create({
   adapter: http2Adapter,
@@ -71,6 +69,7 @@ const GRAPHQL_QUERY_USER_INFO = `
               }
             }
           }
+          forkCount
         }
         pageInfo {
           hasNextPage
@@ -104,16 +103,10 @@ async function fetchGitHubData(username) {
       variables
     }, { headers });
 
-    const data = response.data;
-    //console.log('Raw Response from GitHub:', JSON.stringify(data, null, 2)); // Debugging line
+    const { data: { data: { user } = {} } = {} } = response;
+    if (!user) throw new Error(`User ${username} not found`);
 
-    const user = data.data?.user;
-    if (!user) {
-      throw new Error(`User ${username} not found`);
-    }
-
-    const contributionsCollection = user.contributionsCollection || {};
-    const repositories = user.repositories || {};
+    const { contributionsCollection = {}, repositories = {}} = user;
     const reposNodes = repositories.nodes || [];
 
     const stats = {
@@ -125,56 +118,15 @@ async function fetchGitHubData(username) {
       total_issues: contributionsCollection.totalIssueContributions || 0,
       total_merged_prs: user.pullRequests.totalCount || 0,
       total_repos: repositories.totalCount || 0,
-      total_stars: 0,
+      total_stars: reposNodes.reduce((acc, repo) => acc + repo.stargazers.totalCount, 0),
+      total_forks: reposNodes.reduce((acc, repo) => acc + repo.forkCount, 0),
       total_contributes_to: user.repositoriesContributedTo.totalCount || 0,
-      top_languages: {},
+      top_languages: calculateTopLanguages(reposNodes),
       total_discussions_started: user.repositoryDiscussions?.totalCount || 0,
       total_discussions_answered: user.repositoryDiscussionComments?.totalCount || 0
     };
 
-    const languageCounts = {};
-    const limit = pLimit(MAX_CONCURRENCE);
-    const languagePromises = reposNodes.map(repo => limit(() => fetchRepoLanguages(repo)));
-
-    async function fetchRepoLanguages(repo) {
-      let repoStars = repo.stargazers ? repo.stargazers.totalCount : 0;
-      let repoLanguages = repo.languages ? repo.languages.edges.reduce((acc, { size, node }) => {
-        acc[node.name] = acc[node.name] || { size: 0, color: node.color, count: 0 };
-        acc[node.name].size += size;
-        acc[node.name].count += 1;
-        return acc;
-      }, {}) : {};
-    
-      return { repoStars, repoLanguages };
-    }
-    
-    // Process results more efficiently
-    const results = await Promise.all(languagePromises);
-    results.forEach(({ repoStars, repoLanguages }) => {
-      stats.total_stars += repoStars;
-      Object.entries(repoLanguages).forEach(([language, { size, color, count }]) => {
-        if (!languageCounts[language]) {
-          languageCounts[language] = { size, color, count };
-        } else {
-          languageCounts[language].size += size;
-          languageCounts[language].count += count;
-        }
-      });
-    });
-    
-    // Optimized data processing
-    stats.top_languages = Object.entries(languageCounts)
-      .sort(([, a], [, b]) => b.size - a.size)
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
     stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
-
-    stats.top_languages = Object.keys(languageCounts)
-      .sort((a, b) => languageCounts[b].size - languageCounts[a].size)
-      .reduce((result, key) => {
-        result[key] = languageCounts[key];
-        return result;
-      }, {});
 
     stats.rank = calculateRank({
       commits: stats.total_commits,
@@ -194,6 +146,23 @@ async function fetchGitHubData(username) {
     console.error('Error fetching data from GitHub:', error);
     throw error;
   }
+}
+
+function calculateTopLanguages(reposNodes) {
+  const languageCounts = {};
+  reposNodes.forEach(repo => {
+    repo.languages.edges.forEach(({ size, node }) => {
+      if (!languageCounts[node.name]) {
+        languageCounts[node.name] = { size: 0, color: node.color, count: 0 };
+      }
+      languageCounts[node.name].size += size;
+      languageCounts[node.name].count += 1;
+    });
+  });
+
+  return Object.entries(languageCounts)
+    .sort(([, a], [, b]) => b.size - a.size)
+    .reduce((result, [key, value]) => ({ ...result, [key]: value }), {});
 }
 
 export default fetchGitHubData;
