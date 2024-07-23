@@ -8,7 +8,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "https://github.com/gh0stintheshe11/github-readme-stats-lite"
+      "destination": "https://github.com/gh0stintheshe11/github-stats-svg"
     }
   ],
   "rewrites": [
