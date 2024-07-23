@@ -18,9 +18,10 @@ const ChakraPetchRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils
 const LibreBarcode128Regular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/LibreBarcode128-Regular.ttf'), 'base64');
 
 // Read the PNG file and encode it to Base64
-const EdgeRunnerLogo_base64 = fs.readFileSync(path.join(__dirname, '../utils/edge_runner_logo.png'), 'base64');
-const dimensions = sizeOf(path.join(__dirname, '../utils/edge_runner_logo.png'));
+const EdgeRunnerLogo_base64 = fs.readFileSync(path.join(__dirname, '../utils/logo.png'), 'base64');
+const dimensions = sizeOf(path.join(__dirname, '../utils/logo.png'));
 
+// Github personal page URL
 const githubUrl = 'https://github.com/gh0stintheshe11';
 
 function darkenHexColor(hex, darkenFactor) {
