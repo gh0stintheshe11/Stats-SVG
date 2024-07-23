@@ -159,19 +159,14 @@ function renderStats(stats) {
           }
         }
 
-        @keyframes slideInFromLeft {
-          0% {
-            opacity: 0;
-            transform: translateX(-100%);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
+        @keyframes blink-twice {
+          0%, 100% { opacity: 1; }
+          25%, 75% { opacity: 0; }
+          50% { opacity: 1; }
         }
 
-        .text-slide-in {
-          animation: slideInFromLeft 0.3s ease-out forwards;
+        .blinking {
+          animation: blink-twice 1.5s ease-out;
         }
 
         .background { fill: none; } 
@@ -296,12 +291,12 @@ function renderStats(stats) {
         fill="none"
         style="animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;"></path>
 
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="rank-letter"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="rank-letter animate"  text-anchor="middle">${stats.rank.level}</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="rank-percentage animate" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
 
       ${language_percentage_ring}
 
-      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}"/>
+      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blinking"/>
     </svg>
   `;
   return svg;
