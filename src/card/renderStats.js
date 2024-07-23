@@ -165,7 +165,7 @@ function renderStats(stats) {
           50% { opacity: 1; }
         }
 
-        .blinking {
+        .blink {
           animation: blink-twice 1.5s ease-out;
         }
 
@@ -296,7 +296,7 @@ function renderStats(stats) {
 
       ${language_percentage_ring}
 
-      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="animate"/>
+      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blink"/>
     </svg>
   `;
   return svg;
