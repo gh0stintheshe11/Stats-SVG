@@ -1,6 +1,6 @@
 const config = {
     svg: {
-      width: 1200,
+      width: 1100,
       height: 600
     },
     colors: {

@@ -192,14 +192,14 @@ function renderStats(stats) {
       <clipPath id="clipPathReveal">
         <rect x="0" y="0" height="100" width="0">
           <!-- Animate the width of the rectangle -->
-          <animate attributeName="width" begin="0s" dur="1s" from="0" to="1200" fill="freeze" />
+          <animate attributeName="width" begin="0s" dur="1s" from="0" to="${svg_width}" fill="freeze" />
         </rect>
       </clipPath>
 
-      <text x="1180" y="85" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
+      <text x="${svg_width-20}" y="85" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
 
       <line x1="10" y1="60" x2="10" y2="60" stroke="${config.colors.icon}" stroke-width="2">
-        <animate attributeName="x2" from="10" to="1190" dur="0.5s" fill="freeze" />
+        <animate attributeName="x2" from="10" to="${svg_width-10}" dur="0.5s" fill="freeze" />
       </line>
 
       <g transform="translate(30, 100)" class="animate animate-delay-1">
