@@ -296,7 +296,7 @@ function renderStats(stats) {
 
       ${language_percentage_ring}
 
-      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blinking"/>
+      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="animate"/>
     </svg>
   `;
   return svg;
