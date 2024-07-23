@@ -1,3 +1,4 @@
+// Import necessary functions
 import fetchGitHubData from '../src/fetch/fetch.js';
 import renderStats from '../src/card/renderStats.js';
 
@@ -12,13 +13,11 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1
       console.timeEnd(`fetch data attempt ${attempt + 1}`);
       return data; // If fetch is successful, return the data
     } catch (error) {
-      if (error.response && error.response.status === 403) {
-        console.error('GitHub API rate limit exceeded:', error.message);
-        // Consider sending a custom message or handling this case specifically
-        res.status(503).send('Service temporarily unavailable due to GitHub API rate limits. Please try again later.');
-      } else {
-        console.error('Error fetching data from GitHub:', error.message);
-        res.status(500).send('Error fetching data or rendering image');
+      lastError = error; // Update lastError with the most recent error
+      console.error(`Attempt ${attempt + 1} failed:`, error.message);
+      if (attempt < maxRetries - 1) { // Check if more retries are allowed
+        console.log(`Retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait before retrying
       }
     }
   }
@@ -46,7 +45,13 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error('Error fetching data or rendering image:', error);
-    res.status(500).send('Error fetching data or rendering image');
+    console.error('Error in handler:', error);
+    // Use error handling specific to your server framework
+    // For example, in Express.js:
+    if (error.response && error.response.status === 403) {
+      res.status(503).send('Service temporarily unavailable due to GitHub API rate limits. Please try again later.');
+    } else {
+      res.status(500).send('Error fetching data or rendering image');
+    }
   }
 }

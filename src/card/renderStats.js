@@ -3,6 +3,18 @@ import Icons from '../utils/icons.js';
 // Import the config
 import config from '../../config.js';
 
+// Costumized font
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+// Get the directory name of the current module file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Read the Base64 encoded font file
+const RajdhaniRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/Rajdhani-Regular.ttf'), 'base64');
+const ChakraPetchRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/ChakraPetch-Regular.ttf'), 'base64');
+
+
 function darkenHexColor(hex, darkenFactor) {
   let r = parseInt(hex.slice(1, 3), 16);
   let g = parseInt(hex.slice(3, 5), 16);
@@ -78,6 +90,16 @@ function renderStats(stats) {
   const svg = `
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
       <style>
+
+        @font-face {
+          font-family: 'RajdhaniRegular';
+          src: url('data:font/ttf;base64,${RajdhaniRegular_base64}') format('truetype');
+        }
+
+        @font-face {
+          font-family: 'ChakraPetchRegular';
+          src: url('data:font/ttf;base64,${ChakraPetchRegular_base64}') format('truetype');
+        }
         
         @keyframes change-opacity {
           from {
@@ -93,6 +115,15 @@ function renderStats(stats) {
           animation: change-opacity 0.5s ease-out forwards;
         }
 
+        @keyframes fillProgress {
+          from {
+            stroke-dashoffset: ${circumference};
+          }
+          to {
+            stroke-dashoffset: ${visibleLength};
+          }
+        }
+
         .animate-delay-1 {animation-delay: 0s, 0.1s;}
         .animate-delay-2 {animation-delay: 0.08s, 0.18s;}
         .animate-delay-3 {animation-delay: 0.16s, 0.26s;}
@@ -106,99 +137,89 @@ function renderStats(stats) {
         .animate-delay-11 {animation-delay: 0.8s, 0.9s;}
         .animate-delay-12 {animation-delay: 0.88s, 0.98s;}
 
-        @keyframes fillProgress {
-          from {
-            stroke-dashoffset: ${circumference};
-          }
-          to {
-            stroke-dashoffset: ${visibleLength};
-          }
-        }
-
         .background { fill: none; } 
-        .text { font-family: 'Ubuntu', sans-serif; }
-        .title { fill: ${text_title_color}; font-size: 30px font-weight: bold; }
-        .label { fill: ${text_label_color}; font-size: 20px; }
-        .value { fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
-        .rank-letter { fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
-        .rank-percentage { fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
+        .title { font-family: 'ChakraPetchRegular'; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
+        .label { font-family: 'RajdhaniRegular'; fill: ${text_label_color}; font-size: 20px; }
+        .value { font-family: 'RajdhaniRegular'; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
+        .rank-letter { font-family: 'ChakraPetchRegular'; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
+        .rank-percentage { font-family: 'RajdhaniRegular'; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
         .rank-circle-bg { fill: none; }
         .rank-circle-progress { fill: none; }
         .icon { fill: ${icon_color} ; }
       </style>
       <rect class="background" width="100%" height="100%" />
-      <text x="50" y="50" class="text title animate" font-size="30">${stats.name}'s GitHub Stats</text>
+      <text x="50" y="50" class="title animate" font-size="30">${stats.name}'s GitHub Stats</text>
 
       <g transform="translate(40, 100)" class="animate animate-delay-1">
         <path class="icon" d="${Icons.star_icon}" transform="translate(5, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Total Stars Earned:</text>
-        <text x="320" y="0" class="text value">${stats.total_stars}</text>
+        <text x="40" y="0" class="label">Total Stars Earned:</text>
+        <text x="320" y="0" class="value">${stats.total_stars}</text>
       </g>
 
       <g transform="translate(40, 140)" class="animate animate-delay-2">
         <path class="icon" d="${Icons.contributes_to_icon}" transform="translate(8, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Contributed to:</text>
-        <text x="320" y="0" class="text value">${stats.total_contributes_to}</text>
+        <text x="40" y="0" class="label">Contributed to:</text>
+        <text x="320" y="0" class="value">${stats.total_contributes_to}</text>
       </g>
 
       <g transform="translate(40, 180)" class="animate animate-delay-3">
         <path class="icon" d="${Icons.followers_icon}" transform="translate(7, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Total Followers:</text>
-        <text x="320" y="0" class="text value">${stats.followers}</text>
+        <text x="40" y="0" class="label">Total Followers:</text>
+        <text x="320" y="0" class="value">${stats.followers}</text>
       </g>
 
       <g transform="translate(40, 220)" class="animate animate-delay-4">
         <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -17) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total Repos:</text>
-        <text x="320" y="0" class="text value">${stats.total_repos}</text>
+        <text x="40" y="0" class="label">Total Repos:</text>
+        <text x="320" y="0" class="value">${stats.total_repos}</text>
       </g>
 
       <g transform="translate(40, 260)" class="animate animate-delay-5">
         <path class="icon" d="${Icons.commit_icon}" transform="translate(5, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Total Commits:</text>
-        <text x="320" y="0" class="text value">${stats.total_commits}</text>
+        <text x="40" y="0" class="label">Total Commits:</text>
+        <text x="320" y="0" class="value">${stats.total_commits}</text>
       </g>
 
       <g transform="translate(40, 300)" class="animate animate-delay-6">
         <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -17) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total PRs:</text>
-        <text x="320" y="0" class="text value">${stats.total_prs}</text>
+        <text x="40" y="0" class="label">Total PRs:</text>
+        <text x="320" y="0" class="value">${stats.total_prs}</text>
       </g>
 
       <g transform="translate(40, 340)" class="animate animate-delay-7">
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total PRs Merged:</text>
-        <text x="320" y="0" class="text value">${stats.total_merged_prs}</text>
+        <text x="40" y="0" class="label">Total PRs Merged:</text>
+        <text x="320" y="0" class="value">${stats.total_merged_prs}</text>
       </g>
 
       <g transform="translate(40, 380)" class="animate animate-delay-8">
         <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Total PRs Reviewed:</text>
-        <text x="320" y="0" class="text value">${stats.total_prs_reviewed}</text>
+        <text x="40" y="0" class="label">Total PRs Reviewed:</text>
+        <text x="320" y="0" class="value">${stats.total_prs_reviewed}</text>
       </g>
 
       <g transform="translate(40, 420)" class="animate animate-delay-9">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
-        <text x="40" y="0" class="text label">Merged PRs Percentage:</text>
-        <text x="320" y="0" class="text value">${stats.merged_prs_percentage.toFixed(0)}%</text>
+        <text x="40" y="0" class="label">Merged PRs Percentage:</text>
+        <text x="320" y="0" class="value">${stats.merged_prs_percentage.toFixed(0)}%</text>
       </g>
 
       <g transform="translate(40, 460)" class="animate animate-delay-10">
         <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -18) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total Issues:</text>
-        <text x="320" y="0" class="text value">${stats.total_issues}</text>
+        <text x="40" y="0" class="label">Total Issues:</text>
+        <text x="320" y="0" class="value">${stats.total_issues}</text>
       </g>
 
       <g transform="translate(40, 500)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.discussions_started_icon}" transform="translate(5, -18) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total Discussions Started:</text>
-        <text x="320" y="0" class="text value">${stats.total_discussions_started}</text>
+        <text x="40" y="0" class="label">Total Discussions Started:</text>
+        <text x="320" y="0" class="value">${stats.total_discussions_started}</text>
       </g>
 
       <g transform="translate(40, 540)" class="animate animate-delay-12">
         <path class="icon" d="${Icons.discussions_answered_icon}" transform="translate(5, -18) scale(1.4)"/>
-        <text x="40" y="0" class="text label">Total Discussions Answered:</text>
-        <text x="320" y="0" class="text value">${stats.total_discussions_answered}</text>
+        <text x="40" y="0" class="label">Total Discussions Answered:</text>
+        <text x="320" y="0" class="value">${stats.total_discussions_answered}</text>
       </g>
 
       <circle class="rank-circle-bg" cx="${rank_ring_center_x}" cy="${rank_ring_center_y}" r="${rank_ring_radius}" stroke="${darkenHexColor("#00f0ff",rank_ring_bg_dark_level)}" stroke-width="${rank_ring_thickness}" fill="none"></circle>
@@ -216,8 +237,8 @@ function renderStats(stats) {
         fill="none"
         style="animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;"></path>
 
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="text rank-letter"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="text rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="rank-letter"  text-anchor="middle">${stats.rank.level}</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
 
       ${language_percentage_ring}
     </svg>
