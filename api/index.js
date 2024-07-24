@@ -1,22 +1,8 @@
 // Import necessary functions
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fetchGitHubData from '../src/fetch/fetch.js';
 import renderStats from '../src/card/renderStats.js';
 
-// Get __dirname equivalent in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load the base64 encoded fonts
-const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/utils/fontsBase64.json'), 'utf8'));
-
-const rajdhaniFontBase64 = fontsBase64['Rajdhani-Regular'];
-const chakraPetchFontBase64 = fontsBase64['ChakraPetch-Regular'];
-const libreBarcodeFontBase64 = fontsBase64['LibreBarcode128-Regular'];
-
-// Function to fetch GitHub data with retry logic
+// Add this function above or outside your handler function
 async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
   let lastError;
 
@@ -50,11 +36,7 @@ export default async function handler(req, res) {
       
     if (req.url.includes('github-status')) {
       console.time('render stats');
-      const svg = renderStats(stats, {
-        rajdhaniFontBase64,
-        chakraPetchFontBase64,
-        libreBarcodeFontBase64,
-      });
+      const svg = renderStats(stats);
       res.setHeader('Content-Type', 'image/svg+xml');
       res.send(svg);
       console.timeEnd('render stats');

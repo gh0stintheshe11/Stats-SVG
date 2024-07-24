@@ -18,6 +18,9 @@ const __dirname = path.dirname(__filename);
 const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'), 'base64');
 const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 
+// Load the Base64 encoded fonts from the JSON file
+const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../utils/fontsBase64.json'), 'utf8'));
+
 // Github personal page URL
 const githubUrl = 'https://github.com/gh0stintheshe11';
 
@@ -32,8 +35,7 @@ function darkenHexColor(hex, darkenFactor) {
 
   return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
-
-function renderStats(stats, { rajdhaniFontBase64, chakraPetchFontBase64, libreBarcodeFontBase64 }) {
+function renderStats(stats) {
 
   // SVG Config
   const svg_width = config.svg.width;
@@ -141,15 +143,15 @@ function renderStats(stats, { rajdhaniFontBase64, chakraPetchFontBase64, libreBa
 
         @font-face {
           font-family: 'Rajdhani';
-          src: url(data:font/truetype;charset=utf-8;base64,${rajdhaniFontBase64}) format('truetype');
+          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['Rajdhani-Regular']}) format('truetype');
         }
         @font-face {
           font-family: 'Chakra Petch';
-          src: url(data:font/truetype;charset=utf-8;base64,${chakraPetchFontBase64}) format('truetype');
+          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['ChakraPetch-Regular']}) format('truetype');
         }
         @font-face {
           font-family: 'Libre Barcode 128';
-          src: url(data:font/truetype;charset=utf-8;base64,${libreBarcodeFontBase64}) format('truetype');
+          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['LibreBarcode128-Regular']}) format('truetype');
         }
         
         @keyframes change-opacity {
