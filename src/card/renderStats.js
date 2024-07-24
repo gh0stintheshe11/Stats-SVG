@@ -207,13 +207,13 @@ function renderStats(stats) {
         }
 
         .background { fill: none; } 
-        .title { font-family: 'ChakraPetchRegular'; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
-        .label { font-family: 'RajdhaniRegular'; fill: ${text_label_color}; font-size: 20px; }
-        .value { font-family: 'RajdhaniRegular'; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
-        .barcode { font-family: 'LibreBarcode128Regular'; fill: ${text_title_color};}
-        .rank-letter { font-family: 'ChakraPetchRegular'; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
-        .rank-percentage { font-family: 'RajdhaniRegular'; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
-        .language-legend { font-family: 'RajdhaniRegular'; font-size: 16px; }
+        .title { font-family: 'ChakraPetchRegular', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
+        .label { font-family: 'RajdhaniRegular', Helvetica; fill: ${text_label_color}; font-size: 20px; }
+        .value { font-family: 'RajdhaniRegular', Helvetica; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
+        .barcode { font-family: 'LibreBarcode128Regular', Helvetica; fill: ${text_title_color};}
+        .rank-letter { font-family: 'ChakraPetchRegular', Helvetica; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
+        .rank-percentage { font-family: 'RajdhaniRegular', Helvetica; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
+        .language-legend { font-family: 'RajdhaniRegular', Helvetica; font-size: 16px; }
         .rank-circle-bg { fill: none; }
         .rank-circle-progress { fill: none; }
         .icon { fill: ${icon_color} ; }
