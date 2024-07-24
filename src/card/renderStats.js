@@ -11,7 +11,7 @@ import config from '../../config.js';
 // for mesuring image size
 import sizeOf from 'image-size';
 // for mesuring text length
-import textWidth from 'text-width';
+import { createCanvas } from 'canvas';
 
 // Costumized font
 // Read the Base64 encoded font file
@@ -72,17 +72,25 @@ function renderStats(stats) {
   const language_ring_center_y = svg_height / 2 + language_ring_radius * 2;
   const language_circumference = 2 * Math.PI * language_ring_radius;
 
+  // Function to calculate text width using canvas
+  function textWidth(text, font) {
+    const canvas = createCanvas(1, 1);
+    const context = canvas.getContext('2d');
+    context.font = font;
+    return context.measureText(text).width;
+  }
+
   // Determine the longest language line
   const longestLanguageText = Object.keys(stats.language_percentages).reduce((longest, language) => {
     const value = stats.language_percentages[language];
     const text = `${language} ${value.toFixed(2)}%`;
-    const textWidthValue = textWidth(text, {family: 'YourFontFamilyName', size: '20px'}); // Update with your font details
+    const textWidthValue = textWidth(text, '16px RajdhaniRegular'); // Update with your font details
     return textWidthValue > longest ? textWidthValue : longest;
   }, 0);
 
   // Calculate the positions for the rows
-  const first_column_x_offset = language_ring_center_x + language_ring_radius + language_ring_thickness;
-  const second_column_x_offset = first_column_x_offset + longestLanguageText + language_ring_thickness; // Adjust the offset as needed for spacing
+  const first_column_x_offset = language_ring_center_x + language_ring_radius + language_ring_thickness*1.5;
+  const second_column_x_offset = first_column_x_offset + longestLanguageText + language_ring_thickness/2; // Adjust the offset as needed for spacing
 
   // Render the language percentage ring and text labels
   const totalSegments = Object.keys(stats.language_percentages).length;

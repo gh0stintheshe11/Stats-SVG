@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "axios": "^1.7.2",
+    "canvas": "^2.11.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "http2-wrapper": "^2.2.1",
     "image-size": "^1.1.1",
-    "p-limit": "^6.0.0",
-    "text-width": "^1.2.0"
+    "p-limit": "^6.0.0"
   },
   "devDependencies": {
     "husky": "^9.1.1"
