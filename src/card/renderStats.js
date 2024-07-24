@@ -89,8 +89,8 @@ function renderStats(stats) {
   }, 0);
 
   // Calculate the positions for the rows
-  const first_column_x_offset = language_ring_center_x + language_ring_radius + language_ring_thickness*1.5;
-  const second_column_x_offset = first_column_x_offset + longestLanguageText + language_ring_thickness/2; // Adjust the offset as needed for spacing
+  const first_column_x_offset = language_ring_center_x + language_ring_radius*1.5;
+  const second_column_x_offset = first_column_x_offset + longestLanguageText + language_ring_thickness; // Adjust the offset as needed for spacing
 
   // Render the language percentage ring and text labels
   const totalSegments = Object.keys(stats.language_percentages).length;
