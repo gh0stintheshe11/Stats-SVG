@@ -8,8 +8,10 @@ const __dirname = path.dirname(__filename);
 import Icons from '../utils/icons.js';
 // Import the config
 import config from '../../config.js';
-// const sizeOf = require('image-size');
+// for mesuring image size
 import sizeOf from 'image-size';
+// for mesuring text length
+import textWidth from 'text-width';
 
 // Costumized font
 // Read the Base64 encoded font file
@@ -66,11 +68,23 @@ function renderStats(stats) {
   // Language Ring
   const language_ring_radius = config.language.ringRadius;
   const language_ring_thickness = config.language.ringThickness;
-  const language_ring_center_x = svg_width/2;
-  const language_ring_center_y = svg_height/2 + language_ring_radius*2;
+  const language_ring_center_x = svg_width / 2;
+  const language_ring_center_y = svg_height / 2 + language_ring_radius * 2;
   const language_circumference = 2 * Math.PI * language_ring_radius;
 
-  // render the language percentage ring
+  // Determine the longest language line
+  const longestLanguageText = Object.keys(stats.language_percentages).reduce((longest, language) => {
+    const value = stats.language_percentages[language];
+    const text = `${language} ${value.toFixed(2)}%`;
+    const textWidthValue = textWidth(text, {family: 'YourFontFamilyName', size: '20px'}); // Update with your font details
+    return textWidthValue > longest ? textWidthValue : longest;
+  }, 0);
+
+  // Calculate the positions for the rows
+  const first_column_x_offset = language_ring_center_x + language_ring_radius + language_ring_thickness;
+  const second_column_x_offset = first_column_x_offset + longestLanguageText + language_ring_thickness; // Adjust the offset as needed for spacing
+
+  // Render the language percentage ring and text labels
   const totalSegments = Object.keys(stats.language_percentages).length;
   let accumulatedOffset = 0;
   const language_percentage_ring = Object.keys(stats.language_percentages).map((language, index) => {
@@ -78,17 +92,32 @@ function renderStats(stats) {
     const segmentLength = (value / 100) * language_circumference;
     const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc'; // Default color if not found
 
+    // Ring segment
     const segment = `
       <circle cx="${language_ring_center_x}" cy="${language_ring_center_y}" r="${language_ring_radius}" 
         stroke="${color}" stroke-width="${language_ring_thickness}" fill="none"
         stroke-dasharray="${segmentLength} ${language_circumference - segmentLength}"
         stroke-dashoffset="${-accumulatedOffset}"
         transform="rotate(90 ${language_ring_center_x} ${language_ring_center_y})"
-        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: ${(totalSegments-index)*0.15}s;" />
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: ${(totalSegments - index) * 0.15}s;" />
     `;
     accumulatedOffset += segmentLength;
 
-    return segment;
+    // Determine the position for the legend
+    const isFirstColumn = index < 10;
+    const column_x_offset = isFirstColumn ? first_column_x_offset : second_column_x_offset;
+    const column_index = isFirstColumn ? index : index - 10;
+    const text_y_position = language_ring_center_y - language_ring_radius + column_index * 2  * language_ring_radius / 10 ;
+
+    // Text label
+    const text_element = `
+      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
+        <rect width="14" height="14" fill="${color}" />
+        <text x="20" y="12" class="language-legend" fill="${text_label_color}">${language} ${value.toFixed(2)}%</text>
+      </g>
+    `;
+
+    return segment + text_element;
   }).join('');
   
   // Calculate the length of the "filled" part of the circle
@@ -176,6 +205,7 @@ function renderStats(stats) {
         .barcode { font-family: 'LibreBarcode128Regular'; fill: ${text_title_color};}
         .rank-letter { font-family: 'ChakraPetchRegular'; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
         .rank-percentage { font-family: 'RajdhaniRegular'; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
+        .language-legend { font-family: 'RajdhaniRegular'; font-size: 16px; }
         .rank-circle-bg { fill: none; }
         .rank-circle-progress { fill: none; }
         .icon { fill: ${icon_color} ; }

@@ -12,7 +12,8 @@
     "express": "^4.19.2",
     "http2-wrapper": "^2.2.1",
     "image-size": "^1.1.1",
-    "p-limit": "^6.0.0"
+    "p-limit": "^6.0.0",
+    "text-width": "^1.2.0"
   },
   "devDependencies": {
     "husky": "^9.1.1"
