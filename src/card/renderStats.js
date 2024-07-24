@@ -18,8 +18,8 @@ const ChakraPetchRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils
 const LibreBarcode128Regular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/LibreBarcode128-Regular.ttf'), 'base64');
 
 // Read the PNG file and encode it to Base64
-const EdgeRunnerLogo_base64 = fs.readFileSync(path.join(__dirname, '../utils/logo.png'), 'base64');
-const dimensions = sizeOf(path.join(__dirname, '../utils/logo.png'));
+const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'), 'base64');
+const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 
 // Github personal page URL
 const githubUrl = 'https://github.com/gh0stintheshe11';
@@ -294,9 +294,9 @@ function renderStats(stats) {
       <text x="${rank_ring_center_x}" y="${rank_ring_center_y}" class="rank-letter animate"  text-anchor="middle">${stats.rank.level}</text>
       <text x="${rank_ring_center_x}" y="${rank_ring_center_y+40}" class="rank-percentage animate" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
 
-      ${language_percentage_ring}
+      <image href="data:image/png;base64,${image_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blink"/>
 
-      <image href="data:image/png;base64,${EdgeRunnerLogo_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blink"/>
+      ${language_percentage_ring}
     </svg>
   `;
   return svg;
