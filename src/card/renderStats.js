@@ -1,9 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// Get the directory name of the current module file
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 // Import all the icons from the utils/icons.js file
 import Icons from '../utils/icons.js';
 // Import the config
@@ -13,11 +10,9 @@ import sizeOf from 'image-size';
 // for mesuring text length
 import { createCanvas } from 'canvas';
 
-// Costumized font
-// Read the Base64 encoded font file
-const RajdhaniRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/Rajdhani-Regular.ttf'), 'base64');
-const ChakraPetchRegular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/ChakraPetch-Regular.ttf'), 'base64');
-const LibreBarcode128Regular_base64 = fs.readFileSync(path.join(__dirname, '../utils/fonts/LibreBarcode128-Regular.ttf'), 'base64');
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Read the PNG file and encode it to Base64
 const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'), 'base64');
@@ -38,7 +33,7 @@ function darkenHexColor(hex, darkenFactor) {
   return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-function renderStats(stats) {
+function renderStats(stats, { rajdhaniFontBase64, chakraPetchFontBase64, libreBarcodeFontBase64 }) {
 
   // SVG Config
   const svg_width = config.svg.width;
@@ -84,7 +79,7 @@ function renderStats(stats) {
   const longestLanguageText = Object.keys(stats.language_percentages).reduce((longest, language) => {
     const value = stats.language_percentages[language];
     const text = `${language} ${value.toFixed(2)}%`;
-    const textWidthValue = textWidth(text, '16px RajdhaniRegular'); // Update with your font details
+    const textWidthValue = textWidth(text, '16px Rajdhani'); // Update with your font details
     return textWidthValue > longest ? textWidthValue : longest;
   }, 0);
 
@@ -145,18 +140,16 @@ function renderStats(stats) {
       <style>
 
         @font-face {
-          font-family: 'RajdhaniRegular';
-          src: url('data:font/ttf;base64,${RajdhaniRegular_base64}') format('truetype');
+          font-family: 'Rajdhani';
+          src: url(data:font/truetype;charset=utf-8;base64,${rajdhaniFontBase64}) format('truetype');
         }
-
         @font-face {
-          font-family: 'ChakraPetchRegular';
-          src: url('data:font/ttf;base64,${ChakraPetchRegular_base64}') format('truetype');
+          font-family: 'Chakra Petch';
+          src: url(data:font/truetype;charset=utf-8;base64,${chakraPetchFontBase64}) format('truetype');
         }
-
         @font-face {
-          font-family: 'LibreBarcode128Regular';
-          src: url('data:font/ttf;base64,${LibreBarcode128Regular_base64}') format('truetype');
+          font-family: 'Libre Barcode 128';
+          src: url(data:font/truetype;charset=utf-8;base64,${libreBarcodeFontBase64}) format('truetype');
         }
         
         @keyframes change-opacity {
@@ -207,13 +200,13 @@ function renderStats(stats) {
         }
 
         .background { fill: none; } 
-        .title { font-family: 'ChakraPetchRegular', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
-        .label { font-family: 'RajdhaniRegular', Helvetica; fill: ${text_label_color}; font-size: 20px; }
-        .value { font-family: 'RajdhaniRegular', Helvetica; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
-        .barcode { font-family: 'LibreBarcode128Regular', Helvetica; fill: ${text_title_color};}
-        .rank-letter { font-family: 'ChakraPetchRegular', Helvetica; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
-        .rank-percentage { font-family: 'RajdhaniRegular', Helvetica; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
-        .language-legend { font-family: 'RajdhaniRegular', Helvetica; font-size: 16px; }
+        .title { font-family: 'Chakra Petch', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
+        .label { font-family: 'Rajdhani', Helvetica; fill: ${text_label_color}; font-size: 20px; }
+        .value { font-family: 'Rajdhani', Helvetica; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
+        .barcode { font-family: 'Libre Barcode 128', Helvetica; fill: ${text_title_color};}
+        .rank-letter { font-family: 'Chakra Petch', Helvetica; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
+        .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
+        .language-legend { font-family: 'Rajdhani', Helvetica; font-size: 16px; }
         .rank-circle-bg { fill: none; }
         .rank-circle-progress { fill: none; }
         .icon { fill: ${icon_color} ; }
