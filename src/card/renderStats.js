@@ -20,7 +20,7 @@ const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'),
 const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 
 // Load the Base64 encoded fonts from the JSON file
-const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../utils/fontsBase64.json'), 'utf8'));
+const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../../public/fontsBase64.json'), 'utf8'));
 
 // Github personal page URL
 const githubUrl = 'https://github.com/gh0stintheshe11';
