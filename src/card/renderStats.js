@@ -20,7 +20,12 @@ const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'),
 const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 
 // Load the Base64 encoded fonts from the JSON file
-const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../../public/fontsBase64.json'), 'utf8'));
+//const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../../public/fontsBase64.json'), 'utf8'));
+
+// Define the font URLs for Vercel deployment
+const rajdhaniFontURL = '/fonts/Rajdhani-Regular.ttf';
+const chakraPetchFontURL = '/fonts/ChakraPetch-Regular.ttf';
+const libreBarcodeFontURL = '/fonts/LibreBarcode128-Regular.ttf';
 
 // Github personal page URL
 const githubUrl = 'https://github.com/gh0stintheshe11';
@@ -144,15 +149,15 @@ function renderStats(stats) {
 
         @font-face {
           font-family: 'Rajdhani';
-          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['Rajdhani-Regular']}) format('truetype');
+          src: url('${rajdhaniFontURL}') format('truetype');
         }
         @font-face {
-          font-family: 'Chakra Petch';
-          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['ChakraPetch-Regular']}) format('truetype');
+          font-family: 'ChakraPetch';
+          src: url('${chakraPetchFontURL}') format('truetype');
         }
         @font-face {
-          font-family: 'Libre Barcode 128';
-          src: url(data:font/truetype;charset=utf-8;base64,${fontsBase64['LibreBarcode128-Regular']}) format('truetype');
+          font-family: 'LibreBarcode128';
+          src: url('${libreBarcodeFontURL}') format('truetype');
         }
         
         @keyframes change-opacity {
@@ -203,11 +208,11 @@ function renderStats(stats) {
         }
 
         .background { fill: none; } 
-        .title { font-family: 'Chakra Petch', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
+        .title { font-family: 'ChakraPetch', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
         .label { font-family: 'Rajdhani', Helvetica; fill: ${text_label_color}; font-size: 20px; }
         .value { font-family: 'Rajdhani', Helvetica; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
-        .barcode { font-family: 'Libre Barcode 128', Helvetica; fill: ${text_title_color};}
-        .rank-letter { font-family: 'Chakra Petch', Helvetica; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
+        .barcode { font-family: 'LibreBarcode128', Helvetica; fill: ${text_title_color};}
+        .rank-letter { font-family: 'ChakraPetch', Helvetica; fill: ${rank_letter_color}; font-size: 50px; font-weight: bold; }
         .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rank_percentage_color}; font-size: 20px; font-weight: bold; }
         .language-legend { font-family: 'Rajdhani', Helvetica; font-size: 16px; }
         .rank-circle-bg { fill: none; }
