@@ -1,4 +1,4 @@
 chmod +x clean-deps.sh
 sh ./clean-deps.sh
-node public/convertAllFontsToBase64.js
+node src/utils/convertAllFontsToBase64.js
 git add .

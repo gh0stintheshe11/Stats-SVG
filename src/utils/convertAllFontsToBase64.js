@@ -8,7 +8,7 @@ const getBase64Font = (fontPath) => {
 };
 
 // Directory containing the font files
-const fontDirectory = path.join(process.cwd(), '/public/fonts');
+const fontDirectory = path.join(process.cwd(), '/fonts');
 
 // Ensure the directory exists
 if (!fs.existsSync(fontDirectory)) {
