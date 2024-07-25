@@ -16,6 +16,7 @@ const __dirname = path.dirname(__filename);
 
 // Read the PNG file and encode it to Base64
 const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'), 'base64');
+// get the dimensions of the image
 const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 
 // Load the Base64 encoded fonts from the JSON file
