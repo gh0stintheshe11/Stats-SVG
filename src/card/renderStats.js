@@ -7,8 +7,6 @@ import Icons from '../utils/icons.js';
 import config from '../../config.js';
 // for mesuring image size
 import sizeOf from 'image-size';
-// for mesuring text length
-import { createCanvas } from 'canvas';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -70,28 +68,10 @@ function renderStats(stats) {
   const language_ring_center_y = svg_height / 2 + language_ring_radius * 2;
   const language_circumference = 2 * Math.PI * language_ring_radius;
 
-  // Function to calculate text width using canvas
-  function textWidth(text, font) {
-    const canvas = createCanvas(1, 1);
-    const context = canvas.getContext('2d');
-    context.font = font;
-    return context.measureText(text).width;
-  }
-
-  /*
-  // Determine the longest language line
-  const longestLanguageText = Object.keys(stats.language_percentages).reduce((longest, language) => {
-    const value = stats.language_percentages[language];
-    const text = `${language} ${value.toFixed(2)}%`;
-    const textWidthValue = textWidth(text, '16px Rajdhani'); // Update with your font details
-    return textWidthValue > longest ? textWidthValue : longest;
-  }, 0);
-
   // Calculate the positions for the rows
   const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius*1.7);
-  const second_column_x_offset = Math.round(first_column_x_offset + longestLanguageText + language_ring_thickness); // Adjust the offset as needed for spacing
-  */
-
+  const second_column_x_offset = Math.round(first_column_x_offset + language_ring_radius*2.2 + language_ring_thickness); // Adjust the offset as needed for spacing
+  
   // Render the language percentage ring and text labels
   const totalSegments = Object.keys(stats.language_percentages).length;
   let accumulatedOffset = 0;
@@ -113,7 +93,7 @@ function renderStats(stats) {
 
     // Determine the position for the legend
     const isFirstColumn = index < 10;
-    const column_x_offset = isFirstColumn ? 685 : 905;
+    const column_x_offset = isFirstColumn ? first_column_x_offset : second_column_x_offset;
     const column_index = isFirstColumn ? index : index - 10;
     const text_y_position = Math.round(language_ring_center_y - language_ring_radius + column_index * 2 * language_ring_radius / 10);
 
