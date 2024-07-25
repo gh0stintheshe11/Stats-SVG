@@ -78,6 +78,7 @@ function renderStats(stats) {
     return context.measureText(text).width;
   }
 
+  /*
   // Determine the longest language line
   const longestLanguageText = Object.keys(stats.language_percentages).reduce((longest, language) => {
     const value = stats.language_percentages[language];
@@ -89,6 +90,7 @@ function renderStats(stats) {
   // Calculate the positions for the rows
   const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius*1.7);
   const second_column_x_offset = Math.round(first_column_x_offset + longestLanguageText + language_ring_thickness); // Adjust the offset as needed for spacing
+  */
 
   // Render the language percentage ring and text labels
   const totalSegments = Object.keys(stats.language_percentages).length;
@@ -111,7 +113,7 @@ function renderStats(stats) {
 
     // Determine the position for the legend
     const isFirstColumn = index < 10;
-    const column_x_offset = isFirstColumn ? first_column_x_offset : second_column_x_offset;
+    const column_x_offset = isFirstColumn ? 685 : 905;
     const column_index = isFirstColumn ? index : index - 10;
     const text_y_position = Math.round(language_ring_center_y - language_ring_radius + column_index * 2 * language_ring_radius / 10);
 
