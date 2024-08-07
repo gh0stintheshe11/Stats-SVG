@@ -186,8 +186,8 @@ function renderStats(stats) {
 
         .background { fill: none; } 
         .title { font-family: 'ChakraPetch', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
-        .label { font-family: 'Rajdhani', Helvetica; fill: ${text_label_color}; font-size: 20px; }
-        .value { font-family: 'Rajdhani', Helvetica; fill: ${text_value_color}; font-size: 20px; font-weight: bold; }
+        .label { font-family: 'Rajdhani', Helvetica; fill: ${text_label_color}; font-size: 22px; }
+        .value { font-family: 'Rajdhani', Helvetica; fill: ${text_value_color}; font-size: 24px; font-weight: bold; }
         .barcode { font-family: 'LibreBarcode128', Helvetica; fill: ${text_title_color};}
         .rank-letter { font-family: 'ChakraPetch', Helvetica; fill: ${rank_letter_color}; font-size: 68px; font-weight: bold; }
         .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rank_percentage_color}; font-size: 26px; font-weight: bold; }
