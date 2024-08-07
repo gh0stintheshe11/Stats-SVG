@@ -220,7 +220,7 @@ function renderStats(stats) {
         <text x="320" y="0" class="value">${stats.total_stars}</text>
       </g>
 
-      <g transform="translate(30, 140)" class="animate animate-delay-13">
+      <g transform="translate(30, 140)" class="animate animate-delay-2">
         <path class="icon" d="${Icons.fork_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Forks Earned:</text>
         <text x="320" y="0" class="value">${stats.total_forks}</text>
@@ -232,61 +232,61 @@ function renderStats(stats) {
         <text x="320" y="0" class="value">${stats.followers}</text>
       </g>
 
-      <g transform="translate(30, 220)" class="animate animate-delay-2">
+      <g transform="translate(30, 220)" class="animate animate-delay-4">
         <path class="icon" d="${Icons.contributes_to_icon}" transform="translate(6, -17) scale(0.045)"/>
         <text x="40" y="0" class="label">Contributed to:</text>
         <text x="320" y="0" class="value">${stats.total_contributes_to}</text>
       </g>
 
-      <g transform="translate(30, 260)" class="animate animate-delay-10">
+      <g transform="translate(30, 260)" class="animate animate-delay-5">
         <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -18) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Issues:</text>
         <text x="320" y="0" class="value">${stats.total_issues}</text>
       </g>
 
-      <g transform="translate(30, 300)" class="animate animate-delay-4">
+      <g transform="translate(30, 300)" class="animate animate-delay-6">
         <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Repos:</text>
         <text x="320" y="0" class="value">${stats.total_repos}</text>
       </g>
 
-      <g transform="translate(30, 340)" class="animate animate-delay-5">
+      <g transform="translate(30, 340)" class="animate animate-delay-7">
         <path class="icon" d="${Icons.commit_icon}" transform="translate(5, -17) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Commits:</text>
         <text x="320" y="0" class="value">${stats.total_commits}</text>
       </g>
 
-      <g transform="translate(30, 380)" class="animate animate-delay-6">
+      <g transform="translate(30, 380)" class="animate animate-delay-8">
         <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs:</text>
         <text x="320" y="0" class="value">${stats.total_prs}</text>
       </g>
 
-      <g transform="translate(30, 420)" class="animate animate-delay-7">
+      <g transform="translate(30, 420)" class="animate animate-delay-9">
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs Merged:</text>
         <text x="320" y="0" class="value">${stats.total_merged_prs}</text>
       </g>
 
-      <g transform="translate(30, 460)" class="animate animate-delay-8">
+      <g transform="translate(30, 460)" class="animate animate-delay-10">
         <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -17) scale(0.04)"/>
         <text x="40" y="0" class="label">Total PRs Reviewed:</text>
         <text x="320" y="0" class="value">${stats.total_prs_reviewed}</text>
       </g>
 
-      <g transform="translate(30, 500)" class="animate animate-delay-9">
+      <g transform="translate(30, 500)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
         <text x="40" y="0" class="label">Merged PRs Percentage:</text>
         <text x="320" y="0" class="value">${stats.merged_prs_percentage.toFixed(0)}%</text>
       </g>
 
-      <g transform="translate(30, 540)" class="animate animate-delay-11">
+      <g transform="translate(30, 540)" class="animate animate-delay-12">
         <path class="icon" d="${Icons.discussions_started_icon}" transform="translate(5, -18) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Discussions Started:</text>
         <text x="320" y="0" class="value">${stats.total_discussions_started}</text>
       </g>
 
-      <g transform="translate(30, 580)" class="animate animate-delay-12">
+      <g transform="translate(30, 580)" class="animate animate-delay-13">
         <path class="icon" d="${Icons.discussions_answered_icon}" transform="translate(4, -20) scale(1.6)"/>
         <text x="40" y="0" class="label">Total Discussions Answered:</text>
         <text x="320" y="0" class="value">${stats.total_discussions_answered}</text>
