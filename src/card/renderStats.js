@@ -242,15 +242,15 @@ function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 260)" class="animate animate-delay-5">
-        <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -18) scale(1.4)"/>
-        <text x="40" y="0" class="label">Total Issues</text>
-        <text x="300" y="0" class="value">${stats.total_issues}</text>
-      </g>
-
-      <g transform="translate(30, 300)" class="animate animate-delay-6">
         <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Repos</text>
         <text x="300" y="0" class="value">${stats.total_repos}</text>
+      </g>
+
+      <g transform="translate(30, 300)" class="animate animate-delay-6">
+        <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -18) scale(1.4)"/>
+        <text x="40" y="0" class="label">Total Issues</text>
+        <text x="300" y="0" class="value">${stats.total_issues}</text>
       </g>
 
       <g transform="translate(30, 340)" class="animate animate-delay-7">
