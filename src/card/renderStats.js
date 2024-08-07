@@ -99,10 +99,13 @@ function renderStats(stats) {
 
     // Text label
     const text_element = `
-      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
-        <rect width="14" height="14" fill="${color}" />
-        <text x="20" y="12" class="language-legend" fill="${text_label_color}">${language} ${value.toFixed(2)}%</text>
-      </g>
+    <g transform="translate(${column_x_offset}, ${text_y_position+5})" class="animate" style="animation-delay: ${index*0.1}s;">
+      <rect width="14" height="14" fill="${color}" />
+      <text x="20" y="12" class="language-legend">
+        <tspan fill="${text_label_color}">${language}</tspan>
+        <tspan fill="${text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
+      </text>
+    </g>
     `;
 
     return segment + text_element;
@@ -199,7 +202,7 @@ function renderStats(stats) {
 
       <rect class="background" width="100%" height="100%" />
 
-      <text x="50" y="40" class="title animate" font-size="30">${stats.name}'s GitHub Stats</text>
+      <text x="50" y="40" class="title animate" font-size="36">${stats.name}'s GitHub Stats</text>
 
       <clipPath id="clipPathReveal">
         <rect x="0" y="0" height="100" width="0">
@@ -210,7 +213,7 @@ function renderStats(stats) {
 
       <text x="${svg_width-20}" y="85" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
 
-      <line x1="10" y1="60" x2="10" y2="60" stroke="${config.colors.icon}" stroke-width="2">
+      <line x1="10" y1="60" x2="10" y2="60" stroke="${config.colors.icon}" stroke-width="4">
         <animate attributeName="x2" from="10" to="${svg_width-10}" dur="0.5s" fill="freeze" />
       </line>
 
@@ -313,6 +316,47 @@ function renderStats(stats) {
       <image href="data:image/png;base64,${image_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blink"/>
 
       ${language_percentage_ring}
+
+      <!-- Main border with notch -->
+      <path d="M 430,340
+              L 650,340 
+              L 660,350
+              L 1080,350
+              L 1080,540 
+              L 1040,580 
+              L 430,580 
+              Z" 
+            fill="none" 
+            stroke="${icon_color}" 
+            stroke-width="2" >
+            <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="4s" fill="freeze" />
+      </path>
+
+      <!-- corner trangle -->
+      <path d="M 1080,555
+              L 1080,580 
+              L 1055,580
+              Z" 
+            fill="${icon_color}" 
+            stroke="${icon_color}" 
+            stroke-width="2" >
+            <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="4" />
+      </path>
+
+      <!-- left -->
+      <path d="M 420,340
+              L 430,340
+              L 430,580
+              L 420,580
+              L 420,540
+              L 425,535
+              L 425,480
+              L 420,475
+              Z" 
+            fill="${icon_color}" 
+            stroke="${icon_color}" 
+            stroke-width="2" >
+      </path>
     </svg>
   `;
   return svg;
