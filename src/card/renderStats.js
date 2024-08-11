@@ -53,8 +53,8 @@ function renderStats(stats) {
   // Rank Ring
   const rank_ring_radius = config.rank.ringRadius;
   const rank_ring_thickness = config.rank.ringThickness;
-  const rank_ring_center_x = svg_width/2;
-  const rank_ring_center_y = svg_height/2 - rank_ring_radius*1.2;
+  const rank_ring_center_x = Math.round(svg_width/2);
+  const rank_ring_center_y = Math.round(svg_height/2 - rank_ring_radius*1.2);
   const rank_percentile = stats.rank.percentile;
 
   // Rank Progress Bar
@@ -64,9 +64,9 @@ function renderStats(stats) {
   // Language Ring
   const language_ring_radius = config.language.ringRadius;
   const language_ring_thickness = config.language.ringThickness;
-  const language_ring_center_x = svg_width / 2;
-  const language_ring_center_y = svg_height / 2 + language_ring_radius * 2;
-  const language_circumference = 2 * Math.PI * language_ring_radius;
+  const language_ring_center_x = Math.round(svg_width / 2);
+  const language_ring_center_y = Math.round(svg_height / 2 + language_ring_radius * 2);
+  const language_circumference = Math.round(2 * Math.PI * language_ring_radius);
 
   // Calculate the positions for the rows
   const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius*1.7);
@@ -77,7 +77,7 @@ function renderStats(stats) {
   let accumulatedOffset = 0;
   const language_percentage_ring = Object.keys(stats.language_percentages).map((language, index) => {
     const value = stats.language_percentages[language];
-    const segmentLength = (value / 100) * language_circumference;
+    const segmentLength = Math.round((value / 100) * language_circumference);
     const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc'; // Default color if not found
 
     // Ring segment
@@ -112,9 +112,9 @@ function renderStats(stats) {
   }).join('');
   
   // Calculate the length of the "filled" part of the circle
-  const circumference = 2 * Math.PI * rank_ring_radius;
-  const progressPercentage = (100 - rank_percentile)/100;
-  const visibleLength = circumference - circumference * progressPercentage;
+  const circumference = Math.round(2 * Math.PI * rank_ring_radius);
+  const progressPercentage = Math.round((100 - rank_percentile)/100);
+  const visibleLength = Math.round(circumference - circumference * progressPercentage);
 
   // png image position and size calculation
   const image_width = dimensions.width;
