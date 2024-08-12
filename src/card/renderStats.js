@@ -112,16 +112,16 @@ function renderStats(stats) {
   }).join('');
   
   // Calculate the length of the "filled" part of the circle
-  const circumference = Math.round(2 * Math.PI * rank_ring_radius);
-  const progressPercentage = Math.round((100 - rank_percentile)/100);
+  const circumference = 2 * Math.PI * rank_ring_radius;
+  const progressPercentage = (100 - rank_percentile)/100;
   const visibleLength = Math.round(circumference - circumference * progressPercentage);
 
   // png image position and size calculation
   const image_width = dimensions.width;
   const image_height = dimensions.height;
-  const target_height = Math.round(language_ring_radius*2-language_ring_thickness)
-  const image_y = Math.round(language_ring_center_y - target_height/2)
-  const image_x = Math.round(language_ring_center_x -(target_height/image_height*image_width/2))
+  const target_height = Math.round(language_ring_radius*2-language_ring_thickness);
+  const image_y = Math.round(language_ring_center_y - target_height/2);
+  const image_x = Math.round(language_ring_center_x -(target_height/image_height*image_width/2));
 
   const svg = `
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
