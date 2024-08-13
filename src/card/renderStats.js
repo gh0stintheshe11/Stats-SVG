@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { domainToASCII, fileURLToPath } from 'url';
 // Import all the icons from the utils/icons.js file
 import Icons from '../utils/icons.js';
 // Import the config
@@ -20,9 +20,6 @@ const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
 // Load the Base64 encoded fonts
 const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../utils/fontsBase64.json'), 'utf8'));
 
-// Github personal page URL
-const githubUrl = 'https://github.com/gh0stintheshe11';
-
 function darkenHexColor(hex, darkenFactor) {
   let r = parseInt(hex.slice(1, 3), 16);
   let g = parseInt(hex.slice(3, 5), 16);
@@ -35,6 +32,9 @@ function darkenHexColor(hex, darkenFactor) {
   return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 function renderStats(stats) {
+
+  // Github personal page URL
+  const githubUrl = `https://github.com/${stats.login}`;
 
   // SVG Config
   const svg_width = config.svg.width;
@@ -60,6 +60,24 @@ function renderStats(stats) {
   // Rank Progress Bar
   const rank_progress_bar_thickness = config.rank.progressBarThickness;
   const rank_progress_bar_color = config.colors.rankProgressBar;
+
+  // the animation line of the rank ring
+  const rank_ring_circle_radius = rank_ring_radius + rank_ring_thickness;
+  // dash
+  const rank_ring_left_end = rank_ring_center_x-rank_ring_circle_radius;
+  const rank_ring_right_end = rank_ring_center_x+rank_ring_circle_radius;
+  // circle
+  const angle = Math.PI / 4; // 45 degrees in radians
+  const displacement = Math.round(rank_ring_circle_radius * Math.cos(angle));
+  const rank_ring_top_left_x = rank_ring_center_x - displacement;
+  const rank_ring_top_left_y = rank_ring_center_y - displacement;
+  const rank_ring_bottom_right_x = rank_ring_center_x + displacement;
+  const rank_ring_bottom_right_y = rank_ring_center_y + displacement;
+  const rank_ring_top_right_x = rank_ring_center_x + displacement;
+  const rank_ring_top_right_y = rank_ring_center_y - displacement;
+  const rank_ring_bottom_left_x = rank_ring_center_x - displacement;
+  const rank_ring_bottom_left_y = rank_ring_center_y + displacement;
+  const arc_length = Math.round(Math.PI * rank_ring_circle_radius / 2);
 
   // Language Ring
   const language_ring_radius = config.language.ringRadius;
@@ -191,13 +209,18 @@ function renderStats(stats) {
         .title { font-family: 'ChakraPetch', Helvetica; fill: ${text_title_color}; font-size: 30px font-weight: bold; }
         .label { font-family: 'Rajdhani', Helvetica; fill: ${text_label_color}; font-size: 22px; }
         .value { font-family: 'Rajdhani', Helvetica; fill: ${text_value_color}; font-size: 24px; font-weight: bold; }
+
         .barcode { font-family: 'LibreBarcode128', Helvetica; fill: ${text_title_color};}
-        .rank-letter { font-family: 'ChakraPetch', Helvetica; fill: ${rank_letter_color}; font-size: 68px; font-weight: bold; }
-        .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rank_percentage_color}; font-size: 26px; font-weight: bold; }
+
+        .rank-letter { font-family: 'ChakraPetch', Helvetica; fill: ${rank_letter_color}; font-size: 68px; font-weight: bold; opacity: 0; animation: change-opacity 0.5s ease-out 1.6s forwards; }
+        .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rank_percentage_color}; font-size: 26px; font-weight: bold; opacity: 0; animation: change-opacity 0.5s ease-out 1.6s forwards;}
+
+        .rank-circle-bg { fill: none; opacity: 0; animation: change-opacity 0.5s ease-out 1.5s forwards; }
+        .rank-circle-progress { fill: none; opacity: 0; animation: fillProgress 1.6s ease-out 1.5 forwards, change-opacity 0s 1.6s forwards; stroke-linecap: round;}
+
         .language-legend { font-family: 'Rajdhani', Helvetica; font-size: 16px; }
-        .rank-circle-bg { fill: none; }
-        .rank-circle-progress { fill: none; }
-        .icon { fill: ${icon_color} ; }
+
+        .icon { fill: ${icon_color}; }
       </style>
 
       <rect class="background" width="100%" height="100%" />
@@ -211,7 +234,7 @@ function renderStats(stats) {
         </rect>
       </clipPath>
 
-      <text x="${svg_width-20}" y="85" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
+      <text x="${svg_width-20}" y="50" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
 
       <line x1="10" y1="60" x2="10" y2="60" stroke="${config.colors.icon}" stroke-width="4">
         <animate attributeName="x2" from="10" to="${svg_width-10}" dur="0.5s" fill="freeze" />
@@ -295,8 +318,11 @@ function renderStats(stats) {
         <text x="300" y="0" class="value">${stats.total_discussions_answered}</text>
       </g>
 
+      <!-- Rank Ring -->
+      <!-- Rank Ring Background -->
       <circle class="rank-circle-bg" cx="${rank_ring_center_x}" cy="${rank_ring_center_y}" r="${rank_ring_radius}" stroke="${darkenHexColor("#00f0ff",rank_ring_bg_dark_level)}" stroke-width="${rank_ring_thickness}" fill="none"></circle>
 
+      <!-- Rank Ring Progress -->
       <path class="rank-circle-progress" d="
         M ${rank_ring_center_x},${rank_ring_center_y}
         m ${-rank_ring_radius},0
@@ -306,60 +332,77 @@ function renderStats(stats) {
         stroke-dasharray="${circumference}"
         stroke-dashoffset="${circumference}"
         stroke="${rank_progress_bar_color}" 
-        stroke-width="${rank_progress_bar_thickness}" 
-        fill="none"
-        style="animation: fillProgress 1.5s ease-out forwards; stroke-linecap: round;"></path>
+        stroke-width="${rank_progress_bar_thickness}" >
+      </path>
 
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+Math.round(rank_ring_radius/6)}" class="rank-letter animate"  text-anchor="middle">${stats.rank.level}</text>
-      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+Math.round(rank_ring_radius*2/3)-6}" class="rank-percentage animate" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
+      <!-- Rank Ring Text -->
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+Math.round(rank_ring_radius/6)}" class="rank-letter"  text-anchor="middle">${stats.rank.level}</text>
+      <text x="${rank_ring_center_x}" y="${rank_ring_center_y+Math.round(rank_ring_radius*2/3)-6}" class="rank-percentage" text-anchor="middle" dx="0.1em">${stats.rank.percentile.toFixed(1)}%</text>
 
+      <!-- langauge ring center: image/gif/webp/whatever -->
       <image href="data:image/png;base64,${image_base64}" x="${image_x}" y="${image_y}" height="${target_height}" class="blink"/>
 
+      <!-- Language Ring -->
       ${language_percentage_ring}
 
+      <!-- Language Ring card-like border -->
       <!-- Main border with notch -->
-      <path d="M 430,340
-              L 650,340 
-              L 660,350
-              L 1080,350
-              L 1080,540 
-              L 1040,580 
-              L 430,580 
-              Z" 
-            fill="none" 
-            stroke="${icon_color}" 
-            stroke-width="2" >
-            <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="4s" fill="freeze" />
+      <path d="M 430,340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L 430,580 Z" fill="none" stroke="${icon_color}" stroke-width="2" >
+        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="4s" fill="freeze" />
       </path>
 
       <!-- corner trangle -->
-      <path d="M 1080,555
-              L 1080,580 
-              L 1055,580
-              Z" 
-            fill="${icon_color}" 
-            stroke="${icon_color}" 
-            stroke-width="2" >
-            <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="4" />
+      <path d="M 1080,555 L 1080,580 L 1055,580 Z" fill="${icon_color}" stroke="${icon_color}" stroke-width="2" >
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="4" />
       </path>
 
-      <!-- left -->
-      <path d="M 420,340
-              L 430,340
-              L 430,580
-              L 420,580
-              L 420,540
-              L 425,535
-              L 425,480
-              L 420,475
-              Z" 
-            fill="${icon_color}" 
-            stroke="${icon_color}" 
-            stroke-width="2" >
+      <!-- left solid part -->
+      <path d="M 420,340 L 430,340 L 430,580 L 420,580 L 420,540 L 425,535 L 425,480 L 420,475 Z" fill="${icon_color}" stroke="${icon_color}" stroke-width="2" >
       </path>
+
+      <!-- Rank ring line part -->
+      <!-- Initial dot as a circle with zero radius -->
+      <circle cx="${rank_ring_center_x}" cy="${rank_ring_center_y}" r="4" fill="${icon_color}">
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" />
+        <animate attributeName="opacity" from="1" to="0" dur="0.1s" fill="freeze" begin="0.5s" />
+      </circle>
+
+      <!-- dot change to short dash line moving to left -->
+      <line x1="${rank_ring_center_x}" y1="${rank_ring_center_y}" x2="${rank_ring_center_x}" y2="${rank_ring_center_y}" stroke="${icon_color}" stroke-width="4">
+        <animate attributeName="x2" from="${rank_ring_center_x}" to="${rank_ring_left_end-20}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="${rank_ring_center_x}" to="${rank_ring_left_end}" dur="0.5s" fill="freeze" begin="1s" />
+      </line>
+
+      <!-- dot change to short dash line moving to right -->
+      <line x1="${rank_ring_center_x}" y1="${rank_ring_center_y}" x2="${rank_ring_center_x}" y2="${rank_ring_center_y}" stroke="${icon_color}" stroke-width="4">
+        <animate attributeName="x2" from="${rank_ring_center_x}" to="1080" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="${rank_ring_center_x}" to="${rank_ring_right_end}" dur="0.5" fill="freeze" begin="1s" />
+      </line>
+
+      <!-- top left 1/8 circle path -->
+      <path d="M ${rank_ring_left_end} ${rank_ring_center_y} A ${rank_ring_circle_radius} ${rank_ring_circle_radius} 0 0 1 ${rank_ring_top_left_x} ${rank_ring_top_left_y}" stroke="${icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${arc_length}">
+        <animate attributeName="stroke-dasharray" from="0, ${arc_length}" to="${arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- top right 1/8 circle path -->
+      <path d="M ${rank_ring_right_end} ${rank_ring_center_y} A ${rank_ring_circle_radius} ${rank_ring_circle_radius} 0 0 0 ${rank_ring_top_right_x} ${rank_ring_top_right_y}" stroke="${icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${arc_length}">
+        <animate attributeName="stroke-dasharray" from="0, ${arc_length}" to="${arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- bottom left 1/8 circle path -->
+      <path d="M ${rank_ring_left_end} ${rank_ring_center_y} A ${rank_ring_circle_radius} ${rank_ring_circle_radius} 0 0 0 ${rank_ring_bottom_left_x} ${rank_ring_bottom_left_y}" stroke="${icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${arc_length}">
+        <animate attributeName="stroke-dasharray" from="0, ${arc_length}" to="${arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- bottom right 1/8 circle path -->
+      <path d="M ${rank_ring_right_end} ${rank_ring_center_y} A ${rank_ring_circle_radius} ${rank_ring_circle_radius} 0 0 1 ${rank_ring_bottom_right_x} ${rank_ring_bottom_right_y}" stroke="${icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${arc_length}">
+        <animate attributeName="stroke-dasharray" from="0, ${arc_length}" to="${arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
     </svg>
   `;
   return svg;
 }
 
 export { renderStats as default };
+

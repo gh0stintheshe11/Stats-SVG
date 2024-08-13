@@ -110,6 +110,7 @@ async function fetchGitHubData(username) {
     const reposNodes = repositories.nodes || [];
 
     const stats = {
+      login: user.login,
       name: user.name || user.login,
       followers: user.followers.totalCount || 0,
       total_commits: contributionsCollection.totalCommitContributions || 0,
