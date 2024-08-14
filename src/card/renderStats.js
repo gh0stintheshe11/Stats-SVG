@@ -29,6 +29,12 @@ function darkenHexColor(hex, darkenFactor) {
   return "#" + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 async function calculateGithubUrl(stats) {
   return `https://github.com/${stats.login}`;
 }
@@ -196,6 +202,7 @@ async function renderStats(stats) {
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
       <style>
 
+        <!-- Fonts -->
         @font-face {
           font-family: 'Rajdhani';
           src: url('data:font/truetype;charset=utf-8;base64,${fontsBase64['Rajdhani-Regular']}') format('truetype');
@@ -209,13 +216,10 @@ async function renderStats(stats) {
           src: url('data:font/truetype;charset=utf-8;base64,${fontsBase64['LibreBarcode128-Regular']}') format('truetype');
         }
         
+        <!-- Animation Styles -->
         @keyframes change-opacity {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
 
         .animate {
@@ -223,60 +227,119 @@ async function renderStats(stats) {
           animation: change-opacity 0.5s ease-out forwards;
         }
 
-        .animate-delay-1 {animation-delay: 0s, 0.1s;}
-        .animate-delay-2 {animation-delay: 0.08s, 0.18s;}
-        .animate-delay-3 {animation-delay: 0.16s, 0.26s;}
-        .animate-delay-4 {animation-delay: 0.24s, 0.34s;}
-        .animate-delay-5 {animation-delay: 0.32s, 0.42s;}
-        .animate-delay-6 {animation-delay: 0.4s, 0.5s;}
-        .animate-delay-7 {animation-delay: 0.48s, 0.58s;}
-        .animate-delay-8 {animation-delay: 0.56s, 0.66s;}
-        .animate-delay-9 {animation-delay: 0.64s, 0.74s;}
-        .animate-delay-10 {animation-delay: 0.72s, 0.82s;}
-        .animate-delay-11 {animation-delay: 0.8s, 0.9s;}
-        .animate-delay-12 {animation-delay: 0.88s, 0.98s;}
-        .animate-delay-13 {animation-delay: 0.96s, 1.06s;}
+        .animate-delay-1 {animation-delay: 0.8s, 0.9s;}
+        .animate-delay-2 {animation-delay: 0.88s, 0.98s;}
+        .animate-delay-3 {animation-delay: 0.96s, 1.07s;}
+        .animate-delay-4 {animation-delay: 1.04s, 1.16s;}
+        .animate-delay-5 {animation-delay: 1.12s, 1.25s;}
+        .animate-delay-6 {animation-delay: 1.20s, 1.34s;}
+        .animate-delay-7 {animation-delay: 1.28s, 1.43s;}
+        .animate-delay-8 {animation-delay: 1.36s, 1.52s;}
+        .animate-delay-9 {animation-delay: 1.44s, 1.61s;}
+        .animate-delay-10 {animation-delay: 1.52s, 1.70s;}
+        .animate-delay-11 {animation-delay: 1.60s, 1.79s;}
+        .animate-delay-12 {animation-delay: 1.68s, 1.88s;}
+        .animate-delay-13 {animation-delay: 1.76s, 1.97s;}
 
         @keyframes fillProgress {
-          from {
-            stroke-dashoffset: ${rankRingConfig.rank_circumference};
-          }
-          to {
-            stroke-dashoffset: ${rankRingConfig.visibleLength};
-          }
+          0% { stroke-dashoffset: ${rankRingConfig.rank_circumference}; }
+          100% { stroke-dashoffset: ${rankRingConfig.visibleLength}; }
         }
 
-        @keyframes blink-twice {
+        @keyframes blinking {
           0%, 100% { opacity: 1; }
           25%, 75% { opacity: 0; }
           50% { opacity: 1; }
         }
 
         .blink {
-          animation: blink-twice 1.5s ease-out;
+          animation: blinking 1.5s ease-out;
         }
 
+        @keyframes flikering {
+          0% { opacity: 0; }
+          ${getRandomInt(1,30)}% { opacity: 0.4; }
+          ${getRandomInt(31,45)}% { opacity: 0; }
+          ${getRandomInt(46,90)}% { opacity: 0.2; }
+          100% { opacity: 0; } 
+        }
+
+        <!-- Background Styles -->
         .background { fill: none; } 
-        .title { font-family: 'ChakraPetch', Helvetica; fill: ${elementsConfig.text_title_color}; font-size: 30px font-weight: bold; }
-        .label { font-family: 'Rajdhani', Helvetica; fill: ${elementsConfig.text_label_color}; font-size: 22px; }
-        .value { font-family: 'Rajdhani', Helvetica; fill: ${elementsConfig.text_value_color}; font-size: 24px; font-weight: bold; }
 
-        .barcode { font-family: 'LibreBarcode128', Helvetica; fill: ${elementsConfig.text_title_color};}
+        <!-- Title Styles -->
+        .title { 
+          font-family: 'ChakraPetch', Helvetica; 
+          fill: ${elementsConfig.text_title_color}; 
+          font-size: 30px; 
+          font-weight: bold; 
+          Opacity: 0; 
+          animation: flikering 0.4s 2, change-opacity 1s ease-in-out 0.8s forwards; 
+        }
 
-        .rank-letter { font-family: 'ChakraPetch', Helvetica; fill: ${rankRingConfig.rank_letter_color}; font-size: 68px; font-weight: bold; opacity: 0; animation: change-opacity 0.5s ease-out 1.6s forwards; }
-        .rank-percentage { font-family: 'Rajdhani', Helvetica; fill: ${rankRingConfig.rank_percentage_color}; font-size: 26px; font-weight: bold; opacity: 0; animation: change-opacity 0.5s ease-out 1.6s forwards;}
+        <!-- Label Styles -->
+        .label { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: ${elementsConfig.text_label_color}; 
+          font-size: 22px; 
+        }
 
-        .rank-circle-bg { fill: none; opacity: 0; animation: change-opacity 0.5s ease-out 1.5s forwards; }
-        .rank-circle-progress { fill: none; opacity: 0; animation: fillProgress 1.6s ease-out 1.5 forwards, change-opacity 0s 1.6s forwards; stroke-linecap: round;}
+        <!-- Value Styles -->
+        .value { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: ${elementsConfig.text_value_color}; 
+          font-size: 24px; 
+          font-weight: bold; 
+        }
 
-        .language-legend { font-family: 'Rajdhani', Helvetica; font-size: 16px; }
+        <!-- Barcode Styles -->
+        .barcode { 
+          font-family: 'LibreBarcode128', Helvetica; 
+          fill: ${elementsConfig.text_title_color};
+        }
+        
+        <!-- Rank Ring Styles -->
+        .rank-letter { 
+          font-family: 'ChakraPetch', Helvetica; 
+          fill: ${rankRingConfig.rank_letter_color}; 
+          font-size: 68px; 
+          font-weight: bold; 
+          opacity: 0; 
+          animation: change-opacity 0.5s ease-out 1.6s forwards; 
+        }
+        .rank-percentage { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: ${rankRingConfig.rank_percentage_color}; 
+          font-size: 26px; 
+          font-weight: bold; 
+          opacity: 0; 
+          animation: change-opacity 0.5s ease-out 1.6s forwards;
+        }
+        .rank-circle-bg { 
+          fill: none; 
+          opacity: 0; 
+          animation: change-opacity 0.5s ease-out 1.5s forwards; 
+        }
+        .rank-circle-progress { 
+          fill: none; 
+          opacity: 0; 
+          animation: fillProgress 1.6s ease-out 1.5 forwards, change-opacity 0s 1.6s forwards; 
+          stroke-linecap: round;
+        }
+        
+        <!-- Language Ring Styles -->
+        .language-legend { 
+          font-family: 'Rajdhani', Helvetica; 
+          font-size: 16px; 
+        }
 
+        <!-- Icon Styles -->
         .icon { fill: ${elementsConfig.icon_color}; }
       </style>
 
       <rect class="background" width="100%" height="100%" />
 
-      <text x="50" y="40" class="title animate" font-size="36">${stats.name}'s GitHub Stats</text>
+      <text x="50" y="40" class="title" font-size="36">${stats.name}'s GitHub Stats</text>
 
       <clipPath id="clipPathReveal">
         <rect x="0" y="0" height="100" width="0">
@@ -287,8 +350,15 @@ async function renderStats(stats) {
 
       <text x="${svg_width-20}" y="50" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">${githubUrl}</text>
 
+      <!-- Initial dot -->
+      <circle cx="10" cy="60" r="4" fill="${elementsConfig.icon_color}">
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" />
+        <animate attributeName="opacity" from="1" to="0" dur="0.2s" fill="freeze" begin="0.5s" />
+      </circle>
+
+      <!-- dot change line moving to right -->  
       <line x1="10" y1="60" x2="10" y2="60" stroke="${config.colors.icon}" stroke-width="4">
-        <animate attributeName="x2" from="10" to="${svg_width-10}" dur="0.5s" fill="freeze" />
+        <animate attributeName="x2" from="10" to="${svg_width-10}" dur="0.5s" fill="freeze" begin="0.5s"/>
       </line>
 
       <g transform="translate(30, 100)" class="animate animate-delay-1">
@@ -398,17 +468,19 @@ async function renderStats(stats) {
 
       <!-- Language Ring card-like border -->
       <!-- Main border with notch -->
-      <path d="M 430,340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L 430,580 Z" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" >
-        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="4s" fill="freeze" />
+      <path d="M 430,340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L 430,580 Z" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="3s" fill="freeze" begin="0.6s" />
+        <animate attributeName="opacity" values="0;0.2;0;1" dur="0.2s" fill="freeze" begin="0.4s" />
       </path>
 
       <!-- corner trangle -->
       <path d="M 1080,555 L 1080,580 L 1055,580 Z" fill="${elementsConfig.icon_color}" stroke="${elementsConfig.icon_color}" stroke-width="2" >
-        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="4" />
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="5" />
       </path>
 
       <!-- left solid part -->
-      <path d="M 420,340 L 430,340 L 430,580 L 420,580 L 420,540 L 425,535 L 425,480 L 420,475 Z" fill="${elementsConfig.icon_color}" stroke="${elementsConfig.icon_color}" stroke-width="2" >
+      <path d="M 420,340 L 430,340 L 430,580 L 420,580 L 420,540 L 425,535 L 425,480 L 420,475 Z" fill="${elementsConfig.icon_color}" stroke="${elementsConfig.icon_color}" stroke-width="2">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze" />
       </path>
 
       <!-- Rank ring line part -->
