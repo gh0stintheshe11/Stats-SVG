@@ -119,8 +119,8 @@ async function calculateLanguageRing(config, svg_width, svg_height) {
   const language_ring_center_x = Math.round(svg_width / 2);
   const language_ring_center_y = Math.round(svg_height / 2 + language_ring_radius * 2);
   const language_circumference = Math.round(2 * Math.PI * language_ring_radius);
-  const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius * 1.7);
-  const second_column_x_offset = Math.round(first_column_x_offset + language_ring_radius * 2.2 + language_ring_thickness);
+  const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius * 1.1 + language_ring_thickness);
+  const second_column_x_offset = Math.round(first_column_x_offset + language_ring_radius * 2.4 + language_ring_thickness);
   return {
     language_ring_radius,
     language_ring_thickness,
@@ -182,17 +182,17 @@ async function renderStats(stats) {
     const isFirstColumn = index < 10;
     const column_x_offset = isFirstColumn ? languageRingConfig.first_column_x_offset : languageRingConfig.second_column_x_offset;
     const column_index = isFirstColumn ? index : index - 10;
-    const text_y_position = Math.round(languageRingConfig.language_ring_center_y - languageRingConfig.language_ring_radius + column_index * 2 * languageRingConfig.language_ring_radius / 10);
+    const text_y_position = Math.round(languageRingConfig.language_ring_center_y - languageRingConfig.language_ring_radius - 8 + column_index * 19);
 
     // Text label
     const text_element = `
-    <g transform="translate(${column_x_offset}, ${text_y_position+5})" class="animate" style="animation-delay: ${index*0.1}s;">
-      <rect width="14" height="14" fill="${color}" />
-      <text x="20" y="12" class="language-legend">
-        <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
-        <tspan fill="${elementsConfig.text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
-      </text>
-    </g>
+      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
+        <rect x="0" y="0" width="16" height="16" fill="${color}" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
+          <tspan fill="${elementsConfig.text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
+        </text>
+      </g>
     `;
 
     return segment + text_element;
@@ -330,7 +330,7 @@ async function renderStats(stats) {
         <!-- Language Ring Styles -->
         .language-legend { 
           font-family: 'Rajdhani', Helvetica; 
-          font-size: 16px; 
+          font-size: 18px; 
         }
 
         <!-- Icon Styles -->
