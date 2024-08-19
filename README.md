@@ -23,13 +23,13 @@ The project is organized into several key directories and files:
 
 ### `/src`
 
-#### `/card`
+##### `/card`
 - `renderStats.js`: Responsible for rendering the SVG based on user stats.
 
-#### `/fetch`
+##### `/fetch`
 - `fetch.js`: Handles fetching user data from the GitHub API.
 
-#### `/utils`
+##### `/utils`
 - `calculateLang.js`: Calculates language usage percentages.
 - `calculateRank.js`: Computes the user's rank based on GitHub activity.
 - `convertAllFontsToBase64.js`: Utility to convert fonts to Base64 for embedding in SVG.
@@ -74,9 +74,26 @@ The project is organized into several key directories and files:
 
 ## Deployment
 
-This project is configured for deployment on Vercel. Click the "Deploy" button below to clone and deploy your own instance of the GitHub Stats SVG generator:
+This project is configured for deployment on Vercel. Follow these steps to deploy your own instance of the GitHub Stats SVG generator:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fgithub-stats-svg)
+1. Generate a GitHub Personal Access Token (PAT):
+   - Go to GitHub Settings > Developer settings > Personal access tokens
+   - Click "Generate new token" and select the necessary scopes (at minimum, `public_repo` and `read:user`)
+   - Copy the generated token
+
+2. Click the "Deploy" button below to clone and deploy the project on Vercel:
+
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fgithub-stats-svg)
+
+3. During the Vercel deployment process:
+   - Set the `GITHUB_TOKEN` environment variable with your generated PAT
+   - Update any other necessary configuration settings
+
+4. After deployment, update the SVG URL in your projects or profile README:
+   ```
+   ![GitHub Stats SVG](https://your-vercel-deployment-url.vercel.app/api/github-status?username=your-github-username)
+   ```
+   Replace `your-vercel-deployment-url` with your actual Vercel deployment URL and `your-github-username` with your GitHub username.
 
 The `vercel.json` file includes the necessary settings for serverless function deployment and routing.
 
@@ -98,4 +115,4 @@ Enjoy showcasing your GitHub stats in cyberpunk style! 🚀
 
 #Cyberpunk2077 #Cyberpunk:Edgerunners
 
-![GitHub Stats SVG](http://localhost:3000/api/github-status?username=gh0stintheshe11)
+![GitHub Stats SVG](https://github-stats-svg.vercel.app/api/github-status?username=gh0stintheshe11)
