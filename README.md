@@ -2,14 +2,13 @@
 
 *A highly customizable GitHub stats SVG generator*
 
-This project generates a visually appealing, cyberpunk-styled SVG image displaying GitHub user statistics. It's designed to be embedded in GitHub profiles or other web pages to showcase a user's GitHub activity and contributions.
+This project generates a visually appealing, highly customizable SVG image displaying GitHub user statistics. It's designed to be embedded in GitHub profiles or other web pages to showcase a user's GitHub activity and contributions.
 
 ## Features
 
 - Fetches real-time GitHub user data using the GitHub GraphQL API
 - Generates a customizable SVG image with user stats, displaying various metrics including commits, language usage, and many more
-- Cyberpunk-inspired design with animated elements
-- Supports custom color schemes and configurations
+- Supports custom color schemes, configurations, and animated elements
 
 ## Project Structure
 
