@@ -7,10 +7,8 @@ This project generates a visually appealing, cyberpunk-styled SVG image displayi
 ## Features
 
 - Fetches real-time GitHub user data using the GitHub GraphQL API
-- Generates a customizable SVG image with user stats
+- Generates a customizable SVG image with user stats, displaying various metrics including commits, language usage, and many more
 - Cyberpunk-inspired design with animated elements
-- Displays various metrics including commits, PRs, issues, and language usage
-- Calculates and displays user rank based on GitHub activity
 - Supports custom color schemes and configurations
 
 ## Project Structure
