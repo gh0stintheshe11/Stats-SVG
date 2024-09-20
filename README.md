@@ -41,7 +41,7 @@ You can customize the appearance of the SVG by modifying the `config.js` file. T
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request and open an issue. check [DEVELOP.md](DEVELOP.md) for more information.
+Contributions are welcome! Please feel free to submit a Pull Request and open an issue. check [Intro] (intro.md) for more information.
 
 ## License
 
@@ -53,4 +53,4 @@ Enjoy showcasing your GitHub stats in cyberpunk style! 🚀
 
 #Cyberpunk2077 #Cyberpunk:Edgerunners
 
-![GitHub Stats SVG](http://localhost:3000/api/github-status?username=gh0stintheshe11)
+![GitHub Stats SVG](https://github-stats-svg.vercel.app/api/github-status?username=gh0stintheshe11)
