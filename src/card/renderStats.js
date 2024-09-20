@@ -141,6 +141,49 @@ async function calculateImagePosition(dimensions, language_ring_radius, language
   return { target_height, image_y, image_x };
 }
 
+async function renderLanguageRing(stats, languageRingConfig, elementsConfig) {
+  const totalSegments = Object.keys(stats.language_percentages).length;
+  let accumulatedOffset = 0;
+  let accumulatedPercentage = 0;
+
+  return Object.keys(stats.language_percentages).map((language, index) => {
+    const value = stats.language_percentages[language];
+    accumulatedPercentage += value;
+
+    // Calculate segment length based on accumulated percentage
+    const segmentLength = Math.round((accumulatedPercentage / 100) * languageRingConfig.language_circumference) - accumulatedOffset;
+    
+    const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc';
+
+    const segment = `
+      <circle cx="${languageRingConfig.language_ring_center_x}" cy="${languageRingConfig.language_ring_center_y}" r="${languageRingConfig.language_ring_radius}" 
+        stroke="${color}" stroke-width="${languageRingConfig.language_ring_thickness}" fill="none"
+        stroke-dasharray="${segmentLength} ${languageRingConfig.language_circumference - segmentLength}"
+        stroke-dashoffset="${-accumulatedOffset}"
+        transform="rotate(90 ${languageRingConfig.language_ring_center_x} ${languageRingConfig.language_ring_center_y})"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: ${(totalSegments - index) * 0.15}s;" />
+    `;
+    accumulatedOffset += segmentLength;
+
+    const isFirstColumn = index < 10;
+    const column_x_offset = isFirstColumn ? languageRingConfig.first_column_x_offset : languageRingConfig.second_column_x_offset;
+    const column_index = isFirstColumn ? index : index - 10;
+    const text_y_position = Math.round(languageRingConfig.language_ring_center_y - languageRingConfig.language_ring_radius - 8 + column_index * 19);
+
+    const text_element = `
+      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
+        <rect x="0" y="0" width="16" height="16" fill="${color}" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
+          <tspan fill="${elementsConfig.text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
+        </text>
+      </g>
+    `;
+
+    return segment + text_element;
+  }).join('');
+}
+
 async function renderStats(stats) {
 
   const [
@@ -160,43 +203,7 @@ async function renderStats(stats) {
   ]);
   
   // Render the language percentage ring and text labels
-  const totalSegments = Object.keys(stats.language_percentages).length;
-  let accumulatedOffset = 0;
-  const language_percentage_ring = Object.keys(stats.language_percentages).map((language, index) => {
-    const value = stats.language_percentages[language];
-    const segmentLength = Math.round((value / 100) * languageRingConfig.language_circumference);
-    const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc'; // Default color if not found
-
-    // Ring segment
-    const segment = `
-      <circle cx="${languageRingConfig.language_ring_center_x}" cy="${languageRingConfig.language_ring_center_y}" r="${languageRingConfig.language_ring_radius}" 
-        stroke="${color}" stroke-width="${languageRingConfig.language_ring_thickness}" fill="none"
-        stroke-dasharray="${segmentLength} ${languageRingConfig.language_circumference - segmentLength}"
-        stroke-dashoffset="${-accumulatedOffset}"
-        transform="rotate(90 ${languageRingConfig.language_ring_center_x} ${languageRingConfig.language_ring_center_y})"
-        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: ${(totalSegments - index) * 0.15}s;" />
-    `;
-    accumulatedOffset += segmentLength;
-
-    // Determine the position for the legend
-    const isFirstColumn = index < 10;
-    const column_x_offset = isFirstColumn ? languageRingConfig.first_column_x_offset : languageRingConfig.second_column_x_offset;
-    const column_index = isFirstColumn ? index : index - 10;
-    const text_y_position = Math.round(languageRingConfig.language_ring_center_y - languageRingConfig.language_ring_radius - 8 + column_index * 19);
-
-    // Text label
-    const text_element = `
-      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
-        <rect x="0" y="0" width="16" height="16" fill="${color}" />
-        <text x="20" y="8" class="language-legend" dominant-baseline="central">
-          <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
-          <tspan fill="${elementsConfig.text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
-        </text>
-      </g>
-    `;
-
-    return segment + text_element;
-  }).join('');
+  const language_percentage_ring = await renderLanguageRing(stats, languageRingConfig, elementsConfig);
 
   const svg = `
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">

@@ -11,74 +11,30 @@ const http2Axios = axios.create({
 });
 
 const GRAPHQL_QUERY_USER_INFO = `
-  query userInfo($login: String!, $after: String) {
+  query userInfo($login: String!) {
     user(login: $login) {
       name
       login
       followers {
         totalCount
       }
-      contributionsCollection {
-        totalCommitContributions
-        totalPullRequestContributions
-        totalPullRequestReviewContributions
-        totalIssueContributions
-        pullRequestContributionsByRepository(maxRepositories: 100) {
-          repository {
-            name
-            owner {
-              login
-            }
-            pullRequests(states: MERGED) {
-              totalCount
-            }
-          }
-          contributions {
-            totalCount
-          }
-        }
-      }
-      repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100) {
-        totalCount
-        nodes {
-          name
-          owner {
-            login
-          }
-        }
-      }
-      repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}, after: $after) {
-        totalCount
-        nodes {
-          name
-          owner {
-            login
-          }
-          stargazers {
-            totalCount
-          }
-          issues(states: [OPEN, CLOSED]) {
-            totalCount
-          }
-          languages(first: 20, orderBy: {field: SIZE, direction: DESC}) {
-            edges {
-              size
-              node {
-                color
-                name
-              }
-            }
-          }
-          forkCount
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
+    }
+  }
+`;
+
+const GRAPHQL_QUERY_PULL_REQUESTS = `
+  query userPullRequests($login: String!) {
+    user(login: $login) {
       pullRequests(states: MERGED) {
         totalCount
       }
+    }
+  }
+`;
+
+const GRAPHQL_QUERY_DISCUSSIONS = `
+  query userDiscussions($login: String!) {
+    user(login: $login) {
       repositoryDiscussions {
         totalCount
       }
@@ -89,42 +45,115 @@ const GRAPHQL_QUERY_USER_INFO = `
   }
 `;
 
+const GRAPHQL_QUERY_CONTRIBUTIONS = `
+  query userContributions($login: String!) {
+    user(login: $login) {
+      contributionsCollection {
+        totalCommitContributions
+        totalPullRequestContributions
+        totalPullRequestReviewContributions
+        totalIssueContributions
+      }
+    }
+  }
+`;
+
+const GRAPHQL_QUERY_REPOSITORIES = `
+  query userRepositories($login: String!) {
+    user(login: $login) {
+      repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100) {
+        totalCount
+      }
+      repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}) {
+        totalCount
+        nodes {
+          stargazers {
+            totalCount
+          }
+          forkCount
+          languages(first: 20, orderBy: {field: SIZE, direction: DESC}) {
+            edges {
+              size
+              node {
+                color
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Add a simple in-memory cache
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
 async function fetchGitHubData(username) {
+  console.log('Fetching data for', username);
+
+  // Check if we have cached data
+  const cachedData = cache.get(username);
+  if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
+    console.log('Returning cached data for', username);
+    return cachedData.data;
+  }
+
   const url = 'https://api.github.com/graphql';
   const headers = {
     'Authorization': `bearer ${GITHUB_TOKEN}`,
     'Content-Type': 'application/json'
   };
-  const variables = { login: username };
 
   try {
-    const response = await http2Axios.post(url, {
-      query: GRAPHQL_QUERY_USER_INFO,
-      variables
-    }, { headers });
+    console.time('GitHub API Requests');
+    const [
+      userInfoResponse,
+      pullRequestsResponse,
+      discussionsResponse,
+      contributionsResponse,
+      repositoriesResponse
+    ] = await Promise.all([
+      http2Axios.post(url, { query: GRAPHQL_QUERY_USER_INFO, variables: { login: username } }, { headers }),
+      http2Axios.post(url, { query: GRAPHQL_QUERY_PULL_REQUESTS, variables: { login: username } }, { headers }),
+      http2Axios.post(url, { query: GRAPHQL_QUERY_DISCUSSIONS, variables: { login: username } }, { headers }),
+      http2Axios.post(url, { query: GRAPHQL_QUERY_CONTRIBUTIONS, variables: { login: username } }, { headers }),
+      http2Axios.post(url, { query: GRAPHQL_QUERY_REPOSITORIES, variables: { login: username } }, { headers })
+    ]);
+    console.timeEnd('GitHub API Requests');
 
-    const { data: { data: { user } = {} } = {} } = response;
-    if (!user) throw new Error(`User ${username} not found`);
+    console.log('User Info Response:', JSON.stringify(userInfoResponse.data, null, 2));
+    console.log('Pull Requests Response:', JSON.stringify(pullRequestsResponse.data, null, 2));
+    console.log('Discussions Response:', JSON.stringify(discussionsResponse.data, null, 2));
+    console.log('Contributions Response:', JSON.stringify(contributionsResponse.data, null, 2));
+    console.log('Repositories Response:', JSON.stringify(repositoriesResponse.data, null, 2));
 
-    const { contributionsCollection = {}, repositories = {}} = user;
-    const reposNodes = repositories.nodes || [];
+    const userInfo = userInfoResponse.data?.data?.user;
+    const pullRequests = pullRequestsResponse.data?.data?.user;
+    const discussions = discussionsResponse.data?.data?.user;
+    const contributions = contributionsResponse.data?.data?.user?.contributionsCollection;
+    const repositories = repositoriesResponse.data?.data?.user;
 
+    if (!userInfo) throw new Error(`User ${username} not found`);
+
+    console.time('Data Processing');
     const stats = {
-      login: user.login,
-      name: user.name || user.login,
-      followers: user.followers.totalCount || 0,
-      total_commits: contributionsCollection.totalCommitContributions || 0,
-      total_prs: contributionsCollection.totalPullRequestContributions || 0,
-      total_prs_reviewed: contributionsCollection.totalPullRequestReviewContributions || 0,
-      total_issues: contributionsCollection.totalIssueContributions || 0,
-      total_merged_prs: user.pullRequests.totalCount || 0,
-      total_repos: repositories.totalCount || 0,
-      total_stars: reposNodes.reduce((acc, repo) => acc + repo.stargazers.totalCount, 0),
-      total_forks: reposNodes.reduce((acc, repo) => acc + repo.forkCount, 0),
-      total_contributes_to: user.repositoriesContributedTo.totalCount || 0,
-      top_languages: calculateTopLanguages(reposNodes),
-      total_discussions_started: user.repositoryDiscussions?.totalCount || 0,
-      total_discussions_answered: user.repositoryDiscussionComments?.totalCount || 0
+      login: userInfo.login,
+      name: userInfo.name || userInfo.login,
+      followers: userInfo.followers?.totalCount || 0,
+      total_commits: contributions?.totalCommitContributions || 0,
+      total_prs: contributions?.totalPullRequestContributions || 0,
+      total_prs_reviewed: contributions?.totalPullRequestReviewContributions || 0,
+      total_issues: contributions?.totalIssueContributions || 0,
+      total_merged_prs: pullRequests?.pullRequests?.totalCount || 0,
+      total_repos: repositories?.repositories?.totalCount || 0,
+      total_stars: repositories?.repositories?.nodes?.reduce((acc, repo) => acc + (repo.stargazers?.totalCount || 0), 0) || 0,
+      total_forks: repositories?.repositories?.nodes?.reduce((acc, repo) => acc + (repo.forkCount || 0), 0) || 0,
+      total_contributes_to: repositories?.repositoriesContributedTo?.totalCount || 0,
+      top_languages: calculateTopLanguages(repositories?.repositories?.nodes || []),
+      total_discussions_started: discussions?.repositoryDiscussions?.totalCount || 0,
+      total_discussions_answered: discussions?.repositoryDiscussionComments?.totalCount || 0
     };
 
     stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
@@ -140,6 +169,10 @@ async function fetchGitHubData(username) {
     });
 
     stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
+    console.timeEnd('Data Processing');
+
+    // Cache the results
+    cache.set(username, { data: stats, timestamp: Date.now() });
 
     return stats;
 
