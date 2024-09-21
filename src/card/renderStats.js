@@ -84,8 +84,8 @@ async function calculateRankRing(config, stats, svg_width, svg_height) {
   const rank_ring_bottom_left_y = rank_ring_center_y + displacement;
   const arc_length = Math.round(Math.PI * rank_ring_circle_radius / 2);
   const rank_circumference = 2 * Math.PI * rank_ring_radius;
-  const progressPercentage = (100 - rank_percentile) / 100;
-  const visibleLength = Math.round(rank_circumference - rank_circumference * progressPercentage);
+  // Calculate the length of the visible progress bar
+  const visibleLength = rank_circumference * (1 - rank_percentile / 100);
   return {
     rank_ring_radius,
     rank_ring_thickness,
@@ -141,23 +141,23 @@ async function calculateImagePosition(dimensions, language_ring_radius, language
   return { target_height, image_y, image_x };
 }
 
-async function renderLanguageRing(stats, languageRingConfig, elementsConfig) {
-  const totalSegments = Object.keys(stats.language_percentages).length;
+async function renderLanguageRing(languagePercentages, languageRingConfig, elementsConfig) {
+  const totalSegments = languagePercentages.length;
   let accumulatedOffset = 0;
   let accumulatedPercentage = 0;
 
-  return Object.keys(stats.language_percentages).map((language, index) => {
-    const value = stats.language_percentages[language];
+  return languagePercentages.map((languageData, index) => {
+    const { name: language, percentage: value, color } = languageData;
     accumulatedPercentage += value;
 
     // Calculate segment length based on accumulated percentage
     const segmentLength = Math.round((accumulatedPercentage / 100) * languageRingConfig.language_circumference) - accumulatedOffset;
     
-    const color = stats.top_languages[language].color ? stats.top_languages[language].color : '#cccccc';
+    const strokeColor = color || '#cccccc'; // Default color if not found
 
     const segment = `
       <circle cx="${languageRingConfig.language_ring_center_x}" cy="${languageRingConfig.language_ring_center_y}" r="${languageRingConfig.language_ring_radius}" 
-        stroke="${color}" stroke-width="${languageRingConfig.language_ring_thickness}" fill="none"
+        stroke="${strokeColor}" stroke-width="${languageRingConfig.language_ring_thickness}" fill="none"
         stroke-dasharray="${segmentLength} ${languageRingConfig.language_circumference - segmentLength}"
         stroke-dashoffset="${-accumulatedOffset}"
         transform="rotate(90 ${languageRingConfig.language_ring_center_x} ${languageRingConfig.language_ring_center_y})"
@@ -165,14 +165,16 @@ async function renderLanguageRing(stats, languageRingConfig, elementsConfig) {
     `;
     accumulatedOffset += segmentLength;
 
+    // Calculate position for text labels
     const isFirstColumn = index < 10;
     const column_x_offset = isFirstColumn ? languageRingConfig.first_column_x_offset : languageRingConfig.second_column_x_offset;
     const column_index = isFirstColumn ? index : index - 10;
     const text_y_position = Math.round(languageRingConfig.language_ring_center_y - languageRingConfig.language_ring_radius - 8 + column_index * 19);
 
+    // SVG for the text label
     const text_element = `
-      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index*0.1}s;">
-        <rect x="0" y="0" width="16" height="16" fill="${color}" />
+      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index * 0.1}s;">
+        <rect x="0" y="0" width="16" height="16" fill="${strokeColor}" />
         <text x="20" y="8" class="language-legend" dominant-baseline="central">
           <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
           <tspan fill="${elementsConfig.text_value_color}" dx="5">${value.toFixed(2)}%</tspan>
@@ -203,7 +205,7 @@ async function renderStats(stats) {
   ]);
   
   // Render the language percentage ring and text labels
-  const language_percentage_ring = await renderLanguageRing(stats, languageRingConfig, elementsConfig);
+  const language_percentage_ring = await renderLanguageRing(stats.language_percentages, languageRingConfig, elementsConfig);
 
   const svg = `
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
@@ -250,7 +252,7 @@ async function renderStats(stats) {
 
         @keyframes fillProgress {
           0% { stroke-dashoffset: ${rankRingConfig.rank_circumference}; }
-          100% { stroke-dashoffset: ${rankRingConfig.visibleLength}; }
+          100% { stroke-dashoffset: ${rankRingConfig.rank_circumference + rankRingConfig.visibleLength}; }
         }
 
         @keyframes blinking {
@@ -330,8 +332,10 @@ async function renderStats(stats) {
         .rank-circle-progress { 
           fill: none; 
           opacity: 0; 
-          animation: fillProgress 1.6s ease-out 1.5 forwards, change-opacity 0s 1.6s forwards; 
-          stroke-linecap: round;
+          animation: 
+            fillProgress 1s ease-out 1.6s forwards, 
+            change-opacity 0.1s 1.5s forwards; 
+          stroke-linecap: round; 
         }
         
         <!-- Language Ring Styles -->
@@ -450,18 +454,19 @@ async function renderStats(stats) {
       <!-- Rank Ring Background -->
       <circle class="rank-circle-bg" cx="${rankRingConfig.rank_ring_center_x}" cy="${rankRingConfig.rank_ring_center_y}" r="${rankRingConfig.rank_ring_radius}" stroke="${darkenHexColor("#00f0ff",rankRingConfig.rank_ring_bg_dark_level)}" stroke-width="${rankRingConfig.rank_ring_thickness}" fill="none"></circle>
 
-      <!-- Rank Ring Progress -->
-      <path class="rank-circle-progress" d="
-        M ${rankRingConfig.rank_ring_center_x},${rankRingConfig.rank_ring_center_y}
-        m ${-rankRingConfig.rank_ring_radius},0
-        a ${rankRingConfig.rank_ring_radius},${rankRingConfig.rank_ring_radius} 0 1,0 ${2*rankRingConfig.rank_ring_radius},0
-        a ${rankRingConfig.rank_ring_radius},${rankRingConfig.rank_ring_radius} 0 1,0 ${-2*rankRingConfig.rank_ring_radius},0
-      " transform="rotate(-90 ${rankRingConfig.rank_ring_center_x} ${rankRingConfig.rank_ring_center_y})"
-        stroke-dasharray="${rankRingConfig.rank_circumference}"
-        stroke-dashoffset="${rankRingConfig.rank_circumference}"
+      <!-- Rank Ring Progress (using circle instead of path) -->
+      <circle
+        class="rank-circle-progress"
+        cx="${rankRingConfig.rank_ring_center_x}" 
+        cy="${rankRingConfig.rank_ring_center_y}" 
+        r="${rankRingConfig.rank_ring_radius}" 
         stroke="${rankRingConfig.rank_progress_bar_color}" 
-        stroke-width="${rankRingConfig.rank_progress_bar_thickness}" >
-      </path>
+        stroke-width="${rankRingConfig.rank_progress_bar_thickness}" 
+        fill="none" 
+        stroke-dasharray="${rankRingConfig.rank_circumference} ${rankRingConfig.rank_circumference}" 
+        stroke-dashoffset="${rankRingConfig.rank_circumference}" 
+        transform="rotate(90 ${rankRingConfig.rank_ring_center_x} ${rankRingConfig.rank_ring_center_y})"
+      />
 
       <!-- Rank Ring Text -->
       <text x="${rankRingConfig.rank_ring_center_x}" y="${rankRingConfig.rank_ring_center_y+Math.round(rankRingConfig.rank_ring_radius/6)}" class="rank-letter"  text-anchor="middle">${stats.rank.level}</text>
