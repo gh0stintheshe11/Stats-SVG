@@ -327,14 +327,14 @@ async function renderStats(stats) {
         .rank-circle-bg { 
           fill: none; 
           opacity: 0; 
-          animation: change-opacity 0.5s ease-out 1.5s forwards; 
+          animation: change-opacity 0.3s ease-out 1.5s forwards; 
         }
         .rank-circle-progress { 
           fill: none; 
           opacity: 0; 
           animation: 
-            fillProgress 1s ease-out 1.6s forwards, 
-            change-opacity 0.1s 1.5s forwards; 
+            fillProgress 1s ease-out 1.7s forwards, 
+            change-opacity 0s 1.7s forwards; 
           stroke-linecap: round; 
         }
         
