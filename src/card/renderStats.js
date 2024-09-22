@@ -333,7 +333,7 @@ async function renderStats(stats) {
           fill: none; 
           opacity: 0; 
           animation: 
-            fillProgress 1s ease-out 1.7s forwards, 
+            fillProgress 1.5s ease-out 1.7s forwards, 
             change-opacity 0s 1.7s forwards; 
           stroke-linecap: round; 
         }
