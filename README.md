@@ -9,7 +9,7 @@ This project generates a visually appealing, highly customizable SVG image displ
 - Fetches real-time GitHub user data using the GitHub GraphQL API
 - Generates a customizable SVG image with user stats, displaying various metrics including commits, language usage, and many more
 - Supports custom color schemes, configurations, and animated elements
-- for ranking and language usage calculation, this repo uses the same algorithme as [anuraghazra/github-readme-stats](https://github.com/anuraghazra/github-readme-stats) to keep things under the same standard.
+- For ranking and language usage calculation, this repo uses the same algorithm as arguably the most famous README card repo on GitHub, [anuraghazra/github-readme-stats](https://github.com/anuraghazra/github-readme-stats), to maintain consistency with the same standard.
 
 ## Deployment
 
