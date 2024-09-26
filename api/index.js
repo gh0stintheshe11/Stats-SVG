@@ -7,9 +7,7 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      console.time(`fetch data attempt ${attempt + 1}`);
       const data = await fetchGitHubData(username);
-      console.timeEnd(`fetch data attempt ${attempt + 1}`);
       return data; // If fetch is successful, return the data
     } catch (error) {
       lastError = error; // Update lastError with the most recent error
@@ -28,17 +26,17 @@ export default async function handler(req, res) {
   const { username } = req.query;
 
   try {
-    console.time('fetch data');
     const stats = await fetchGitHubDataWithRetry(username);
     console.log(stats);
-    console.timeEnd('fetch data');
-      
+    
     if (req.url.includes('github-status')) {
       console.time('render stats');
       const svg = await renderStats(stats);
-      res.setHeader('Content-Type', 'image/svg+xml');
-      res.send(svg);
       console.timeEnd('render stats');
+      res.setHeader('Content-Type', 'image/svg+xml');
+      console.time('send svg');
+      res.send(svg);
+      console.timeEnd('send svg');
     } else {
       res.status(404).send('Not Found');
     }

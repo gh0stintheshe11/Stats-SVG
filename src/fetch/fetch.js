@@ -18,23 +18,15 @@ const GRAPHQL_QUERY_USER_INFO = `
       followers {
         totalCount
       }
-    }
-  }
-`;
-
-const GRAPHQL_QUERY_PULL_REQUESTS = `
-  query userPullRequests($login: String!) {
-    user(login: $login) {
+      contributionsCollection {
+        totalCommitContributions
+        totalPullRequestContributions
+        totalPullRequestReviewContributions
+        totalIssueContributions
+      }
       pullRequests(states: MERGED) {
         totalCount
       }
-    }
-  }
-`;
-
-const GRAPHQL_QUERY_DISCUSSIONS = `
-  query userDiscussions($login: String!) {
-    user(login: $login) {
       repositoryDiscussions {
         totalCount
       }
@@ -45,27 +37,18 @@ const GRAPHQL_QUERY_DISCUSSIONS = `
   }
 `;
 
-const GRAPHQL_QUERY_CONTRIBUTIONS = `
-  query userContributions($login: String!) {
-    user(login: $login) {
-      contributionsCollection {
-        totalCommitContributions
-        totalPullRequestContributions
-        totalPullRequestReviewContributions
-        totalIssueContributions
-      }
-    }
-  }
-`;
-
 const GRAPHQL_QUERY_REPOSITORIES = `
-  query userRepositories($login: String!) {
+  query userRepositories($login: String!, $after: String) {
     user(login: $login) {
       repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100) {
         totalCount
       }
-      repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}) {
+      repositories(first: 100, after: $after, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}) {
         totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         nodes {
           stargazers {
             totalCount
@@ -78,6 +61,51 @@ const GRAPHQL_QUERY_REPOSITORIES = `
                 color
                 name
               }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION = `
+  query userContributions($login: String!, $from: DateTime!, $to: DateTime!, $after: String) {
+    user(login: $login) {
+      contributionsCollection(from: $from, to: $to) {
+        commitContributionsByRepository {
+          contributions(first: 100, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              commitCount
+              occurredAt
+            }
+          }
+        }
+        issueContributions(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            occurredAt
+            issue {
+              state
+            }
+          }
+        }
+        pullRequestContributions(first: 100, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            occurredAt
+            pullRequest {
+              state
             }
           }
         }
@@ -106,54 +134,87 @@ async function fetchGitHubData(username) {
     'Content-Type': 'application/json'
   };
 
+  const now = new Date();
+  const fromDate = new Date(now);
+  fromDate.setDate(now.getDate() - 14);
+
   try {
     console.time('GitHub API Requests');
-    const [
-      userInfoResponse,
-      pullRequestsResponse,
-      discussionsResponse,
-      contributionsResponse,
-      repositoriesResponse
-    ] = await Promise.all([
-      http2Axios.post(url, { query: GRAPHQL_QUERY_USER_INFO, variables: { login: username } }, { headers }),
-      http2Axios.post(url, { query: GRAPHQL_QUERY_PULL_REQUESTS, variables: { login: username } }, { headers }),
-      http2Axios.post(url, { query: GRAPHQL_QUERY_DISCUSSIONS, variables: { login: username } }, { headers }),
-      http2Axios.post(url, { query: GRAPHQL_QUERY_CONTRIBUTIONS, variables: { login: username } }, { headers }),
-      http2Axios.post(url, { query: GRAPHQL_QUERY_REPOSITORIES, variables: { login: username } }, { headers })
+
+    const fetchUserInfo = async () => {
+      const response = await http2Axios.post(url, { query: GRAPHQL_QUERY_USER_INFO, variables: { login: username } }, { headers });
+      return response.data?.data?.user;
+    };
+
+    const fetchRepositories = async () => {
+      let allRepositories = [];
+      let hasNextPage = true;
+      let after = null;
+      let contributedToCount = 0;
+
+      while (hasNextPage) {
+        const response = await http2Axios.post(url, { 
+          query: GRAPHQL_QUERY_REPOSITORIES, 
+          variables: { login: username, after } 
+        }, { headers });
+
+        const data = response.data?.data?.user;
+        if (!data) {
+          throw new Error('No user data returned from GitHub API');
+        }
+
+        allRepositories = allRepositories.concat(data.repositories.nodes);
+        hasNextPage = data.repositories.pageInfo.hasNextPage;
+        after = data.repositories.pageInfo.endCursor;
+
+        // Only set this on the first iteration
+        if (contributedToCount === 0) {
+          contributedToCount = data.repositoriesContributedTo.totalCount;
+        }
+      }
+
+      return { 
+        repositories: { nodes: allRepositories }, 
+        repositoriesContributedTo: { totalCount: contributedToCount }
+      };
+    };
+
+    const fetchContributionsDistribution = async () => {
+      const response = await http2Axios.post(url, { 
+        query: GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION, 
+        variables: { login: username, from: fromDate.toISOString(), to: now.toISOString() } 
+      }, { headers });
+      return response.data?.data?.user?.contributionsCollection;
+    };
+
+    const [userInfo, repositories, contributionsDistribution] = await Promise.all([
+      fetchUserInfo(),
+      fetchRepositories(),
+      fetchContributionsDistribution()
     ]);
+
     console.timeEnd('GitHub API Requests');
-
-    console.log('User Info Response:', JSON.stringify(userInfoResponse.data, null, 2));
-    console.log('Pull Requests Response:', JSON.stringify(pullRequestsResponse.data, null, 2));
-    console.log('Discussions Response:', JSON.stringify(discussionsResponse.data, null, 2));
-    console.log('Contributions Response:', JSON.stringify(contributionsResponse.data, null, 2));
-    console.log('Repositories Response:', JSON.stringify(repositoriesResponse.data, null, 2));
-
-    const userInfo = userInfoResponse.data?.data?.user;
-    const pullRequests = pullRequestsResponse.data?.data?.user;
-    const discussions = discussionsResponse.data?.data?.user;
-    const contributions = contributionsResponse.data?.data?.user?.contributionsCollection;
-    const repositories = repositoriesResponse.data?.data?.user;
 
     if (!userInfo) throw new Error(`User ${username} not found`);
 
     console.time('Data Processing');
+
     const stats = {
       login: userInfo.login,
       name: userInfo.name || userInfo.login,
       followers: userInfo.followers?.totalCount || 0,
-      total_commits: contributions?.totalCommitContributions || 0,
-      total_prs: contributions?.totalPullRequestContributions || 0,
-      total_prs_reviewed: contributions?.totalPullRequestReviewContributions || 0,
-      total_issues: contributions?.totalIssueContributions || 0,
-      total_merged_prs: pullRequests?.pullRequests?.totalCount || 0,
-      total_repos: repositories?.repositories?.totalCount || 0,
-      total_stars: repositories?.repositories?.nodes?.reduce((acc, repo) => acc + (repo.stargazers?.totalCount || 0), 0) || 0,
-      total_forks: repositories?.repositories?.nodes?.reduce((acc, repo) => acc + (repo.forkCount || 0), 0) || 0,
-      total_contributes_to: repositories?.repositoriesContributedTo?.totalCount || 0,
-      top_languages: calculateTopLanguages(repositories?.repositories?.nodes || []),
-      total_discussions_started: discussions?.repositoryDiscussions?.totalCount || 0,
-      total_discussions_answered: discussions?.repositoryDiscussionComments?.totalCount || 0
+      total_commits: userInfo.contributionsCollection?.totalCommitContributions || 0,
+      total_prs: userInfo.contributionsCollection?.totalPullRequestContributions || 0,
+      total_prs_reviewed: userInfo.contributionsCollection?.totalPullRequestReviewContributions || 0,
+      total_issues: userInfo.contributionsCollection?.totalIssueContributions || 0,
+      total_merged_prs: userInfo.pullRequests?.totalCount || 0,
+      total_repos: repositories.repositories?.nodes?.length || 0,
+      total_stars: repositories.repositories?.nodes?.reduce((acc, repo) => acc + (repo.stargazers?.totalCount || 0), 0) || 0,
+      total_forks: repositories.repositories?.nodes?.reduce((acc, repo) => acc + (repo.forkCount || 0), 0) || 0,
+      total_contributes_to: repositories.repositoriesContributedTo?.totalCount || 0,
+      top_languages: calculateTopLanguages(repositories.repositories?.nodes || []),
+      total_discussions_started: userInfo.repositoryDiscussions?.totalCount || 0,
+      total_discussions_answered: userInfo.repositoryDiscussionComments?.totalCount || 0
     };
 
     stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
@@ -169,10 +230,24 @@ async function fetchGitHubData(username) {
     });
 
     stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
+
+    async function fetchMoreData(type, after) {
+      const response = await http2Axios.post(url, {
+        query: GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION,
+        variables: { login: username, from: fromDate.toISOString(), to: now.toISOString(), after }
+      }, { headers });
+      return response.data.data.user.contributionsCollection;
+    }
+
+    stats.contribution_distribution = await processContributionsDistribution(
+      contributionsDistribution,
+      fetchMoreData
+    );
+
     console.timeEnd('Data Processing');
 
     // Cache the results
-    cache.set(username, { data: stats, timestamp: Date.now() });
+    //cache.set(username, { data: stats, timestamp: Date.now() });
 
     return stats;
 
@@ -197,6 +272,61 @@ function calculateTopLanguages(reposNodes) {
   return Object.entries(languageCounts)
     .sort(([, a], [, b]) => b.size - a.size)
     .reduce((result, [key, value]) => ({ ...result, [key]: value }), {});
+}
+
+async function processContributionsDistribution(contributionsCollection, fetchMoreData) {
+  if (!contributionsCollection) {
+    console.error('contributionsCollection is undefined or missing.');
+    return {};
+  }
+
+  const result = {};
+  
+  // Helper function to add contributions to a specific date
+  function addContribution(date, type, count) {
+    if (!result[date]) {
+      result[date] = { commits: 0, issues: 0, pullRequests: 0, total: 0 };
+    }
+    result[date][type] += count;
+    result[date].total += count;
+  }
+
+  // Process all types of contributions
+  async function processContributions(contributions, type, getCount = () => 1) {
+    let hasNextPage = true;
+    let endCursor = null;
+
+    while (hasNextPage) {
+      const { nodes, pageInfo } = contributions;
+      nodes.forEach(node => {
+        const date = node.occurredAt.split('T')[0];
+        addContribution(date, type, getCount(node));
+      });
+
+      hasNextPage = pageInfo.hasNextPage;
+      endCursor = pageInfo.endCursor;
+
+      if (hasNextPage) {
+        const moreData = await fetchMoreData(type, endCursor);
+        contributions = moreData[type];
+      }
+    }
+  }
+
+  // Process commit contributions
+  await processContributions(
+    contributionsCollection.commitContributionsByRepository[0].contributions,
+    'commits',
+    node => node.commitCount || 0
+  );
+
+  // Process issue contributions
+  await processContributions(contributionsCollection.issueContributions, 'issues');
+
+  // Process pull request contributions
+  await processContributions(contributionsCollection.pullRequestContributions, 'pullRequests');
+
+  return result;
 }
 
 export default fetchGitHubData;
