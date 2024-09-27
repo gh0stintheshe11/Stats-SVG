@@ -221,8 +221,8 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
       
       <!-- top and bottom line -->
-      <line x1="0" y1="${chartHeight+2}" x2="${chartWidth}" y2="${chartHeight+2}" stroke="#00f0ff" stroke-width="1"/>
-      <line x1="0" y1="-2" x2="${chartWidth}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
+      <line x1="0" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="#00f0ff" stroke-width="1"/>
+      <line x1="0" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
       <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
 
       <!-- Candlesticks -->
