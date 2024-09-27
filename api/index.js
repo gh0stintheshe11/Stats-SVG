@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
   try {
     const stats = await fetchGitHubDataWithRetry(username);
-    console.log(stats);
+    //console.log(stats);
     
     if (req.url.includes('github-status')) {
       console.time('render stats');

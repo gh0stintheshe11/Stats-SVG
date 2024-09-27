@@ -213,9 +213,6 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
   const barWidth = chartWidth / data.length;
   const yScale = chartHeight / maxTotal;
 
-  console.log("Max total (candlestick):", maxTotal);
-  console.log("Y scale (candlestick):", yScale);
-
   const chartSVG = `
     <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
       <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
@@ -394,7 +391,7 @@ async function renderStats(stats) {
           font-size: 68px; 
           font-weight: bold; 
           opacity: 0; 
-          animation: change-opacity 0.8s ease-out 1.5s forwards; 
+          animation: change-opacity 0.8s ease-out 1.6s forwards; 
         }
         .rank-percentage { 
           font-family: 'Rajdhani', Helvetica; 
@@ -402,19 +399,19 @@ async function renderStats(stats) {
           font-size: 26px; 
           font-weight: bold; 
           opacity: 0; 
-          animation: change-opacity 0.8s ease-out 1.3s forwards;
+          animation: change-opacity 0.8s ease-out 1.4s forwards;
         }
         .rank-circle-bg { 
           fill: none; 
           opacity: 0; 
-          animation: change-opacity 0.3s ease-out 1.3s forwards; 
+          animation: change-opacity 0.3s ease-out 1.2s forwards; 
         }
         .rank-circle-progress { 
           fill: none; 
           opacity: 0; 
           animation: 
-            fillProgress 1.5s ease-out 1.4s forwards, 
-            change-opacity 0s 1.4s forwards; 
+            fillProgress 1.5s ease-out 1.3s forwards, 
+            change-opacity 0s 1.3s forwards; 
           stroke-linecap: round; 
         }
         
