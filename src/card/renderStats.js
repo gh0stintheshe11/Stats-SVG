@@ -394,7 +394,7 @@ async function renderStats(stats) {
           font-size: 68px; 
           font-weight: bold; 
           opacity: 0; 
-          animation: change-opacity 0.5s ease-out 1.6s forwards; 
+          animation: change-opacity 0.5s ease-out 1.2s forwards; 
         }
         .rank-percentage { 
           font-family: 'Rajdhani', Helvetica; 
@@ -402,7 +402,7 @@ async function renderStats(stats) {
           font-size: 26px; 
           font-weight: bold; 
           opacity: 0; 
-          animation: change-opacity 0.5s ease-out 1.6s forwards;
+          animation: change-opacity 0.5s ease-out 1s forwards;
         }
         .rank-circle-bg { 
           fill: none; 
