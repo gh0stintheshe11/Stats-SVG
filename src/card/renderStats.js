@@ -585,13 +585,13 @@ async function renderStats(stats) {
       <!-- dot change to short dash line moving to left -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
         <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x - rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
-        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end}" dur="0.3s" fill="freeze" begin="1s" />
+        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end}" dur="0.2s" fill="freeze" begin="1s" />
       </line>
 
       <!-- dot change to short dash line moving to right -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
         <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x + rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
-        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_end}" dur="0.3s" fill="freeze" begin="1s" />
+        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_end}" dur="0.2s" fill="freeze" begin="1s" />
       </line>
 
       <!-- top left 1/8 circle path -->
