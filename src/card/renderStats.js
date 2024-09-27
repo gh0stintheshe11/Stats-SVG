@@ -220,7 +220,7 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
     <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
       <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
       
-      <!-- top and bottom line -->
+      <!-- border line -->
       <line x1="0" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="#00f0ff" stroke-width="1"/>
       <line x1="0" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
       <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
@@ -252,12 +252,12 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       }).join('')}
 
       <!-- Date labels (first and last) -->
-      <text x="0" y="${chartHeight*1.1}" text-anchor="start" class="label" font-size="4">${data[0].date}</text>
-      <text x="${chartWidth}" y="${chartHeight*1.1}" class="label" text-anchor="end" font-size="4">${data[data.length - 1].date}</text>
+      <text x="0" y="${(chartHeight+2)*1.11}" text-anchor="start" class="label" font-size="4">${data[0].date}</text>
+      <text x="${chartWidth}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4">${data[data.length - 1].date}</text>
 
       <!-- Y-axis labels -->
-      <text x="-3" y="+11" text-anchor="end" class="label">${maxTotal}</text>
-      <text x="-3" y="${chartHeight+2}" text-anchor="end" class="label">0</text>
+      <text x="-5" y="+11" text-anchor="end" class="label">${maxTotal}</text>
+      <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label">0</text>
     </g>
   `;
 
