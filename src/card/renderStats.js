@@ -203,8 +203,8 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
   });
 
   // Chart dimensions and position
-  const chartX = 2*rankRingConfig.rank_ring_center_x - rankRingConfig.rank_ring_left_end * 0.95;
-  const chartWidth = 1080 - rankRingConfig.rank_ring_right_end * 1.02;
+  const chartX = rankRingConfig.rank_ring_center_x + rankRingConfig.rank_ring_radius * 1.8;
+  const chartWidth = 1080 - chartX;
   const chartY = rankRingConfig.rank_ring_center_y - 1.2 * rankRingConfig.rank_ring_radius;
   const chartHeight = 2.4 * rankRingConfig.rank_ring_radius;
 
@@ -218,11 +218,12 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
 
   const chartSVG = `
     <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
-      <text x="${chartWidth}" y="-10" text-anchor="end" class="label" font-size="10">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
+      <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
       
-      <!-- X and Y axes -->
-      <line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#00f0ff" stroke-width="1"/>
-      <line x1="0" y1="0" x2="${chartWidth}" y2="0" stroke="#00f0ff" stroke-width="1"/>
+      <!-- top and bottom line -->
+      <line x1="0" y1="${chartHeight+2}" x2="${chartWidth}" y2="${chartHeight+2}" stroke="#00f0ff" stroke-width="1"/>
+      <line x1="0" y1="-2" x2="${chartWidth}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
+      <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
 
       <!-- Candlesticks -->
       ${data.map((d, i) => {
@@ -255,8 +256,8 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       <text x="${chartWidth}" y="${chartHeight*1.1}" class="label" text-anchor="end" font-size="4">${data[data.length - 1].date}</text>
 
       <!-- Y-axis labels -->
-      <text x="-5" y="0" text-anchor="end" class="label" font-size="8">${maxTotal}</text>
-      <text x="-5" y="${chartHeight}" text-anchor="end" class="label" font-size="8">0</text>
+      <text x="-3" y="+11" text-anchor="end" class="label">${maxTotal}</text>
+      <text x="-3" y="${chartHeight+2}" text-anchor="end" class="label">0</text>
     </g>
   `;
 
@@ -583,13 +584,13 @@ async function renderStats(stats) {
 
       <!-- dot change to short dash line moving to left -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end*0.95}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x - rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
         <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end}" dur="0.5s" fill="freeze" begin="1s" />
       </line>
 
       <!-- dot change to short dash line moving to right -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="1080" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x + rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
         <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_end}" dur="0.5" fill="freeze" begin="1s" />
       </line>
 
