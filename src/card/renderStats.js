@@ -231,7 +231,7 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
         const closeY = chartHeight - (d.close * yScale);
         
         const isBullish = d.close > d.open; // If close > open, it's a bullish candlestick (green)
-        const color = isBullish ? "#00ff00" : "#ff0000"; // Green for bullish, red for bearish
+        const color = isBullish ? "#32cd32" : "#c5003c"; // Green for bullish, red for bearish
 
         return `
           <!-- Wick -->
