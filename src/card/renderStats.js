@@ -186,6 +186,83 @@ async function renderLanguageRing(languagePercentages, languageRingConfig, eleme
   }).join('');
 }
 
+async function renderContributionChart(contributionDistribution, rankRingConfig) {
+  // Sort the dates
+  const sortedDates = Object.keys(contributionDistribution).sort().slice(-config.contribution_distribution.days_to_show);
+  const data = sortedDates.map((date, i, arr) => {
+    const total = contributionDistribution[date].total;
+    const prevTotal = i > 0 ? contributionDistribution[arr[i - 1]].total : total;
+    
+    return {
+      date,
+      open: prevTotal,   // Simulate open as the previous day's total
+      close: total,      // Use the current day's total as the close
+      high: Math.max(total, prevTotal), // High is the max of current and previous totals
+      low: Math.min(total, prevTotal)   // Low is the min of current and previous totals
+    };
+  });
+
+  // Chart dimensions and position
+  const chartX = 2*rankRingConfig.rank_ring_center_x - rankRingConfig.rank_ring_left_end * 0.95;
+  const chartWidth = 1080 - rankRingConfig.rank_ring_right_end * 1.02;
+  const chartY = rankRingConfig.rank_ring_center_y - 1.2 * rankRingConfig.rank_ring_radius;
+  const chartHeight = 2.4 * rankRingConfig.rank_ring_radius;
+
+  // Calculate scales
+  const maxTotal = Math.max(...data.map(d => d.high)); // Using 'high' for the max value
+  const barWidth = chartWidth / data.length;
+  const yScale = chartHeight / maxTotal;
+
+  console.log("Max total (candlestick):", maxTotal);
+  console.log("Y scale (candlestick):", yScale);
+
+  const chartSVG = `
+    <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
+      <text x="${chartWidth}" y="-10" text-anchor="end" class="label" font-size="10">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
+      
+      <!-- X and Y axes -->
+      <line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#00f0ff" stroke-width="1"/>
+      <line x1="0" y1="0" x2="${chartWidth}" y2="0" stroke="#00f0ff" stroke-width="1"/>
+
+      <!-- Candlesticks -->
+      ${data.map((d, i) => {
+        const x = i * barWidth;
+        const highY = chartHeight - (d.high * yScale);
+        const lowY = chartHeight - (d.low * yScale);
+        const openY = chartHeight - (d.open * yScale);
+        const closeY = chartHeight - (d.close * yScale);
+        
+        const isBullish = d.close > d.open; // If close > open, it's a bullish candlestick (green)
+        const color = isBullish ? "#00ff00" : "#ff0000"; // Green for bullish, red for bearish
+
+        return `
+          <!-- Wick -->
+          <line x1="${x + barWidth / 2}" y1="${highY}" x2="${x + barWidth / 2}" y2="${lowY}" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="${x + barWidth * 0.1}" 
+            y="${Math.min(openY, closeY)}" 
+            width="${barWidth * 0.8}" 
+            height="${Math.abs(openY - closeY)}" 
+            fill="${color}" 
+          />
+        `;
+      }).join('')}
+
+      <!-- Date labels (first and last) -->
+      <text x="0" y="${chartHeight*1.1}" text-anchor="start" class="label" font-size="4">${data[0].date}</text>
+      <text x="${chartWidth}" y="${chartHeight*1.1}" class="label" text-anchor="end" font-size="4">${data[data.length - 1].date}</text>
+
+      <!-- Y-axis labels -->
+      <text x="-5" y="0" text-anchor="end" class="label" font-size="8">${maxTotal}</text>
+      <text x="-5" y="${chartHeight}" text-anchor="end" class="label" font-size="8">0</text>
+    </g>
+  `;
+
+  return chartSVG;
+}
+
 async function renderStats(stats) {
 
   const [
@@ -194,18 +271,20 @@ async function renderStats(stats) {
     elementsConfig,
     rankRingConfig,
     languageRingConfig,
-    imagePosition,
+    imagePosition
   ] = await Promise.all([
     calculateGithubUrl(stats),
     calculateSvgConfig(config),
     calculateElementsConfig(config),
     calculateRankRing(config, stats, config.svg.width, config.svg.height),
     calculateLanguageRing(config, config.svg.width, config.svg.height),
-    calculateImagePosition(dimensions, config.language.ringRadius, config.language.ringThickness, Math.round(config.svg.width / 2), Math.round(config.svg.height / 2 + config.language.ringRadius * 2)),
+    calculateImagePosition(dimensions, config.language.ringRadius, config.language.ringThickness, Math.round(config.svg.width / 2), Math.round(config.svg.height / 2 + config.language.ringRadius * 2))
   ]);
   
-  // Render the language percentage ring and text labels
-  const language_percentage_ring = await renderLanguageRing(stats.language_percentages, languageRingConfig, elementsConfig);
+  const [language_percentage_ring, contribution_chart] = await Promise.all([
+    renderLanguageRing(stats.language_percentages, languageRingConfig, elementsConfig),
+    renderContributionChart(stats.contribution_distribution, rankRingConfig)
+  ]);
 
   const svg = `
     <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
@@ -504,7 +583,7 @@ async function renderStats(stats) {
 
       <!-- dot change to short dash line moving to left -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end-20}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end*0.95}" dur="0.5s" fill="freeze" begin="0.5s" />
         <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end}" dur="0.5s" fill="freeze" begin="1s" />
       </line>
 
@@ -534,6 +613,8 @@ async function renderStats(stats) {
         <animate attributeName="stroke-dasharray" from="0, ${rankRingConfig.arc_length}" to="${rankRingConfig.arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
       </path>
 
+      ${contribution_chart}
+      
     </svg>
   `;
   return svg;

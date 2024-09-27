@@ -2,6 +2,7 @@ import axios from 'axios';
 import 'dotenv/config';
 import { calculateLanguagePercentage } from '../utils/calculateLang.js';
 import { calculateRank } from '../utils/calculateRank.js';
+import config from '../../config.js';
 import pkg from 'http2-wrapper';
 const { http2Adapter } = pkg;
 
@@ -136,7 +137,7 @@ async function fetchGitHubData(username) {
 
   const now = new Date();
   const fromDate = new Date(now);
-  fromDate.setDate(now.getDate() - 14);
+  fromDate.setDate(now.getDate() - config.contribution_distribution.days_to_show);
 
   try {
     console.time('GitHub API Requests');
@@ -282,13 +283,23 @@ async function processContributionsDistribution(contributionsCollection, fetchMo
 
   const result = {};
   
+  // Create a date range for the last 30 days
+  const endDate = new Date();
+  const startDate = new Date(endDate);
+  startDate.setDate(startDate.getDate() - config.contribution_distribution.days_to_show + 1); 
+
+  // Initialize all days in the range with zero contributions
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const dateString = d.toISOString().split('T')[0];
+    result[dateString] = { commits: 0, issues: 0, pullRequests: 0, total: 0 };
+  }
+  
   // Helper function to add contributions to a specific date
   function addContribution(date, type, count) {
-    if (!result[date]) {
-      result[date] = { commits: 0, issues: 0, pullRequests: 0, total: 0 };
+    if (result[date]) {
+      result[date][type] += count;
+      result[date].total += count;
     }
-    result[date][type] += count;
-    result[date].total += count;
   }
 
   // Process all types of contributions
@@ -300,7 +311,9 @@ async function processContributionsDistribution(contributionsCollection, fetchMo
       const { nodes, pageInfo } = contributions;
       nodes.forEach(node => {
         const date = node.occurredAt.split('T')[0];
-        addContribution(date, type, getCount(node));
+        if (result[date]) { // Only add if the date is within our range
+          addContribution(date, type, getCount(node));
+        }
       });
 
       hasNextPage = pageInfo.hasNextPage;
@@ -308,17 +321,19 @@ async function processContributionsDistribution(contributionsCollection, fetchMo
 
       if (hasNextPage) {
         const moreData = await fetchMoreData(type, endCursor);
-        contributions = moreData[type];
+        contributions = moreData[`${type}Contributions`];
       }
     }
   }
 
   // Process commit contributions
-  await processContributions(
-    contributionsCollection.commitContributionsByRepository[0].contributions,
-    'commits',
-    node => node.commitCount || 0
-  );
+  for (const repo of contributionsCollection.commitContributionsByRepository) {
+    await processContributions(
+      repo.contributions,
+      'commits',
+      node => node.commitCount
+    );
+  }
 
   // Process issue contributions
   await processContributions(contributionsCollection.issueContributions, 'issues');

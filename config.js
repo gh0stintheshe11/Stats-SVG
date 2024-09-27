@@ -21,6 +21,9 @@ const config = {
     language: {
       ringRadius: 80,
       ringThickness: 34
+    },
+    contribution_distribution: {
+      days_to_show: 60
     }
   }
 
