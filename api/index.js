@@ -1,5 +1,6 @@
 // Import necessary functions
-import fetchGitHubData from '../src/fetch/fetch.js';
+import fetchGitHubData from '../src/fetch/fetch_github.js';
+import fetchLeetCodeStats from '../src/fetch/fetch_leetcode.js';
 import renderStats from '../src/card/renderStats.js';
 
 async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
@@ -26,10 +27,9 @@ export default async function handler(req, res) {
   const { username } = req.query;
 
   try {
-    const stats = await fetchGitHubDataWithRetry(username);
-    //console.log(stats);
-    
     if (req.url.includes('github-status')) {
+      const stats = await fetchGitHubDataWithRetry(username);
+      //console.log(stats);
       console.time('render stats');
       const svg = await renderStats(stats);
       console.timeEnd('render stats');
@@ -37,6 +37,10 @@ export default async function handler(req, res) {
       console.time('send svg');
       res.send(svg);
       console.timeEnd('send svg');
+    } else if (req.url.includes('leetcode-status')) {
+      const stats = await fetchLeetCodeStats(username);
+      console.log(stats);
+      res.status(200).json(stats);
     } else {
       res.status(404).send('Not Found');
     }
