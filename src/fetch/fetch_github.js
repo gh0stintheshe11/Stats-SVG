@@ -117,7 +117,7 @@ const GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION = `
 
 // Add a simple in-memory cache
 const cache = new Map();
-const CACHE_TTL = 2 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes in milliseconds
 
 async function fetchGitHubData(username) {
   console.log('Fetching data for', username);

@@ -3,19 +3,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import sizeOf from 'image-size';
 import config from '../../config.js';
-import Icons from '../utils/icons.js';
+import Icons from '../asset/icons.js';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read the PNG file and encode it to Base64
-const image_base64 = fs.readFileSync(path.join(__dirname, '../utils/image.gif'), 'base64');
+const image_base64 = fs.readFileSync(path.join(__dirname, '../asset/image.gif'), 'base64');
 // get the dimensions of the image
-const dimensions = sizeOf(path.join(__dirname, '../utils/image.gif'));
+const dimensions = sizeOf(path.join(__dirname, '../asset/image.gif'));
 
 // Load the Base64 encoded fonts
-const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../utils/fontsBase64.json'), 'utf8'));
+const fontsBase64 = JSON.parse(fs.readFileSync(path.join(__dirname, '../asset/fontsBase64.json'), 'utf8'));
 
 function darkenHexColor(hex, darkenFactor) {
   let r = parseInt(hex.slice(1, 3), 16);

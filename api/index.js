@@ -23,6 +23,26 @@ async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1
   throw lastError;
 }
 
+async function fetchLeetCodeStatsWithRetry(username, maxRetries = 5, retryDelay = 1000) {
+  let lastError;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const data = await fetchLeetCodeStats(username);
+      return data; // If fetch is successful, return the data
+    } catch (error) {
+      lastError = error; // Update lastError with the most recent error
+      console.error(`Attempt ${attempt + 1} failed:`, error.message);
+      if (attempt < maxRetries - 1) { // Check if more retries are allowed
+        console.log(`Retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait before retrying
+      }
+    }
+  }
+  // After all retries have failed, throw the last error
+  throw lastError;
+}
+
 export default async function handler(req, res) {
   const { username } = req.query;
 
@@ -37,8 +57,11 @@ export default async function handler(req, res) {
       console.time('send svg');
       res.send(svg);
       console.timeEnd('send svg');
+
     } else if (req.url.includes('leetcode-status')) {
-      const stats = await fetchLeetCodeStats(username);
+      console.time('fetch leetcode stats');
+      const stats = await fetchLeetCodeStatsWithRetry(username);
+      console.timeEnd('fetch leetcode stats');
       console.log(stats);
       res.status(200).json(stats);
     } else {
