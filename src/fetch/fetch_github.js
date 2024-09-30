@@ -125,8 +125,10 @@ async function fetchGitHubData(username) {
   // Check if we have cached data
   const cachedData = cache.get(username);
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
-    console.log('Returning cached data for', username);
-    return cachedData.data;
+    console.time('Get cached data');
+    const data = cachedData.data;
+    console.timeEnd('Get cached data');
+    return data;
   }
 
   const url = 'https://api.github.com/graphql';

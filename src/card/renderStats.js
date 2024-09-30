@@ -173,7 +173,7 @@ async function renderLanguageRing(languagePercentages, languageRingConfig, eleme
 
     // SVG for the text label
     const text_element = `
-      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index * 0.1}s;">
+      <g transform="translate(${column_x_offset}, ${text_y_position})" class="animate" style="animation-delay: ${index * 0.15}s;">
         <rect x="0" y="0" width="16" height="16" fill="${strokeColor}" />
         <text x="20" y="8" class="language-legend" dominant-baseline="central">
           <tspan fill="${elementsConfig.text_label_color}">${language}</tspan>
