@@ -30,7 +30,7 @@ const config = {
       global_display_time_delay: 0.5,
       bar_display_time_delay: 1,
       bar_display_time_interval: 0.02,
-      bar_display_time_duration: 0.1
+      bar_display_time_duration: 0.2
     }
   }
 
