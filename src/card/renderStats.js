@@ -265,21 +265,21 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
     <!-- Date labels (first and last) -->
     <text x="0" y="${(chartHeight+2)*1.11}" text-anchor="start" class="label" font-size="4" opacity="0">
       ${data[0].date}
-      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
     </text>
     <text x="${chartWidth}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4" opacity="0">
       ${data[data.length - 1].date}
-      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime}s"/>
     </text>
 
     <!-- Y-axis labels -->
-    <text x="-5" y="+11" text-anchor="end" class="label" opacity="0">
-      ${maxTotal}
-      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    <!-- max -->
+    <text x="-5" y="+11" text-anchor="end" class="label" opacity="0"> ${maxTotal}
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime + 0.5}s"/>
     </text>
-    <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label" opacity="0">
-      0
-      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    <!-- min -->
+    <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label" opacity="0"> 0
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
     </text>
 
     </g>
