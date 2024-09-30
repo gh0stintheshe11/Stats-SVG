@@ -214,13 +214,18 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
   const yScale = chartHeight / maxTotal;
 
   const chartSVG = `
-    <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
-      <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
-      
-      <!-- border line -->
-      <line x1="0" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="#00f0ff" stroke-width="1"/>
-      <line x1="0" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
-      <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="-2" stroke="#00f0ff" stroke-width="1"/>
+  <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
+    <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${config.contribution_distribution.days_to_show} days)</text>
+    
+    <!-- border lines with animations -->
+    <line x1="0" y1="${chartHeight+2}" x2="0" y2="${chartHeight+2}" stroke="${config.contribution_distribution.border_color}" stroke-width="1">
+      <animate attributeName="x1" from="0" to="${chartWidth+2}" dur="0.5s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
+    </line>
+    <line x1="0" y1="-2" x2="0" y2="-2" stroke="${config.contribution_distribution.border_color}" stroke-width="1">
+      <animate attributeName="x2" from="0" to="${chartWidth+2}" dur="0.5s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
+    </line>
+    <line x1="${chartWidth+2}" y1="-2" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="${config.contribution_distribution.border_color}" stroke-width="1" opacity="1">
+    </line>
 
       <!-- Candlesticks -->
       ${data.map((d, i) => {
@@ -231,30 +236,46 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
         const closeY = chartHeight - (d.close * yScale);
         
         const isBullish = d.close > d.open; // If close > open, it's a bullish candlestick (green)
-        const color = isBullish ? "#32cd32" : "#c5003c"; // Green for bullish, red for bearish
+        const color = isBullish ? config.contribution_distribution.bullish_color : config.contribution_distribution.bearish_color; // Green for bullish, red for bearish
 
         return `
-          <!-- Wick -->
-          <line x1="${x + barWidth / 2}" y1="${highY}" x2="${x + barWidth / 2}" y2="${lowY}" stroke="#00f0ff" stroke-width="1"/>
+          <g opacity="0">
+            <!-- Wick -->
+            <line x1="${x + barWidth / 2}" y1="${highY}" x2="${x + barWidth / 2}" y2="${lowY}" stroke="#00f0ff" stroke-width="1"/>
 
-          <!-- Body -->
-          <rect 
-            x="${x + barWidth * 0.1}" 
-            y="${Math.min(openY, closeY)}" 
-            width="${barWidth * 0.8}" 
-            height="${Math.abs(openY - closeY)}" 
-            fill="${color}" 
-          />
+            <!-- Body -->
+            <rect 
+              x="${x + barWidth * 0.1}" 
+              y="${Math.min(openY, closeY)}" 
+              width="${barWidth * 0.8}" 
+              height="${Math.abs(openY - closeY)}" 
+              fill="${color}" 
+            />
+            <animate attributeName="opacity" from="0" to="1" dur="${config.contribution_distribution.bar_display_time_duration}s" begin="${config.contribution_distribution.global_display_time_delay + i * config.contribution_distribution.bar_display_time_interval}s" fill="freeze" />
+          </g>
         `;
       }).join('')}
 
-      <!-- Date labels (first and last) -->
-      <text x="0" y="${(chartHeight+2)*1.11}" text-anchor="start" class="label" font-size="4">${data[0].date}</text>
-      <text x="${chartWidth}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4">${data[data.length - 1].date}</text>
+    <!-- Date labels (first and last) -->
+    <text x="0" y="${(chartHeight+2)*1.11}" text-anchor="start" class="label" font-size="4" opacity="0">
+      ${data[0].date}
+      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    </text>
+    <text x="${chartWidth}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4" opacity="0">
+      ${data[data.length - 1].date}
+      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    </text>
 
-      <!-- Y-axis labels -->
-      <text x="-5" y="+11" text-anchor="end" class="label">${maxTotal}</text>
-      <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label">0</text>
+    <!-- Y-axis labels -->
+    <text x="-5" y="+11" text-anchor="end" class="label" opacity="0">
+      ${maxTotal}
+      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    </text>
+    <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label" opacity="0">
+      0
+      <animate attributeName="opacity" from="0" to="1" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + 0.8}s"/>
+    </text>
+
     </g>
   `;
 

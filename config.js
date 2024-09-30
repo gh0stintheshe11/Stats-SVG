@@ -23,7 +23,14 @@ const config = {
       ringThickness: 34
     },
     contribution_distribution: {
-      days_to_show: 60
+      days_to_show: 60,
+      border_color: "#00f0ff",
+      bullish_color: "#32cd32",
+      bearish_color: "#c5003c",
+      global_display_time_delay: 0.5,
+      bar_display_time_delay: 1,
+      bar_display_time_interval: 0.02,
+      bar_display_time_duration: 0.2
     }
   }
 
