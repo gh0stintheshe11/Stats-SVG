@@ -478,10 +478,21 @@ async function renderStats(stats) {
       </line>
 
       <g transform="translate(30, 100)" class="animate animate-delay-1">
-        <path class="icon" d="${Icons.star_icon}" transform="translate(5, -17) scale(0.04)"/>
+        <path class="icon" d="${Icons.star_icon}" transform="translate(5, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Stars Earned</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_stars}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </path>
       </g>
+
+      <!-- point to stars -->
+      <line x1="370" y1="92" x2="370" y2="92" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.1s" />
+      </line>
 
       <g transform="translate(30, 140)" class="animate animate-delay-2">
         <path class="icon" d="${Icons.fork_icon}" transform="translate(7, -18) scale(0.04)"/>
@@ -490,28 +501,72 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 180)" class="animate animate-delay-3">
-        <path class="icon" d="${Icons.followers_icon}" transform="translate(7, -17) scale(0.04)"/>
+        <path class="icon" d="${Icons.followers_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Followers</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.followers}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </path>
       </g>
+
+      <!-- point to followers -->
+      <line x1="370" y1="172" x2="370" y2="172" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.27s" />
+      </line>
 
       <g transform="translate(30, 220)" class="animate animate-delay-7">
-        <path class="icon" d="${Icons.commit_icon}" transform="translate(5, -17) scale(0.04)"/>
+        <path class="icon" d="${Icons.commit_icon}" transform="translate(4, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Commits</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_commits}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </path>
       </g>
+
+      <!-- point to commits -->
+      <line x1="370" y1="212" x2="370" y2="212" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.63s" />
+      </line>
 
       <g transform="translate(30, 260)" class="animate animate-delay-6">
-        <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -18) scale(1.4)"/>
+        <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Issues</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_issues}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </path>
       </g>
 
+      <!-- point to issues -->
+      <line x1="370" y1="252" x2="370" y2="252" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.54s" />
+      </line>
+
       <g transform="translate(30, 300)" class="animate animate-delay-8">
-        <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -17) scale(1.4)"/>
+        <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </path>
       </g>
+
+      <!-- point to prs -->
+      <line x1="370" y1="292" x2="370" y2="292" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.72s" />
+      </line>
 
       <g transform="translate(30, 340)" class="animate animate-delay-9">
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
@@ -520,10 +575,21 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 380)" class="animate animate-delay-10">
-        <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -17) scale(0.04)"/>
+        <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total PRs Reviewed</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs_reviewed}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
       </g>
+
+      <!-- point to prs reviewed -->
+      <line x1="370" y1="372" x2="370" y2="372" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.9s" />
+      </line>
 
       <g transform="translate(30, 420)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
@@ -532,10 +598,21 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
-        <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -17) scale(1.4)"/>
+        <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Repos</text>
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_repos}</text>
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </circle>
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </path>
       </g>
+
+      <!-- point to repo -->
+      <line x1="370" y1="452" x2="370" y2="452" stroke="${elementsConfig.icon_color}" stroke-width="1">
+        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.45s" />
+      </line>
 
       <g transform="translate(30, 500)" class="animate animate-delay-4">
         <path class="icon" d="${Icons.contributes_to_icon}" transform="translate(6, -17) scale(0.045)"/>
@@ -621,62 +698,6 @@ async function renderStats(stats) {
       <!-- lower half line -->
       <line x1="${rankRingConfig.rank_ring_left_line_end-25}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_left_line_end-25}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="2">
         <animate attributeName="y2" from="${rankRingConfig.rank_ring_center_y}" to="452" dur="0.4s" fill="freeze" begin="1s" />
-      </line>
-
-      <!-- point to stars -->
-      <circle cx="367" cy="92" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="92" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="92" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to followers -->
-      <circle cx="367" cy="172" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="172" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="172" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to commits -->
-      <circle cx="367" cy="212" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="212" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="212" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to issues -->
-      <circle cx="367" cy="252" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="252" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="252" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to prs -->
-      <circle cx="367" cy="292" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="292" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="292" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to prs reviewed -->
-      <circle cx="367" cy="332" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="332" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="332" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
-      </line>
-
-      <!-- point to repo -->
-      <circle cx="367" cy="452" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.5s" />
-      </circle>
-      <line x1="${rankRingConfig.rank_ring_left_line_end-24}" y1="452" x2="${rankRingConfig.rank_ring_left_line_end-24}" y2="452" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_left_line_end-24}" to="370" dur="0.1s" fill="freeze" begin="1.4s" />
       </line>
 
       <!-- dot change to short dash line moving to right -->
