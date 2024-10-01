@@ -125,10 +125,7 @@ async function fetchGitHubData(username) {
   // Check if we have cached data
   const cachedData = cache.get(username);
   if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
-    console.time('Get cached data');
-    const data = cachedData.data;
-    console.timeEnd('Get cached data');
-    return data;
+    return cachedData.data;
   }
 
   const url = 'https://api.github.com/graphql';
@@ -142,7 +139,7 @@ async function fetchGitHubData(username) {
   fromDate.setDate(now.getDate() - config.contribution_distribution.days_to_show);
 
   try {
-    console.time('GitHub API Requests');
+    console.time('GitHub API calls');
 
     const fetchUserInfo = async () => {
       const response = await http2Axios.post(url, { query: GRAPHQL_QUERY_USER_INFO, variables: { login: username } }, { headers });
@@ -196,7 +193,7 @@ async function fetchGitHubData(username) {
       fetchContributionsDistribution()
     ]);
 
-    console.timeEnd('GitHub API Requests');
+    console.timeEnd('GitHub API calls');
 
     if (!userInfo) throw new Error(`User ${username} not found`);
 
