@@ -218,6 +218,7 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
   const yScale = chartHeight / maxTotal;
   ;
   const totalBarDisplayTime = (data.length - 1) * config.contribution_distribution.bar_display_time_interval;
+  const top_border_line_x = maxTotal > 100 ? 33 : maxTotal > 10 ? 22 : 11;
 
   const chartSVG = `
   <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
@@ -230,11 +231,11 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
     </line>
     <!-- top line -->
     <line x1="${chartWidth+2}" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="${config.contribution_distribution.border_color}" stroke-width="1">
-      <animate attributeName="x2" from="${chartWidth+2}" to="0" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime + 0.2}s"/>
+      <animate attributeName="x2" from="${chartWidth+2}" to="${top_border_line_x}" dur="0.3s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime + 0.2}s"/>
     </line>
     <!-- side line -->
     <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="${config.contribution_distribution.border_color}" stroke-width="1" opacity="1">
-      <animate attributeName="y2" from="${chartHeight+2}" to="0" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime}s"/>
+      <animate attributeName="y2" from="${chartHeight+2}" to="-2" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime}s"/>
     </line>
 
     <!-- Candlesticks -->
@@ -271,19 +272,15 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       ${data[0].date}
       <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
     </text>
-    <text x="${chartWidth}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4" opacity="0">
+    <text x="${chartWidth+4}" y="${(chartHeight+2)*1.11}" class="label" text-anchor="end" font-size="4" opacity="0">
       ${data[data.length - 1].date}
       <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime}s"/>
     </text>
 
     <!-- Y-axis labels -->
     <!-- max -->
-    <text x="-5" y="+11" text-anchor="end" class="label" opacity="0"> ${maxTotal}
+    <text x="0" y="5" text-anchor="start" class="label" opacity="0"> ${maxTotal}
       <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime + 0.5}s"/>
-    </text>
-    <!-- min -->
-    <text x="-5" y="${chartHeight+2}" text-anchor="end" class="label" opacity="0"> 0
-      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay}s"/>
     </text>
 
     </g>
