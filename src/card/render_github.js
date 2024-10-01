@@ -589,7 +589,7 @@ async function renderStats(stats) {
       <!-- Language Ring card-like border -->
       <!-- Main border with notch -->
       <path d="M ${rankRingConfig.rank_ring_left_line_end+10},340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L ${rankRingConfig.rank_ring_left_line_end+10},580 Z" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
-        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="3s" fill="freeze" begin="0.6s" />
+        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="3s" fill="freeze" begin="0.7s" />
         <animate attributeName="opacity" values="0;0.3;0;1" dur="0.2s" fill="freeze" begin="0.4s" />
       </path>
 
