@@ -70,8 +70,8 @@ async function calculateRankRing(config, stats, svg_width, svg_height) {
   const rank_ring_center_y = Math.round(svg_height / 2 - rank_ring_radius * 1.2);
   const rank_percentile = stats.rank.percentile;
   const rank_ring_circle_radius = rank_ring_radius + rank_ring_thickness;
-  const rank_ring_left_end = rank_ring_center_x - rank_ring_circle_radius;
-  const rank_ring_right_end = rank_ring_center_x + rank_ring_circle_radius;
+  const rank_ring_left_arc = rank_ring_center_x - rank_ring_circle_radius;
+  const rank_ring_right_arc = rank_ring_center_x + rank_ring_circle_radius;
   const angle = Math.PI / 4; // 45 degrees in radians
   const displacement = Math.round(rank_ring_circle_radius * Math.cos(angle));
   const rank_ring_top_left_x = rank_ring_center_x - displacement;
@@ -86,14 +86,16 @@ async function calculateRankRing(config, stats, svg_width, svg_height) {
   const rank_circumference = 2 * Math.PI * rank_ring_radius;
   // Calculate the length of the visible progress bar
   const visibleLength = rank_circumference * (1 - rank_percentile / 100);
+  const rank_ring_left_line_end = rank_ring_center_x - rank_ring_radius*1.7;
+  const rank_ring_right_line_end = rank_ring_center_x + rank_ring_radius*1.7;
   return {
     rank_ring_radius,
     rank_ring_thickness,
     rank_ring_center_x,
     rank_ring_center_y,
     rank_ring_circle_radius,
-    rank_ring_left_end,
-    rank_ring_right_end,
+    rank_ring_left_arc,
+    rank_ring_right_arc,
     rank_ring_top_left_x,
     rank_ring_top_left_y,
     rank_ring_bottom_right_x,
@@ -110,6 +112,8 @@ async function calculateRankRing(config, stats, svg_width, svg_height) {
     visibleLength,
     rank_progress_bar_thickness,
     rank_progress_bar_color,
+    rank_ring_left_line_end,
+    rank_ring_right_line_end,
   };
 }
 
@@ -119,8 +123,8 @@ async function calculateLanguageRing(config, svg_width, svg_height) {
   const language_ring_center_x = Math.round(svg_width / 2);
   const language_ring_center_y = Math.round(svg_height / 2 + language_ring_radius * 2);
   const language_circumference = Math.round(2 * Math.PI * language_ring_radius);
-  const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius * 1.1 + language_ring_thickness);
-  const second_column_x_offset = Math.round(first_column_x_offset + language_ring_radius * 2.4 + language_ring_thickness);
+  const first_column_x_offset = Math.round(language_ring_center_x + language_ring_radius * 1.8);
+  const second_column_x_offset = Math.round(first_column_x_offset + (1080 - first_column_x_offset) / 2);
   return {
     language_ring_radius,
     language_ring_thickness,
@@ -584,9 +588,9 @@ async function renderStats(stats) {
 
       <!-- Language Ring card-like border -->
       <!-- Main border with notch -->
-      <path d="M 430,340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L 430,580 Z" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+      <path d="M ${rankRingConfig.rank_ring_left_line_end+10},340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L ${rankRingConfig.rank_ring_left_line_end+10},580 Z" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
         <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="3s" fill="freeze" begin="0.6s" />
-        <animate attributeName="opacity" values="0;0.2;0;1" dur="0.2s" fill="freeze" begin="0.4s" />
+        <animate attributeName="opacity" values="0;0.3;0;1" dur="0.2s" fill="freeze" begin="0.4s" />
       </path>
 
       <!-- corner trangle -->
@@ -595,7 +599,7 @@ async function renderStats(stats) {
       </path>
 
       <!-- left solid part -->
-      <path d="M 420,340 L 430,340 L 430,580 L 420,580 L 420,540 L 425,535 L 425,480 L 420,475 Z" fill="${elementsConfig.icon_color}" stroke="${elementsConfig.icon_color}" stroke-width="2">
+      <path d="M ${rankRingConfig.rank_ring_left_line_end},340 L ${rankRingConfig.rank_ring_left_line_end+10},340 L ${rankRingConfig.rank_ring_left_line_end+10},580 L ${rankRingConfig.rank_ring_left_line_end},580 L ${rankRingConfig.rank_ring_left_line_end},540 L ${rankRingConfig.rank_ring_left_line_end+5},535 L ${rankRingConfig.rank_ring_left_line_end+5},480 L ${rankRingConfig.rank_ring_left_line_end},475 Z" fill="${elementsConfig.icon_color}" stroke="${elementsConfig.icon_color}" stroke-width="2">
         <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze" />
       </path>
 
@@ -608,33 +612,33 @@ async function renderStats(stats) {
 
       <!-- dot change to short dash line moving to left -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x - rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
-        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_end}" dur="0.2s" fill="freeze" begin="1s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_line_end}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_arc}" dur="0.2s" fill="freeze" begin="1s" />
       </line>
 
       <!-- dot change to short dash line moving to right -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_center_x + rankRingConfig.rank_ring_radius*1.7}" dur="0.5s" fill="freeze" begin="0.5s" />
-        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_end}" dur="0.2s" fill="freeze" begin="1s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_line_end}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_right_arc}" dur="0.2s" fill="freeze" begin="1s" />
       </line>
 
       <!-- top left 1/8 circle path -->
-      <path d="M ${rankRingConfig.rank_ring_left_end} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 1 ${rankRingConfig.rank_ring_top_left_x} ${rankRingConfig.rank_ring_top_left_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
+      <path d="M ${rankRingConfig.rank_ring_left_arc} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 1 ${rankRingConfig.rank_ring_top_left_x} ${rankRingConfig.rank_ring_top_left_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
         <animate attributeName="stroke-dasharray" from="0, ${rankRingConfig.arc_length}" to="${rankRingConfig.arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
       </path>
 
       <!-- top right 1/8 circle path -->
-      <path d="M ${rankRingConfig.rank_ring_right_end} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 0 ${rankRingConfig.rank_ring_top_right_x} ${rankRingConfig.rank_ring_top_right_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
+      <path d="M ${rankRingConfig.rank_ring_right_arc} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 0 ${rankRingConfig.rank_ring_top_right_x} ${rankRingConfig.rank_ring_top_right_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
         <animate attributeName="stroke-dasharray" from="0, ${rankRingConfig.arc_length}" to="${rankRingConfig.arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
       </path>
 
       <!-- bottom left 1/8 circle path -->
-      <path d="M ${rankRingConfig.rank_ring_left_end} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 0 ${rankRingConfig.rank_ring_bottom_left_x} ${rankRingConfig.rank_ring_bottom_left_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
+      <path d="M ${rankRingConfig.rank_ring_left_arc} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 0 ${rankRingConfig.rank_ring_bottom_left_x} ${rankRingConfig.rank_ring_bottom_left_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
         <animate attributeName="stroke-dasharray" from="0, ${rankRingConfig.arc_length}" to="${rankRingConfig.arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
       </path>
 
       <!-- bottom right 1/8 circle path -->
-      <path d="M ${rankRingConfig.rank_ring_right_end} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 1 ${rankRingConfig.rank_ring_bottom_right_x} ${rankRingConfig.rank_ring_bottom_right_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
+      <path d="M ${rankRingConfig.rank_ring_right_arc} ${rankRingConfig.rank_ring_center_y} A ${rankRingConfig.rank_ring_circle_radius} ${rankRingConfig.rank_ring_circle_radius} 0 0 1 ${rankRingConfig.rank_ring_bottom_right_x} ${rankRingConfig.rank_ring_bottom_right_y}" stroke="${elementsConfig.icon_color}" stroke-width="4" fill="transparent" stroke-dasharray="0, ${rankRingConfig.arc_length}">
         <animate attributeName="stroke-dasharray" from="0, ${rankRingConfig.arc_length}" to="${rankRingConfig.arc_length}, 0" dur="1s" fill="freeze" begin="1s"/>
       </path>
 
