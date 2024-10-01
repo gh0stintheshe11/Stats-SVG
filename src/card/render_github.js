@@ -279,7 +279,7 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
 
     <!-- Y-axis labels -->
     <!-- max -->
-    <text x="0" y="5" text-anchor="start" class="label" opacity="0"> ${maxTotal}
+    <text x="-2" y="5" text-anchor="start" class="label" opacity="0"> ${maxTotal}
       <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="${config.contribution_distribution.global_display_time_delay + totalBarDisplayTime + 0.5}s"/>
     </text>
 
