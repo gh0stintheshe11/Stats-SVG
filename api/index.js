@@ -2,7 +2,7 @@
 import fetchGitHubData from '../src/fetch/fetch_github.js';
 import fetchLeetCodeStats from '../src/fetch/fetch_leetcode.js';
 import fetchSteamStatus from '../src/fetch/fetch_steam.js';
-import renderStats from '../src/card/renderStats.js';
+import renderStats from '../src/card/render_github.js';
 
 async function fetchGitHubDataWithRetry(username, maxRetries = 5, retryDelay = 1000) {
   let lastError;
