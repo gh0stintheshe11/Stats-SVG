@@ -487,8 +487,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-100}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-100}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.2s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.3s" />
         </path>
       </g>
 
@@ -513,8 +514,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-180}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-180}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.37s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.47s" />
         </path>
       </g>
 
@@ -533,8 +535,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-220}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-220}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.73s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.83s" />
         </path>
       </g>
 
@@ -553,8 +556,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-260}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-260}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.64s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.74s" />
         </path>
       </g>
 
@@ -573,8 +577,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-300}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-300}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.82s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.92s" />
         </path> 
       </g>
 
@@ -599,8 +604,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-380}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-380}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="2s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="2.1s" />
         </path>
       </g>
 
@@ -620,8 +626,9 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-460}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-460}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.55s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.65s" />
         </path>
       </g>
 
