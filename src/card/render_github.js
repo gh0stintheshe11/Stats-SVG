@@ -487,16 +487,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-100}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-88} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-88}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.2s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.3s" />
         </path>
       </g>
-
-      <!-- point to stars -->
-      <line x1="370" y1="92" x2="370" y2="92" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.1s" />
-      </line>
 
       <g transform="translate(30, 140)" class="animate animate-delay-2">
         <path class="icon" d="${Icons.fork_icon}" transform="translate(7, -18) scale(0.04)"/>
@@ -514,16 +509,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-180}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-186} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-186}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.37s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.47s" />
         </path>
       </g>
-
-      <!-- point to followers -->
-      <line x1="370" y1="172" x2="370" y2="172" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.27s" />
-      </line>
 
       <g transform="translate(30, 220)" class="animate animate-delay-7">
         <path class="icon" d="${Icons.commit_icon}" transform="translate(4, -18) scale(0.04)"/>
@@ -535,16 +525,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-220}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-223} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-223}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.73s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.83s" />
         </path>
       </g>
-
-      <!-- point to commits -->
-      <line x1="370" y1="212" x2="370" y2="212" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.63s" />
-      </line>
 
       <g transform="translate(30, 260)" class="animate animate-delay-6">
         <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -19) scale(1.4)"/>
@@ -556,16 +541,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-260}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-260} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-260}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.64s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.74s" />
         </path>
       </g>
-
-      <!-- point to issues -->
-      <line x1="370" y1="252" x2="370" y2="252" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.54s" />
-      </line>
 
       <g transform="translate(30, 300)" class="animate animate-delay-8">
         <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -19) scale(1.4)"/>
@@ -577,16 +557,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-300}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-297} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-297}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.82s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.92s" />
         </path> 
       </g>
-
-      <!-- point to prs -->
-      <line x1="370" y1="292" x2="370" y2="292" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.72s" />
-      </line>
 
       <g transform="translate(30, 340)" class="animate animate-delay-9">
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
@@ -604,7 +579,7 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-380}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-374} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-374}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="2s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="2.1s" />
         </path>
@@ -626,16 +601,11 @@ async function renderStats(stats) {
         <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
         </path>
-        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-460}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+        <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-451} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-451}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.55s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.65s" />
         </path>
       </g>
-
-      <!-- point to repo -->
-      <line x1="370" y1="452" x2="370" y2="452" stroke="${elementsConfig.icon_color}" stroke-width="1">
-        <animate attributeName="x2" from="370" to="${rankRingConfig.rank_ring_left_line_end-24}" dur="0.1s" fill="freeze" begin="1.45s" />
-      </line>
 
       <g transform="translate(30, 500)" class="animate animate-delay-4">
         <path class="icon" d="${Icons.contributes_to_icon}" transform="translate(6, -17) scale(0.045)"/>
@@ -709,7 +679,7 @@ async function renderStats(stats) {
 
       <!-- dot change to short dash line moving to left -->
       <line x1="${rankRingConfig.rank_ring_center_x}" y1="${rankRingConfig.rank_ring_center_y}" x2="${rankRingConfig.rank_ring_center_x}" y2="${rankRingConfig.rank_ring_center_y}" stroke="${elementsConfig.icon_color}" stroke-width="4">
-        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_line_end-25}" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x2" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_arc}" dur="0.5s" fill="freeze" begin="0.5s" />
         <animate attributeName="x1" from="${rankRingConfig.rank_ring_center_x}" to="${rankRingConfig.rank_ring_left_arc}" dur="0.2s" fill="freeze" begin="1s" />
       </line>
 
