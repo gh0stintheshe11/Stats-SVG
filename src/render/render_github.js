@@ -478,15 +478,20 @@ async function renderStats(stats) {
       </line>
 
       <g transform="translate(30, 100)" class="animate animate-delay-1">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_stars > 50 ? "#32cd32" : "#c5003c", stats.total_stars > 50 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.star_icon}" transform="translate(5, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Stars Earned</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_stars}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-88} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-88}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.2s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.3s" />
@@ -500,15 +505,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 180)" class="animate animate-delay-3">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.followers > 10 ? "#32cd32" : "#c5003c", stats.followers > 10 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.followers_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Followers</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.followers}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-186} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-186}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.37s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.47s" />
@@ -516,15 +526,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 220)" class="animate animate-delay-7">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_commits > 1000 ? "#32cd32" : "#c5003c", stats.total_commits > 1000 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.commit_icon}" transform="translate(4, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Commits</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_commits}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-223} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-223}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.73s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.83s" />
@@ -532,15 +547,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 260)" class="animate animate-delay-6">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_issues > 25 ? "#32cd32" : "#c5003c", stats.total_issues > 25 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Issues</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_issues}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-260} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-260}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.64s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.74s" />
@@ -548,15 +568,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 300)" class="animate animate-delay-8">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_prs > 50 ? "#32cd32" : "#c5003c", stats.total_prs > 50 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-297} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-297}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.82s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.92s" />
@@ -570,15 +595,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 380)" class="animate animate-delay-10">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_prs_reviewed > 2 ? "#32cd32" : "#c5003c", stats.total_prs_reviewed > 2 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total PRs Reviewed</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs_reviewed}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-374} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-374}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="2s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="2.1s" />
@@ -592,15 +622,20 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="${darkenHexColor(stats.total_repos > 3 ? "#32cd32" : "#c5003c",stats.total_repos > 3 ? rankRingConfig.rank_ring_bg_dark_level : 50)}" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </path>
+        <!-- icon -->
         <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Repos</text>
+        <!-- value -->
         <text x="320" y="0" class="value" text-anchor="end">${stats.total_repos}</text>
+        <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
         </circle>
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
-          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
-        </path>
+        <!-- connector -->
         <path d="M 340,-8 L ${rankRingConfig.rank_ring_left_line_end-54},-8 L ${rankRingConfig.rank_ring_left_line_end-54},${rankRingConfig.rank_ring_center_y-451} L ${rankRingConfig.rank_ring_left_arc-30},${rankRingConfig.rank_ring_center_y-451}" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.55s" />
           <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.65s" />

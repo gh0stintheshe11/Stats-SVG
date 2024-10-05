@@ -220,6 +220,7 @@ async function fetchGitHubData(username) {
     stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
 
     stats.rank = calculateRank({
+      all_commits: true,
       commits: stats.total_commits,
       prs: stats.total_prs,
       issues: stats.total_issues,
