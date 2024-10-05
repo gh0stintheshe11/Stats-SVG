@@ -54,4 +54,4 @@ Enjoy showcasing your GitHub stats in cyberpunk style! 🚀
 
 #Cyberpunk2077 #Cyberpunk:Edgerunners
 
-![GitHub Stats SVG](https://github-stats-svg.vercel.app/api/github-status?username=gh0stintheshe11)
+![GitHub Stats SVG](https://stats-svg.vercel.app/api/github-status?username=gh0stintheshe11)
