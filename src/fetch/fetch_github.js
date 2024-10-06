@@ -70,43 +70,16 @@ const GRAPHQL_QUERY_REPOSITORIES = `
   }
 `;
 
-const GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION = `
-  query userContributions($login: String!, $from: DateTime!, $to: DateTime!, $after: String) {
+const GRAPHQL_QUERY_CONTRIBUTIONS_CALENDAR = `
+  query userContributions($login: String!, $from: DateTime!, $to: DateTime!) {
     user(login: $login) {
       contributionsCollection(from: $from, to: $to) {
-        commitContributionsByRepository {
-          contributions(first: 100, after: $after) {
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            nodes {
-              commitCount
-              occurredAt
-            }
-          }
-        }
-        issueContributions(first: 100, after: $after) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          nodes {
-            occurredAt
-            issue {
-              state
-            }
-          }
-        }
-        pullRequestContributions(first: 100, after: $after) {
-          pageInfo {
-            hasNextPage
-            endCursor
-          }
-          nodes {
-            occurredAt
-            pullRequest {
-              state
+        contributionCalendar {
+          totalContributions
+          weeks {
+            contributionDays {
+              date
+              contributionCount
             }
           }
         }
@@ -136,7 +109,7 @@ async function fetchGitHubData(username) {
 
   const now = new Date();
   const fromDate = new Date(now);
-  fromDate.setDate(now.getDate() - config.contribution_distribution.days_to_show);
+  fromDate.setDate(now.getDate() - config.contribution_distribution.days_to_show + 1);
 
   try {
     console.time('GitHub API calls');
@@ -179,18 +152,18 @@ async function fetchGitHubData(username) {
       };
     };
 
-    const fetchContributionsDistribution = async () => {
+    const fetchContributionsCalendar = async (username, fromDate, toDate) => {
       const response = await http2Axios.post(url, { 
-        query: GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION, 
-        variables: { login: username, from: fromDate.toISOString(), to: now.toISOString() } 
+        query: GRAPHQL_QUERY_CONTRIBUTIONS_CALENDAR, 
+        variables: { login: username, from: fromDate.toISOString(), to: toDate.toISOString() } 
       }, { headers });
       return response.data?.data?.user?.contributionsCollection;
     };
-
-    const [userInfo, repositories, contributionsDistribution] = await Promise.all([
+    
+    const [userInfo, repositories, contributionsCalendar] = await Promise.all([
       fetchUserInfo(),
       fetchRepositories(),
-      fetchContributionsDistribution()
+      fetchContributionsCalendar(username, fromDate, now)
     ]);
 
     console.timeEnd('GitHub API calls');
@@ -232,18 +205,8 @@ async function fetchGitHubData(username) {
 
     stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
 
-    async function fetchMoreData(type, after) {
-      const response = await http2Axios.post(url, {
-        query: GRAPHQL_QUERY_CONTRIBUTIONS_DISTRIBUTION,
-        variables: { login: username, from: fromDate.toISOString(), to: now.toISOString(), after }
-      }, { headers });
-      return response.data.data.user.contributionsCollection;
-    }
-
-    stats.contribution_distribution = await processContributionsDistribution(
-      contributionsDistribution,
-      fetchMoreData
-    );
+    stats.contribution_distribution = await processContributionsCalendar(contributionsCalendar);
+    console.log(Object.keys(stats.contribution_distribution).length);
 
     console.timeEnd('Data Processing');
 
@@ -274,72 +237,24 @@ function calculateTopLanguages(reposNodes) {
     .sort(([, a], [, b]) => b.size - a.size)
     .reduce((result, [key, value]) => ({ ...result, [key]: value }), {});
 }
-
-async function processContributionsDistribution(contributionsCollection, fetchMoreData) {
-  if (!contributionsCollection) {
-    console.error('contributionsCollection is undefined or missing.');
-    return {};
-  }
-
+  
+// Process contributions calendar in date:{total:value}
+async function processContributionsCalendar(contributionsCollection) {
   const result = {};
-  
-  // Create a date range for the last 30 days
-  const endDate = new Date();
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - config.contribution_distribution.days_to_show + 1); 
 
-  // Initialize all days in the range with zero contributions
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-    const dateString = d.toISOString().split('T')[0];
-    result[dateString] = { commits: 0, issues: 0, pullRequests: 0, total: 0 };
-  }
-  
-  // Helper function to add contributions to a specific date
-  function addContribution(date, type, count) {
-    if (result[date]) {
-      result[date][type] += count;
-      result[date].total += count;
-    }
-  }
-
-  // Process all types of contributions
-  async function processContributions(contributions, type, getCount = () => 1) {
-    let hasNextPage = true;
-    let endCursor = null;
-
-    while (hasNextPage) {
-      const { nodes, pageInfo } = contributions;
-      nodes.forEach(node => {
-        const date = node.occurredAt.split('T')[0];
-        if (result[date]) { // Only add if the date is within our range
-          addContribution(date, type, getCount(node));
+  // Check if contributionsCollection and contributionCalendar exist
+  if (contributionsCollection && contributionsCollection.contributionCalendar) {
+    for (const week of contributionsCollection.contributionCalendar.weeks) {
+      for (const day of week.contributionDays) {
+        // Initialize the date entry if it doesn't exist
+        if (!result[day.date]) {
+          result[day.date] = { total: 0 }; // Initialize total contributions for the date
         }
-      });
-
-      hasNextPage = pageInfo.hasNextPage;
-      endCursor = pageInfo.endCursor;
-
-      if (hasNextPage) {
-        const moreData = await fetchMoreData(type, endCursor);
-        contributions = moreData[`${type}Contributions`];
+        // Accumulate contributions for the date
+        result[day.date].total += day.contributionCount;
       }
     }
   }
-
-  // Process commit contributions
-  for (const repo of contributionsCollection.commitContributionsByRepository) {
-    await processContributions(
-      repo.contributions,
-      'commits',
-      node => node.commitCount
-    );
-  }
-
-  // Process issue contributions
-  await processContributions(contributionsCollection.issueContributions, 'issues');
-
-  // Process pull request contributions
-  await processContributions(contributionsCollection.pullRequestContributions, 'pullRequests');
 
   return result;
 }
