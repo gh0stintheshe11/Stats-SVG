@@ -152,14 +152,53 @@ async function fetchGitHubData(username) {
       };
     };
 
-    const fetchContributionsCalendar = async (username, fromDate, toDate) => {
-      const response = await http2Axios.post(url, { 
-        query: GRAPHQL_QUERY_CONTRIBUTIONS_CALENDAR, 
-        variables: { login: username, from: fromDate.toISOString(), to: toDate.toISOString() } 
-      }, { headers });
-      return response.data?.data?.user?.contributionsCollection;
-    };
-    
+    async function fetchContributionsCalendar(username, fromDate, toDate) {
+      const startDate = new Date(fromDate);
+      const endDate = new Date(toDate);
+
+      // Check if the date period is greater than 1 year
+      const isMoreThanOneYear = (endDate - startDate) > (365 * 24 * 60 * 60 * 1000);
+
+      if (isMoreThanOneYear) {
+        const promises = [];
+
+        // Separate the date range by year
+        for (let year = startDate.getFullYear(); year <= endDate.getFullYear(); year++) {
+          const yearStartDate = new Date(year, 0, 1); // January 1st of the current year
+          const yearEndDate = new Date(year, 11, 31); // December 31st of the current year
+
+          // Adjust the start and end dates if they fall outside the specified range
+          const from = yearStartDate < startDate ? startDate : yearStartDate;
+          const to = yearEndDate > endDate ? endDate : yearEndDate;
+
+          // Create a promise for the current year range
+          promises.push(fetchContributionsForYear(url, headers, username, from, to));
+        }
+
+        // Wait for all promises to resolve
+        const results = await Promise.all(promises);
+
+        // Combine results
+        const combinedResult = results.reduce((acc, curr) => {
+          for (const date in curr) {
+            if (!acc[date]) {
+              acc[date] = { total: 0 };
+            }
+            acc[date].total += curr[date].total;
+          }
+          return acc;
+        }, {});
+
+        // Log the length of the combined result
+        console.log(Object.keys(combinedResult).length);
+        return combinedResult;
+
+      } else {
+        // If the period is 1 year or less, run a normal query
+        return fetchContributionsForYear(url, headers, username, startDate, endDate);
+      }
+    }
+
     const [userInfo, repositories, contributionsCalendar] = await Promise.all([
       fetchUserInfo(),
       fetchRepositories(),
@@ -206,7 +245,6 @@ async function fetchGitHubData(username) {
     stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
 
     stats.contribution_distribution = await processContributionsCalendar(contributionsCalendar);
-    console.log(Object.keys(stats.contribution_distribution).length);
 
     console.timeEnd('Data Processing');
 
@@ -240,6 +278,31 @@ function calculateTopLanguages(reposNodes) {
   
 // Process contributions calendar in date:{total:value}
 async function processContributionsCalendar(contributionsCollection) {
+  const result = {};
+
+  // Check if contributionsCollection is a valid object
+  if (contributionsCollection && typeof contributionsCollection === 'object') {
+    // Iterate over the keys (dates) in the contributionsCollection
+    for (const date in contributionsCollection) {
+      if (contributionsCollection.hasOwnProperty(date)) {
+        const total = contributionsCollection[date].total || 0; // Use 0 if total is undefined
+        result[date] = { total }; // Store the total contributions for the date
+      }
+    }
+  } else {
+    console.warn('Invalid contributionsCollection:', contributionsCollection);
+  }
+
+  return result;
+}
+
+async function fetchContributionsForYear(url, headers, username, fromDate, toDate) {
+  const response = await http2Axios.post(url, { 
+    query: GRAPHQL_QUERY_CONTRIBUTIONS_CALENDAR, 
+    variables: { login: username, from: fromDate.toISOString(), to: toDate.toISOString() } 
+  }, { headers });
+
+  const contributionsCollection = response.data?.data?.user?.contributionsCollection;
   const result = {};
 
   // Check if contributionsCollection and contributionCalendar exist

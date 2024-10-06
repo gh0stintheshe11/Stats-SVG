@@ -23,7 +23,7 @@ const config = {
       ringThickness: 34
     },
     contribution_distribution: {
-      days_to_show: 60,
+      days_to_show: 60, // best to set to 60 days, if more than 60 days, the chart will be too crowded
       border_color: "#00f0ff",
       bullish_color: "#32cd32",
       bearish_color: "#c5003c",
