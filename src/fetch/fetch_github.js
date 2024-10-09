@@ -41,7 +41,7 @@ const GRAPHQL_QUERY_USER_INFO = `
 const GRAPHQL_QUERY_REPOSITORIES = `
   query userRepositories($login: String!, $after: String) {
     user(login: $login) {
-      repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100) {
+      repositoriesContributedTo(contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY], first: 100, includeUserRepositories: true) {
         totalCount
       }
       repositories(first: 100, after: $after, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}) {
