@@ -626,8 +626,8 @@ async function renderStats(stats) {
 
       <g transform="translate(30, 420)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
-        <text x="40" y="0" class="label">Merged PRs Percentage</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(1)}%</text>
+        <text x="40" y="0" class="label">Merged PRs %</text>
+        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(1)}</text>
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
@@ -659,13 +659,13 @@ async function renderStats(stats) {
 
       <g transform="translate(30, 540)" class="animate animate-delay-12">
         <path class="icon" d="${Icons.discussions_started_icon}" transform="translate(5, -18) scale(1.4)"/>
-        <text x="40" y="0" class="label">Total Discussions Started</text>
+        <text x="40" y="0" class="label">Discussions Started</text>
         <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_discussions_started)}</text>
       </g>
 
       <g transform="translate(30, 580)" class="animate animate-delay-13">
         <path class="icon" d="${Icons.discussions_answered_icon}" transform="translate(4, -20) scale(1.6)"/>
-        <text x="40" y="0" class="label">Total Discussions Answered</text>
+        <text x="40" y="0" class="label">Discussions Answered</text>
         <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_discussions_answered)}</text>
       </g>
 
