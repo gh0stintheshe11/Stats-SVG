@@ -618,7 +618,7 @@ async function renderStats(stats) {
       <g transform="translate(30, 420)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
         <text x="40" y="0" class="label">Merged PRs Percentage</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(0)}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(1)}</text>
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
