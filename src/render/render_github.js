@@ -35,6 +35,15 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function convertNumberUnit(number) {
+  if (number >= 1000000) {
+    return (number / 1000000).toFixed(1) + 'M';
+  } else if (number >= 1000) {
+    return (number / 1000).toFixed(1) + 'K';
+  }
+  return number;
+}
+
 async function calculateGithubUrl(stats) {
   return `https://github.com/${stats.login}`;
 }
@@ -486,7 +495,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.star_icon}" transform="translate(5, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Stars Earned</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_stars}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_stars)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
@@ -501,7 +510,7 @@ async function renderStats(stats) {
       <g transform="translate(30, 140)" class="animate animate-delay-2">
         <path class="icon" d="${Icons.fork_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Forks Earned</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_forks}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_forks)}</text>
       </g>
 
       <g transform="translate(30, 180)" class="animate animate-delay-3">
@@ -513,7 +522,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.followers_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Followers</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.followers}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.followers)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
@@ -534,7 +543,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.commit_icon}" transform="translate(4, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total Commits</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_commits}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_commits)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
@@ -555,7 +564,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.issue_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Issues</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_issues}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_issues)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
@@ -576,7 +585,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.pr_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_prs)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
@@ -591,7 +600,7 @@ async function renderStats(stats) {
       <g transform="translate(30, 340)" class="animate animate-delay-9">
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs Merged</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_merged_prs}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_merged_prs)}</text>
       </g>
 
       <g transform="translate(30, 380)" class="animate animate-delay-10">
@@ -603,7 +612,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.pr_reviewed_icon}" transform="translate(7, -18) scale(0.04)"/>
         <text x="40" y="0" class="label">Total PRs Reviewed</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_prs_reviewed}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_prs_reviewed)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
@@ -618,7 +627,7 @@ async function renderStats(stats) {
       <g transform="translate(30, 420)" class="animate animate-delay-11">
         <path class="icon" d="${Icons.merged_prs_percentage_icon}" transform="translate(5, -17) scale(0.04)"/>
         <text x="40" y="0" class="label">Merged PRs Percentage</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(1)}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${stats.merged_prs_percentage.toFixed(1)}%</text>
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
@@ -630,7 +639,7 @@ async function renderStats(stats) {
         <path class="icon" d="${Icons.repo_icon}" transform="translate(5, -19) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Repos</text>
         <!-- value -->
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_repos}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_repos)}</text>
         <!-- node -->
         <circle cx="337" cy="-8" r="3" fill="none" stroke="${elementsConfig.icon_color}" stroke-width="1" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
@@ -645,19 +654,19 @@ async function renderStats(stats) {
       <g transform="translate(30, 500)" class="animate animate-delay-4">
         <path class="icon" d="${Icons.contributes_to_icon}" transform="translate(6, -17) scale(0.045)"/>
         <text x="40" y="0" class="label">Contributed to</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_contributes_to}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_contributes_to)}</text>
       </g>
 
       <g transform="translate(30, 540)" class="animate animate-delay-12">
         <path class="icon" d="${Icons.discussions_started_icon}" transform="translate(5, -18) scale(1.4)"/>
         <text x="40" y="0" class="label">Total Discussions Started</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_discussions_started}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_discussions_started)}</text>
       </g>
 
       <g transform="translate(30, 580)" class="animate animate-delay-13">
         <path class="icon" d="${Icons.discussions_answered_icon}" transform="translate(4, -20) scale(1.6)"/>
         <text x="40" y="0" class="label">Total Discussions Answered</text>
-        <text x="320" y="0" class="value" text-anchor="end">${stats.total_discussions_answered}</text>
+        <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_discussions_answered)}</text>
       </g>
 
       <!-- Rank Ring -->
