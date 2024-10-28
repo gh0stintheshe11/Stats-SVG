@@ -25,7 +25,7 @@ This project generates a visually appealing, highly customizable SVG image displ
 7.  To import a project, click the `Add New...` button and select the `Project` option.
 8.  Click the `Continue with GitHub` button, search for the required Git Repository and import it by clicking the `Import` button. Alternatively, you can import a Third-Party Git Repository using the `Import Third-Party Git Repository ->` link at the bottom of the page.
 9.  Create a personal access token (PAT) [here](https://github.com/settings/tokens/new) and enable the `repo` and `user` permissions (this allows access to see private repo and user stats).
-10. Add the PAT as an environment variable named `GITHUB_TOKEN` (as shown).
+10. Add the PAT as an environment variable named `GITHUB_TOKEN`.
 11. Click deploy, and you're good to go. See your domains to use the API!
 
 </details>
