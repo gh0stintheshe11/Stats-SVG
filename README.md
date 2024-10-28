@@ -13,28 +13,29 @@ This project generates a visually appealing, highly customizable SVG image displ
 
 ## Deployment
 
-This project is configured for deployment on Vercel. Follow these steps to deploy your own instance of the GitHub Stats SVG generator:
+[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gh0stintheshe11/Stats-SVG)
 
-1. Generate a GitHub Personal Access Token (PAT):
-   - Go to GitHub Settings > Developer settings > Personal access tokens
-   - Click "Generate new token" and select the necessary scopes (at minimum, `public_repo` and `read:user`)
-   - Copy the generated token
+<details>
+ <summary><b>:hammer_and_wrench: Step-by-step guide on setting up your own Vercel instance</b></summary>
 
-2. Click the "Deploy" button below to clone and deploy the project on Vercel:
+1.  Go to [vercel.com](https://vercel.com/).
+2.  Click on `Log in`.
+    ![](https://files.catbox.moe/pcxk33.png)
+3.  Sign in with GitHub by pressing `Continue with GitHub`.
+    ![](https://files.catbox.moe/b9oxey.png)
+4.  Sign in to GitHub and allow access to all repositories if prompted.
+5.  Fork this repo.
+6.  Go back to your [Vercel dashboard](https://vercel.com/dashboard).
+7.  To import a project, click the `Add New...` button and select the `Project` option.
+    ![](https://files.catbox.moe/3n76fh.png)
+8.  Click the `Continue with GitHub` button, search for the required Git Repository and import it by clicking the `Import` button. Alternatively, you can import a Third-Party Git Repository using the `Import Third-Party Git Repository ->` link at the bottom of the page.
+    ![](https://files.catbox.moe/mg5p04.png)
+9.  Create a personal access token (PAT) [here](https://github.com/settings/tokens/new) and enable the `repo` and `user` permissions (this allows access to see private repo and user stats).
+10. Add the PAT as an environment variable named `GITHUB_TOKEN` (as shown).
+    ![](https://files.catbox.moe/0yclio.png)
+11. Click deploy, and you're good to go. See your domains to use the API!
 
-   [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gh0stintheshe11/Stats-SVG)
-
-4. During the Vercel deployment process:
-   - Set the `GITHUB_TOKEN` environment variable with your generated PAT
-   - Update any other necessary configuration settings
-
-5. After deployment, update the SVG URL in your projects or profile README:
-   ```
-   ![GitHub Stats SVG](https://your-vercel-deployment-url.vercel.app/api/github-status?username=your-github-username)
-   ```
-   Replace `your-vercel-deployment-url` with your actual Vercel deployment URL and `your-github-username` with your GitHub username.
-
-The `vercel.json` file includes the necessary settings for serverless function deployment and routing.
+</details>
 
 ## Customization
 
