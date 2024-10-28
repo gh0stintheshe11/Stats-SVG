@@ -16,7 +16,8 @@ This project generates a visually appealing, highly customizable SVG image displ
 > [!IMPORTANT]
 > This project requires a GitHub Personal Access Token (PAT) to access private repositories. Refer to the Manual Deployment section below for how you can get the PAT.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgh0stintheshe11%2Fstats-svg&env=GITHUB_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20required%20for%20the%20API&envLink=https%3A%2F%2Fgithub.com%2Fsettings%2Ftokens%2Fnew%3Fscopes%3Drepo%252Cuser&project-name=stats-svg&repository-name=stats-svg)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2F${YOUR_GITHUB_USERNAME}%2Fstats-svg&env=GITHUB_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20required%20for%20the%20API&envLink=https%3A%2F%2Fgithub.com%2Fsettings%2Ftokens%2Fnew%3Fscopes%3Drepo%252Cuser&project-name=stats-svg&repository-name=stats-svg)
 
 <details>
  <summary><b>Manual Deployment</b></summary>
