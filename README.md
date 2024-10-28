@@ -22,13 +22,13 @@ This project is configured for deployment on Vercel. Follow these steps to deplo
 
 2. Click the "Deploy" button below to clone and deploy the project on Vercel:
 
-   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fgithub-stats-svg)
+   [![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gh0stintheshe11/Stats-SVG)
 
-3. During the Vercel deployment process:
+4. During the Vercel deployment process:
    - Set the `GITHUB_TOKEN` environment variable with your generated PAT
    - Update any other necessary configuration settings
 
-4. After deployment, update the SVG URL in your projects or profile README:
+5. After deployment, update the SVG URL in your projects or profile README:
    ```
    ![GitHub Stats SVG](https://your-vercel-deployment-url.vercel.app/api/github-status?username=your-github-username)
    ```
