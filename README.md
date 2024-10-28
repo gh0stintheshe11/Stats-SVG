@@ -13,9 +13,8 @@ This project generates a visually appealing, highly customizable SVG image displ
 
 ## Deployment
 
-Since the GitHub API only allows 5k requests per hour, the api provided by this repo could possibly hit the rate limiter. If you host it on your own Vercel server, then you do not have to worry about anything. Click on the deploy button to get started!
+Since the GitHub API only allows 5k requests per hour, the api provided by this repo could possibly hit the rate limiter. You can host your own instance of this repo on Vercel to avoid the rate limiter.
 
-[![Deploy to Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/gh0stintheshe11/stats-svg)
 > [!IMPORTANT]
 > This project requires a GitHub Personal Access Token (PAT) to access private repositories. Refer to the Manual Deployment section below for how you can get the PAT.
 
