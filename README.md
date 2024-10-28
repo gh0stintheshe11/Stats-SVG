@@ -13,20 +13,43 @@ This project generates a visually appealing, highly customizable SVG image displ
 
 ## Deployment
 
-<details>
- <summary><b>:hammer_and_wrench: Step-by-step guide on setting up your own Vercel instance</b></summary>
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fgh0stintheshe11%2Fstats-svg&env=GITHUB_TOKEN&envDescription=GitHub%20Personal%20Access%20Token%20required%20for%20the%20API&envLink=https%3A%2F%2Fgithub.com%2Fsettings%2Ftokens%2Fnew%3Fscopes%3Drepo%252Cuser&project-name=stats-svg&repository-name=stats-svg)
 
-1.  Go to [vercel.com](https://vercel.com/).
-2.  Click on `Log in`.
-3.  Sign in with GitHub by pressing `Continue with GitHub`.
-4.  Sign in to GitHub and allow access to all repositories if prompted.
-5.  Fork this repo.
-6.  Go back to your [Vercel dashboard](https://vercel.com/dashboard).
-7.  To import a project, click the `Add New...` button and select the `Project` option.
-8.  Click the `Continue with GitHub` button, search for the required Git Repository and import it by clicking the `Import` button. Alternatively, you can import a Third-Party Git Repository using the `Import Third-Party Git Repository ->` link at the bottom of the page.
-9.  Create a personal access token (PAT) [here](https://github.com/settings/tokens/new) and enable the `repo` and `user` permissions (this allows access to see private repo and user stats).
-10. Add the PAT as an environment variable named `GITHUB_TOKEN`.
-11. Click deploy, and you're good to go. See your domains to use the API!
+<details>
+ <summary><b>Manual Deployment</b></summary>
+
+#### 1. Fork and Prepare the Repository
+1. Fork this repository to your GitHub account
+2. [Create a Personal Access Token (PAT)](https://github.com/settings/tokens/new)
+   - Set the token name (e.g., "stats-svg")
+   - Select scopes: `repo` and `user`
+   - Copy the generated token (you won't see it again so save it!)
+
+#### 2. Deploy to Vercel
+1. Visit [Vercel](https://vercel.com/)
+2. Sign up/Log in with your GitHub account
+3. From your Vercel dashboard:
+   - Click `Add New...` → `Project`
+   - Select the forked repository
+   - Click `Import`
+
+#### 3. Configure Environment Variables
+1. In the project configuration screen:
+   - Expand the `Environment Variables` section
+   - Add a new variable:
+     - Name: `GITHUB_TOKEN`
+     - Value: Your GitHub PAT from step 1
+2. Click `Deploy`
+
+#### 4. Using Your Instance
+- Once deployed, Vercel will provide you with a domain (e.g., `your-project.vercel.app`)
+- You can use your instance by replacing the domain in the API URL:
+  ```
+  https://your-project.vercel.app/api/github-status?username=YOUR_GITHUB_USERNAME
+  ```
+
+#### Troubleshooting
+- For issues, check Vercel's deployment logs or open an issue in this repository
 
 </details>
 
