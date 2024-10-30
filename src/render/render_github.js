@@ -155,11 +155,13 @@ async function calculateImagePosition(dimensions, language_ring_radius, language
 }
 
 async function renderLanguageRing(languagePercentages, languageRingConfig, elementsConfig) {
-  const totalSegments = languagePercentages.length;
+  // Take only top 20 languages
+  const topLanguages = languagePercentages.slice(0, 20);
+  const totalSegments = topLanguages.length;
   let accumulatedOffset = 0;
   let accumulatedPercentage = 0;
 
-  return languagePercentages.map((languageData, index) => {
+  return topLanguages.map((languageData, index) => {
     const { name: language, percentage: value, color } = languageData;
     accumulatedPercentage += value;
 
