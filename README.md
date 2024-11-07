@@ -1,6 +1,6 @@
-# <i class="fa-brands fa-github fa-spin"></i>Stats<i class="fa-solid fa-chart-line fa-fade"></i>
+# <i class="fa-brands fa-github fa-spin"></i>Stats SVG<i class="fa-solid fa-chart-line fa-fade"></i>
 
-*A highly customizable GitHub stats SVG generator*
+*A highly customizable stats SVG generator*
 
 This project generates a visually appealing, highly customizable SVG image displaying GitHub user statistics. It's designed to be embedded in GitHub profiles or other web pages to showcase a user's GitHub activity and contributions.
 
