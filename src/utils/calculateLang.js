@@ -16,13 +16,17 @@ export function calculateLanguagePercentage(languages) {
   // Step 2: Calculate total k-metric
   const totalK = languageMetrics.reduce((sum, { k }) => sum + k, 0);
 
-  // Step 3: Calculate percentage based on k-metric
-  const languagePercentages = languageMetrics.map(({ name, k, color }) => ({
-    name,
-    percentage: (k / totalK) * 100,  // Calculate percentage
-    color  // Include color
-  }));
+  // Step 3: Calculate percentage based on k-metric and sort
+  let languagePercentages = languageMetrics.map(({ name, k, color }) => ({
+    name: name === 'Jupyter Notebook' ? 'Jupyter' : name,
+    percentage: (k / totalK) * 100,
+    color
+  })).sort((a, b) => b.percentage - a.percentage);
 
-  // Step 4: Sort by percentage in descending order before returning
-  return languagePercentages.sort((a, b) => b.percentage - a.percentage);
+  // Step 4: Keep only top 20 languages
+  if (languagePercentages.length > 20) {
+    languagePercentages = languagePercentages.slice(0, 20);
+  }
+
+  return languagePercentages;
 }
