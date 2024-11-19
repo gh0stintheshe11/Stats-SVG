@@ -487,8 +487,12 @@ async function renderStats(stats) {
       </line>
 
       <g transform="translate(30, 100)" class="animate animate-delay-1">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_stars > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_stars > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_stars > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
         </path>
         <!-- icon -->
@@ -514,8 +518,12 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 180)" class="animate animate-delay-3">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.followers > 10 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.followers > 10 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.followers > 10 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
         </path>
         <!-- icon -->
@@ -535,8 +543,12 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 220)" class="animate animate-delay-7">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_commits > 1000 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_commits > 1000 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_commits > 1000 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
         </path>
         <!-- icon -->
@@ -556,8 +568,12 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 260)" class="animate animate-delay-6">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_issues > 25 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_issues > 25 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_issues > 25 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
         </path>
         <!-- icon -->
@@ -577,8 +593,12 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 300)" class="animate animate-delay-8">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_prs > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_prs > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_prs > 50 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
         </path>
         <!-- icon -->
@@ -598,14 +618,26 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 340)" class="animate animate-delay-9">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_merged_prs > 10 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_merged_prs > 10 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
         <path class="icon" d="${Icons.merged_prs_icon}" transform="translate(5, -17) scale(1.4)"/>
         <text x="40" y="0" class="label">Total PRs Merged</text>
         <text x="320" y="0" class="value" text-anchor="end">${convertNumberUnit(stats.total_merged_prs)}</text>
       </g>
 
       <g transform="translate(30, 380)" class="animate animate-delay-10">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_prs_reviewed > 2 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_prs_reviewed > 2 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_prs_reviewed > 2 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
         </path>
         <!-- icon -->
@@ -631,8 +663,12 @@ async function renderStats(stats) {
       </g>
 
       <g transform="translate(30, 460)" class="animate animate-delay-5">
-        <!-- border -->
-        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="${stats.total_repos > 3 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+        <!-- top border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-8" fill="none" stroke="${stats.total_repos > 3 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </path>
+        <!-- bottom border -->
+        <path d="M 337,-11 L 337,-24 L -10,-24 L -10,-8" fill="none" stroke="${stats.total_repos > 3 ? "#32cd32" : "#c5003c"}" stroke-width="2" opacity="0">
           <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
         </path>
         <!-- icon -->
