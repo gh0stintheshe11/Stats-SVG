@@ -229,7 +229,7 @@ async function fetchGitHubData(username) {
       total_discussions_answered: userInfo.repositoryDiscussionComments?.totalCount || 0
     };
 
-    stats.merged_prs_percentage = stats.total_prs ? (stats.total_merged_prs / stats.total_prs) * 100 : 0;
+    stats.merged_prs_percentage = stats.total_prs ? Math.min((stats.total_merged_prs / stats.total_prs) * 100, 100) : 0;
 
     stats.rank = calculateRank({
       all_commits: true,
