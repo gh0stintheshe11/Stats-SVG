@@ -222,10 +222,9 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
   const chartHeight = 2.4 * rankRingConfig.rank_ring_radius;
 
   // Calculate scales
-  const maxTotal = Math.max(...data.map(d => d.high)); // Using 'high' for the max value
+  const maxTotal = Math.max(...data.map(d => d.high)) + 1; // Add 1 to create space for the label
   const barWidth = chartWidth / data.length;
   const yScale = chartHeight / maxTotal;
-  ;
   const totalBarDisplayTime = (data.length - 1) * config.contribution_distribution.bar_display_time_interval;
   const top_border_line_x = maxTotal > 100 ? 33 : maxTotal > 10 ? 22 : 11;
 
@@ -255,8 +254,18 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       const openY = chartHeight - (d.open * yScale);
       const closeY = chartHeight - (d.close * yScale);
       
-      const isBullish = d.close > d.open; // If close > open, it's a bullish candlestick (green)
-      const color = isBullish ? config.contribution_distribution.bullish_color : config.contribution_distribution.bearish_color; // Green for bullish, red for bearish
+      // Check if open and close are at the same level
+      const sameLevel = Math.abs(openY - closeY) < 0.1;
+      
+      // Determine color based on price movement and same level condition
+      let color;
+      if (sameLevel) {
+        color = config.contribution_distribution.neutral_color;
+      } else {
+        color = d.close > d.open ? config.contribution_distribution.bullish_color : config.contribution_distribution.bearish_color;
+      }
+
+      const bodyHeight = sameLevel ? 1 : Math.abs(openY - closeY); // Use minimum height of 1 if same level
 
       return `
         <g opacity="0">
@@ -268,7 +277,7 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
             x="${x + barWidth * 0.1}" 
             y="${Math.min(openY, closeY)}" 
             width="${barWidth * 0.8}" 
-            height="${Math.abs(openY - closeY)}" 
+            height="${bodyHeight}" 
             fill="${color}" 
           />
           <animate attributeName="opacity" from="0" to="1" dur="${config.contribution_distribution.bar_display_time_duration}s" begin="${config.contribution_distribution.global_display_time_delay + i * config.contribution_distribution.bar_display_time_interval}s" fill="freeze" />

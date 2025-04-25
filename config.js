@@ -27,6 +27,7 @@ const config = {
       border_color: "#00f0ff",
       bullish_color: "#32cd32",
       bearish_color: "#c5003c",
+      neutral_color: "#f8e602",
       global_display_time_delay: 0.5,
       bar_display_time_delay: 1,
       bar_display_time_interval: 0.02,
