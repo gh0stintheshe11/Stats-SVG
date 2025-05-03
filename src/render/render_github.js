@@ -256,7 +256,8 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       
       // Check if open and close are at the same level
       const sameLevel = Math.abs(openY - closeY) < 0.1;
-      
+      const isZero = d.open === 0 && d.close === 0;
+
       // Determine color based on price movement and same level condition
       let color;
       if (sameLevel) {
@@ -266,6 +267,9 @@ async function renderContributionChart(contributionDistribution, rankRingConfig)
       }
 
       const bodyHeight = sameLevel ? 1 : Math.abs(openY - closeY); // Use minimum height of 1 if same level
+
+      // Only render if not both open and close are zero
+      if (isZero) return '';
 
       return `
         <g opacity="0">
