@@ -16,6 +16,7 @@ const GRAPHQL_QUERY_USER_INFO = `
     user(login: $login) {
       name
       login
+      createdAt
       followers {
         totalCount
       }
@@ -83,6 +84,19 @@ const GRAPHQL_QUERY_CONTRIBUTIONS_CALENDAR = `
             }
           }
         }
+      }
+    }
+  }
+`;
+
+const GRAPHQL_QUERY_CONTRIBUTIONS_BY_YEAR = `
+  query userContributionsByYear($login: String!, $from: DateTime!, $to: DateTime!) {
+    user(login: $login) {
+      contributionsCollection(from: $from, to: $to) {
+        totalCommitContributions
+        totalPullRequestContributions
+        totalPullRequestReviewContributions
+        totalIssueContributions
       }
     }
   }
@@ -209,16 +223,21 @@ async function fetchGitHubData(username) {
 
     if (!userInfo) throw new Error(`User ${username} not found`);
 
+    // Fetch all-time contributions in parallel
+    console.time('Fetching all-time contributions');
+    const allTimeContributions = await fetchAllTimeContributions(url, headers, username, userInfo.createdAt);
+    console.timeEnd('Fetching all-time contributions');
+
     console.time('Data Processing');
 
     const stats = {
       login: userInfo.login,
       name: userInfo.name || userInfo.login,
       followers: userInfo.followers?.totalCount || 0,
-      total_commits: userInfo.contributionsCollection?.totalCommitContributions || 0,
-      total_prs: userInfo.contributionsCollection?.totalPullRequestContributions || 0,
-      total_prs_reviewed: userInfo.contributionsCollection?.totalPullRequestReviewContributions || 0,
-      total_issues: userInfo.contributionsCollection?.totalIssueContributions || 0,
+      total_commits: allTimeContributions.commits,
+      total_prs: allTimeContributions.prs,
+      total_prs_reviewed: allTimeContributions.reviews,
+      total_issues: allTimeContributions.issues,
       total_merged_prs: userInfo.pullRequests?.totalCount || 0,
       total_repos: repositories.repositories?.nodes?.length || 0,
       total_stars: repositories.repositories?.nodes?.reduce((acc, repo) => acc + (repo.stargazers?.totalCount || 0), 0) || 0,
@@ -320,6 +339,61 @@ async function fetchContributionsForYear(url, headers, username, fromDate, toDat
   }
 
   return result;
+}
+
+async function fetchAllTimeContributions(url, headers, username, userCreatedAt) {
+  const createdDate = new Date(userCreatedAt);
+  const currentDate = new Date();
+  
+  // Create an array of promises for each year
+  const promises = [];
+  
+  for (let year = createdDate.getFullYear(); year <= currentDate.getFullYear(); year++) {
+    // Calculate the start and end dates for each year
+    const yearStart = new Date(Math.max(
+      new Date(year, 0, 1).getTime(),
+      createdDate.getTime()
+    ));
+    
+    const yearEnd = new Date(Math.min(
+      new Date(year, 11, 31, 23, 59, 59).getTime(),
+      currentDate.getTime()
+    ));
+    
+    // Create a promise for fetching this year's contributions
+    promises.push(
+      http2Axios.post(url, {
+        query: GRAPHQL_QUERY_CONTRIBUTIONS_BY_YEAR,
+        variables: {
+          login: username,
+          from: yearStart.toISOString(),
+          to: yearEnd.toISOString()
+        }
+      }, { headers }).then(response => {
+        const contributions = response.data?.data?.user?.contributionsCollection;
+        return {
+          commits: contributions?.totalCommitContributions || 0,
+          prs: contributions?.totalPullRequestContributions || 0,
+          reviews: contributions?.totalPullRequestReviewContributions || 0,
+          issues: contributions?.totalIssueContributions || 0
+        };
+      })
+    );
+  }
+  
+  // Execute all promises in parallel
+  const yearlyContributions = await Promise.all(promises);
+  
+  // Sum up all contributions
+  const totals = yearlyContributions.reduce((acc, year) => ({
+    commits: acc.commits + year.commits,
+    prs: acc.prs + year.prs,
+    reviews: acc.reviews + year.reviews,
+    issues: acc.issues + year.issues
+  }), { commits: 0, prs: 0, reviews: 0, issues: 0 });
+  
+  console.log(`Fetched contributions for ${promises.length} years in parallel`);
+  return totals;
 }
 
 export default fetchGitHubData;
