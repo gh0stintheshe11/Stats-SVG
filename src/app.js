@@ -36,8 +36,15 @@ function isAllowed(username) {
   return allowList.split(',').some((name) => name.trim().toLowerCase() === username.toLowerCase());
 }
 
+// Browsers and GitHub's image proxy must fetch a card again for every page view. A card's
+// animations start the moment the image is loaded, not when it becomes visible: a copy taken
+// from a cache is "loaded" before the page has drawn anything, so the viewer would miss the
+// beginning of the animation. Only Vercel's CDN caches cards (see cdnCacheControl below).
+const CLIENT_CACHE_CONTROL = 'no-cache, no-store, max-age=0, must-revalidate';
+
 /**
- * Cache-Control for a card, based on how old its data is.
+ * Cache rules for Vercel's CDN, based on how old the card's data is. They are sent in the
+ * Vercel-CDN-Cache-Control header, which only Vercel reads and doesn't pass on.
  *
  * - Fresh data: cacheable until the data turns `max_age_seconds` old. After that the CDN may hand
  *   out the old card once more while it asks the function again in the background.
@@ -46,14 +53,13 @@ function isAllowed(username) {
  *
  * Either way the CDN falls back to the last card if the function fails.
  */
-function cacheControl({ status, ageMs }) {
+function cdnCacheControl({ status, ageMs }) {
   const { max_age_seconds, stale_max_age_seconds, keep_stale_seconds } = config.cache;
   if (status === 'stale') {
-    return `public, max-age=${stale_max_age_seconds}, s-maxage=${stale_max_age_seconds}, stale-if-error=${keep_stale_seconds}`;
+    return `max-age=${stale_max_age_seconds}, stale-if-error=${keep_stale_seconds}`;
   }
   const remaining = Math.max(stale_max_age_seconds, Math.round(max_age_seconds - ageMs / 1000));
-  return `public, max-age=${remaining}, s-maxage=${remaining}, ` +
-    `stale-while-revalidate=${keep_stale_seconds}, stale-if-error=${keep_stale_seconds}`;
+  return `max-age=${remaining}, stale-while-revalidate=${keep_stale_seconds}, stale-if-error=${keep_stale_seconds}`;
 }
 
 /** Server-Timing header: shows in the browser's dev tools how the response was produced. */
@@ -90,7 +96,7 @@ function errorResponse(error) {
  * Serves /api/<card>?username=<name>.
  *
  * Card data comes from a two-level cache with background refresh (src/lib/store.js), and the
- * response itself is cacheable by the CDN, so most views never wait for an upstream API.
+ * response itself is cached by Vercel's CDN, so most views never wait for an upstream API.
  *
  * Takes a standard Request and returns a standard Response, so the same code runs on
  * Vercel (api/index.js), in the local dev server (scripts/dev-server.js) and in tests.
@@ -128,7 +134,8 @@ export async function handleRequest(request) {
     const dataMs = performance.now() - dataStartedAt;
 
     const headers = {
-      'Cache-Control': cacheControl(result),
+      'Cache-Control': CLIENT_CACHE_CONTROL,
+      'Vercel-CDN-Cache-Control': cdnCacheControl(result),
       'X-Content-Type-Options': 'nosniff',
     };
 

@@ -38,10 +38,11 @@ const config = {
     },
     cache: {
       // How long card data counts as fresh after it was fetched (from GitHub etc.). Until then
-      // browsers, GitHub's image proxy and the Vercel CDN reuse the card, and nothing is fetched again.
+      // Vercel's CDN answers with the same card, and nothing is fetched again. (Browsers always
+      // ask again, so that the card's animation plays from the start on every page view.)
       max_age_seconds: 3600,
       // Older data is still shown right away while fresh data is fetched in the background. A card
-      // built from such data is cached only this long, so the next view shows the fresh data.
+      // built from such data is kept by the CDN only this long, so the next view shows the fresh data.
       stale_max_age_seconds: 60,
       // How long old data and old cards may still be shown: while a refresh is running, and when
       // the upstream API or the function fails.

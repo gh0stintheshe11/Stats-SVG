@@ -53,7 +53,12 @@ describe('GET /api/github-status', () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('content-type'), 'image/svg+xml; charset=utf-8');
     assert.match(response.headers.get('content-security-policy'), /default-src 'none'/);
-    assert.equal(response.headers.get('cache-control'), 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=604800, stale-if-error=604800');
+    // Only Vercel's CDN caches the card; browsers and image proxies fetch it for every page view,
+    // otherwise its animation would not play from the start.
+    assert.equal(response.headers.get('cache-control'), 'no-cache, no-store, max-age=0, must-revalidate');
+    assert.equal(response.headers.get('vercel-cdn-cache-control'), 'max-age=3600, stale-while-revalidate=604800, stale-if-error=604800');
+    assert.equal(response.headers.get('etag'), null, 'a validator would let browsers reuse their copy');
+    assert.equal(response.headers.get('last-modified'), null, 'a validator would let browsers reuse their copy');
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.match(response.headers.get('server-timing'), /^cache;desc="miss", data;dur=[\d.]+, render;dur=[\d.]+$/);
     assert.match(await response.text(), /^\s*<svg /);
@@ -72,7 +77,7 @@ describe('GET /api/github-status', () => {
     assert.equal(calls.length, callsAfterFirst);
   });
 
-  test('a card is cacheable until its data turns one hour old', async (t) => {
+  test('the CDN may keep a card until its data turns one hour old', async (t) => {
     withEnv(t, { GITHUB_TOKEN: TOKEN });
     const clock = mockClock(t);
     mockFetch(t, githubApi());
@@ -82,10 +87,10 @@ describe('GET /api/github-status', () => {
     clock.advance(10 * MINUTE);
     const response = await get(`/api/github-status?username=${user}`);
     assert.match(response.headers.get('server-timing'), /^cache;desc="hit age 600s"/);
-    assert.match(response.headers.get('cache-control'), /^public, max-age=3000, s-maxage=3000, stale-while-revalidate=/);
+    assert.match(response.headers.get('vercel-cdn-cache-control'), /^max-age=3000, stale-while-revalidate=/);
   });
 
-  test('older data is served at once, cached only briefly, and refreshed for the next request', async (t) => {
+  test('older data is served at once, kept by the CDN only briefly, and refreshed for the next request', async (t) => {
     withEnv(t, { GITHUB_TOKEN: TOKEN });
     const clock = mockClock(t);
     const calls = mockFetch(t, githubApi());
@@ -98,7 +103,8 @@ describe('GET /api/github-status', () => {
     assert.equal(stale.status, 200);
     assert.match(stale.headers.get('server-timing'), /^cache;desc="stale age 3660s"/);
     // No stale-while-revalidate here: once the minute is over, the CDN must ask the function again.
-    assert.equal(stale.headers.get('cache-control'), 'public, max-age=60, s-maxage=60, stale-if-error=604800');
+    assert.equal(stale.headers.get('vercel-cdn-cache-control'), 'max-age=60, stale-if-error=604800');
+    assert.equal(stale.headers.get('cache-control'), 'no-cache, no-store, max-age=0, must-revalidate');
 
     // The refresh runs in the background; ask again until its result is used.
     const refreshed = await waitFor(async () => {
@@ -106,7 +112,7 @@ describe('GET /api/github-status', () => {
       return response.headers.get('server-timing').startsWith('cache;desc="hit') && response;
     });
     assert.match(refreshed.headers.get('server-timing'), /^cache;desc="hit age 0s"/);
-    assert.match(refreshed.headers.get('cache-control'), /^public, max-age=3600, /);
+    assert.match(refreshed.headers.get('vercel-cdn-cache-control'), /^max-age=3600, /);
     assert.ok(calls.length > callsAfterFirst, 'the refresh asked GitHub again');
   });
 

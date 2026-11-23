@@ -21,7 +21,6 @@ on:
 run-name: Smoke test (${{ github.event.client_payload.environment || 'manual' }})
 
 permissions:
-  actions: read # the status action looks up this job to link to it
   statuses: write # for the commit status
 
 jobs:
@@ -32,6 +31,12 @@ jobs:
       DEPLOYMENT_URL: ${{ github.event.client_payload.url || inputs.url }}
       # Lets the requests through Vercel Deployment Protection; see the README.
       BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      # The result is reported on the deployed commit. (A repository_dispatch run itself is attached
+      # to the latest commit on main, which may be a different one.) The name includes the
+      # environment, so preview and production deployments of one commit keep separate statuses.
+      STATUS_SHA: ${{ github.event.client_payload.git.sha }}
+      STATUS_NAME: Smoke test (${{ github.event.client_payload.environment }})
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check access to the deployment
         id: access
@@ -58,16 +63,15 @@ jobs:
               ;;
           esac
 
-      # Reports this job's result on the deployed commit (repository_dispatch runs are otherwise
-      # attached to the latest commit on main). The name includes the environment, so preview
-      # and production deployments of one commit don't overwrite each other's status.
-      - name: Report the result as a commit status
-        if: steps.access.outputs.blocked != 'true' && github.event_name == 'repository_dispatch'
-        uses: vercel/repository-dispatch/actions/status@v1
-        with:
-          name: Smoke test (${{ github.event.client_payload.environment }})
+      - name: Mark the commit as pending
+        if: steps.access.outputs.blocked != 'true' && env.STATUS_SHA != ''
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$STATUS_SHA" --silent \
+            -f state=pending -f context="$STATUS_NAME" -f description="Requesting a card from the deployment" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
       - name: Request a card from the deployment
+        id: card
         if: steps.access.outputs.blocked != 'true'
         env:
           # A GitHub username the deployment is allowed to serve (see ALLOWED_USERNAMES).
@@ -91,8 +95,22 @@ jobs:
           grep -qi '^content-type: image/svg+xml' headers.txt || { echo "::error::Response is not an SVG"; exit 1; }
           python3 -I -c 'import sys, xml.etree.ElementTree as ET; root = ET.parse(sys.argv[1]).getroot(); assert root.tag.endswith("svg"), root.tag' card.svg \
             || { echo "::error::Response is not well-formed SVG"; exit 1; }
+          # Browsers must not keep the card, or its animation would not play from the start on the next view.
+          grep -qiE '^cache-control:.*no-store' headers.txt || { echo "::error::The card must be sent with Cache-Control: no-store"; exit 1; }
           echo "Card OK: $(wc -c < card.svg) bytes, $(grep -i '^server-timing' headers.txt | tr -d '\r')"
 
           # Invalid input must be rejected before any GitHub API call.
           status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "${auth[@]}" "$base/api/github-status?username=%3Cbad%3E")
           [ "$status" = 400 ] || { echo "::error::Expected HTTP 400 for an invalid username, got $status"; exit 1; }
+
+      # Runs after a failure too, so the commit never stays "pending". When the access check itself
+      # failed, the card step was skipped and the status becomes "failure".
+      - name: Report the result on the commit
+        if: always() && steps.access.outputs.blocked != 'true' && env.STATUS_SHA != ''
+        env:
+          CARD_RESULT: ${{ steps.card.outcome }}
+        run: |
+          if [ "$CARD_RESULT" = success ]; then state=success; description="The deployment serves a valid card"; else state=failure; description="The deployment did not serve a valid card"; fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$STATUS_SHA" --silent \
+            -f state="$state" -f context="$STATUS_NAME" -f description="$description" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

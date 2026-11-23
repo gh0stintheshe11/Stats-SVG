@@ -83,16 +83,18 @@ If you change the fonts in `/fonts`, regenerate the embedded copies with `npm ru
 Cards are cached in layers, so a visitor almost never waits for the GitHub API:
 
 1. **Card data** is kept in the [Vercel Runtime Cache](https://vercel.com/docs/runtime-cache), which survives deployments. It counts as fresh for `cache.max_age_seconds` (1 hour) after it was fetched from GitHub. Older data, up to `cache.keep_stale_seconds` (7 days), is still shown right away while fresh data is fetched in the background. If GitHub is down or rate-limited, the last data simply keeps being shown.
-2. **Cards** are cached by browsers, GitHub's image proxy and Vercel's CDN until their data turns 1 hour old. A card built from older data is cached for only `cache.stale_max_age_seconds` (1 minute), so the next view shows the refreshed numbers. If the function fails, the CDN keeps serving the last card.
+2. **Cards** are cached by Vercel's CDN until their data turns 1 hour old. A card built from older data is kept for only `cache.stale_max_age_seconds` (1 minute), so the next view shows the refreshed numbers. If the function fails, the CDN keeps serving the last card.
 3. **Past years' contribution totals** are cached for 30 days, so a refresh only asks GitHub about the current year.
 
 Only the very first request for a username waits for GitHub. A card that hasn't been viewed for a while shows its last known numbers immediately, and the current ones when it is viewed again a minute later.
+
+**Browsers and GitHub's image proxy are told not to keep a copy** (`Cache-Control: no-store`), so every page view fetches the card from the CDN. This is on purpose: a card's animation starts when the image is loaded, and a browser that reuses a copy it already has does not play the animation from the start again.
 
 Responses include a `Server-Timing` header (visible in the browser's dev tools) showing whether the data was a cache `hit`, `stale` or `miss`, and how long each step took. Runtime Cache is free on the Hobby plan within its monthly limits.
 
 ## Development
 
-Requires Node.js 24, the version used on Vercel and in CI (`engines` in `package.json`). Node.js 20.12+ also works locally.
+Requires Node.js 24, the version used on Vercel and in CI (`engines` in `package.json`).
 
 ```sh
 npm install
