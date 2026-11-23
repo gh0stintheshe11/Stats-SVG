@@ -1,3 +1,6 @@
-chmod +x clean-deps.sh
-sh ./clean-deps.sh
-git add package.json package-lock.json
+# Fail the commit if package.json lists dependencies the code doesn't use.
+# This only reports; it never uninstalls packages or stages files for you.
+npm run --silent check:deps || {
+  echo "Unused dependencies found (see above). Remove them with 'npm uninstall <name>', or commit with --no-verify if this is a false positive."
+  exit 1
+}

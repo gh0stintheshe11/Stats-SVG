@@ -1,0 +1,1422 @@
+
+    <svg width="1100" height="600" xmlns="http://www.w3.org/2000/svg">
+      <style>
+
+        <!-- Fonts -->
+        @font-face {
+          font-family: 'Rajdhani';
+          src: url('data:…') format('truetype');
+        }
+        @font-face {
+          font-family: 'ChakraPetch';
+          src: url('data:…') format('truetype');
+        }
+        @font-face {
+          font-family: 'LibreBarcode128';
+          src: url('data:…') format('truetype');
+        }
+        
+        <!-- Animation Styles -->
+        @keyframes change-opacity {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+
+        .animate {
+          opacity: 0;
+          animation: change-opacity 0.5s ease-out forwards;
+        }
+
+        .animate-delay-1 {animation-delay: 0.8s, 0.9s;}
+        .animate-delay-2 {animation-delay: 0.88s, 0.98s;}
+        .animate-delay-3 {animation-delay: 0.96s, 1.07s;}
+        .animate-delay-4 {animation-delay: 1.04s, 1.16s;}
+        .animate-delay-5 {animation-delay: 1.12s, 1.25s;}
+        .animate-delay-6 {animation-delay: 1.20s, 1.34s;}
+        .animate-delay-7 {animation-delay: 1.28s, 1.43s;}
+        .animate-delay-8 {animation-delay: 1.36s, 1.52s;}
+        .animate-delay-9 {animation-delay: 1.44s, 1.61s;}
+        .animate-delay-10 {animation-delay: 1.52s, 1.70s;}
+        .animate-delay-11 {animation-delay: 1.60s, 1.79s;}
+        .animate-delay-12 {animation-delay: 1.68s, 1.88s;}
+        .animate-delay-13 {animation-delay: 1.76s, 1.97s;}
+
+        @keyframes fillProgress {
+          0% { stroke-dashoffset: 502.6548245743669; }
+          100% { stroke-dashoffset: 851.9999276535519; }
+        }
+
+        @keyframes blinking {
+          0%, 100% { opacity: 1; }
+          25%, 75% { opacity: 0; }
+          50% { opacity: 1; }
+        }
+
+        .blink {
+          animation: blinking 1.5s ease-out;
+        }
+
+        @keyframes flikering {
+          0% { opacity: 0; }
+          16% { opacity: 0.4; }
+          38% { opacity: 0; }
+          68% { opacity: 0.2; }
+          100% { opacity: 0; } 
+        }
+
+        <!-- Background Styles -->
+        .background { fill: none; } 
+
+        <!-- Title Styles -->
+        .title { 
+          font-family: 'ChakraPetch', Helvetica; 
+          fill: #00f0ff; 
+          font-size: 30px; 
+          font-weight: bold; 
+          Opacity: 0; 
+          animation: flikering 0.4s 2, change-opacity 1s ease-in-out 0.8s forwards; 
+        }
+
+        <!-- Label Styles -->
+        .label { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: #00f0ff; 
+          font-size: 22px; 
+        }
+
+        <!-- Value Styles -->
+        .value { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: #f8e602; 
+          font-size: 24px; 
+          font-weight: bold; 
+        }
+
+        <!-- Barcode Styles -->
+        .barcode { 
+          font-family: 'LibreBarcode128', Helvetica; 
+          fill: #00f0ff;
+        }
+        
+        <!-- Rank Ring Styles -->
+        .rank-letter { 
+          font-family: 'ChakraPetch', Helvetica; 
+          fill: #c5003c; 
+          font-size: 68px; 
+          font-weight: bold; 
+          opacity: 0; 
+          animation: change-opacity 0.8s ease-out 2.6s forwards; 
+        }
+        .rank-percentage { 
+          font-family: 'Rajdhani', Helvetica; 
+          fill: #c5003c; 
+          font-size: 26px; 
+          font-weight: bold; 
+          opacity: 0; 
+          animation: change-opacity 0.8s ease-out 2.4s forwards;
+        }
+        .rank-circle-bg { 
+          fill: none; 
+          opacity: 0; 
+          animation: change-opacity 0.3s ease-out 1.2s forwards; 
+        }
+        .rank-circle-progress { 
+          fill: none; 
+          opacity: 0; 
+          animation: 
+            fillProgress 1.5s ease-out 2.4s forwards, 
+            change-opacity 0s 2.4s forwards; 
+          stroke-linecap: round; 
+        }
+        
+        <!-- Language Ring Styles -->
+        .language-legend { 
+          font-family: 'Rajdhani', Helvetica; 
+          font-size: 18px; 
+        }
+
+        <!-- Icon Styles -->
+        .icon { fill: #00f0ff; }
+      </style>
+
+      <rect class="background" width="100%" height="100%" />
+
+      <text x="50" y="40" class="title" font-size="36">Octo Cat's GitHub Stats</text>
+
+      <clipPath id="clipPathReveal">
+        <rect x="0" y="0" height="100" width="0">
+          <!-- Animate the width of the rectangle -->
+          <animate attributeName="width" begin="0s" dur="1s" from="0" to="1100" fill="freeze" />
+        </rect>
+      </clipPath>
+
+      <text x="1080" y="50" class="barcode" text-anchor="end" font-size="30" clip-path="url(#clipPathReveal)">https://github.com/octocat</text>
+
+      <!-- Initial dot -->
+      <circle cx="10" cy="60" r="4" fill="#00f0ff">
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" />
+        <animate attributeName="opacity" from="1" to="0" dur="0.2s" fill="freeze" begin="0.5s" />
+      </circle>
+
+      <!-- dot change line moving to right -->  
+      <line x1="10" y1="60" x2="10" y2="60" stroke="#00f0ff" stroke-width="4">
+        <animate attributeName="x2" from="10" to="1090" dur="0.5s" fill="freeze" begin="0.5s"/>
+      </line>
+
+      <!-- Stats list -->
+      
+      <g transform="translate(30, 100)" class="animate animate-delay-1">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z" transform="translate(5, -18) scale(0.04)"/>
+        <text x="40" y="0" class="label">Total Stars Earned</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">120</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.1s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,116 L 406,116" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.2s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.3s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 140)" class="animate animate-delay-2">
+        <path class="icon" d="M80 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm80-24c0 32.8-19.7 61-48 73.3l0 38.7c0 17.7 14.3 32 32 32l160 0c17.7 0 32-14.3 32-32l0-38.7C307.7 141 288 112.8 288 80c0-44.2 35.8-80 80-80s80 35.8 80 80c0 32.8-19.7 61-48 73.3l0 38.7c0 53-43 96-96 96l-48 0 0 70.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3l0-70.7-48 0c-53 0-96-43-96-96l0-38.7C19.7 141 0 112.8 0 80C0 35.8 35.8 0 80 0s80 35.8 80 80zm208 24a24 24 0 1 0 0-48 24 24 0 1 0 0 48zM248 432a24 24 0 1 0 -48 0 24 24 0 1 0 48 0z" transform="translate(7, -18) scale(0.04)"/>
+        <text x="40" y="0" class="label">Total Forks Earned</text>
+        <text x="320" y="0" class="value" text-anchor="end">30</text>
+      </g>
+
+      <g transform="translate(30, 180)" class="animate animate-delay-3">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM504 312V248H440c-13.3 0-24-10.7-24-24s10.7-24 24-24h64V136c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24H552v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z" transform="translate(7, -18) scale(0.04)"/>
+        <text x="40" y="0" class="label">Total Followers</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">15</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.27s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,18 L 406,18" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.37s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.47s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 220)" class="animate animate-delay-7">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M320 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm156.8-48C462 361 397.4 416 320 416s-142-55-156.8-128H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H163.2C178 151 242.6 96 320 96s142 55 156.8 128H608c17.7 0 32 14.3 32 32s-14.3 32-32 32H476.8z" transform="translate(4, -18) scale(0.04)"/>
+        <text x="40" y="0" class="label">Total Commits</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">1.2K</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.63s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,-19 L 406,-19" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.73s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.83s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 260)" class="animate animate-delay-6">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z" transform="translate(5, -19) scale(1.4)"/>
+        <text x="40" y="0" class="label">Total Issues</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">30</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.54s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,-56 L 406,-56" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.64s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.74s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 300)" class="animate animate-delay-8">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z" transform="translate(5, -19) scale(1.4)"/>
+        <text x="40" y="0" class="label">Total PRs</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">60</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.72s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,-93 L 406,-93" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.82s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.92s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 340)" class="animate animate-delay-9">
+        <path class="icon" d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z" transform="translate(5, -17) scale(1.4)"/>
+        <text x="40" y="0" class="label">Total PRs Merged</text>
+        <text x="320" y="0" class="value" text-anchor="end">45</text>
+      </g>
+
+      <g transform="translate(30, 380)" class="animate animate-delay-10">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" transform="translate(7, -18) scale(0.04)"/>
+        <text x="40" y="0" class="label">Total PRs Reviewed</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">5</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.9s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,-170 L 406,-170" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="2s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="2.1s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 420)" class="animate animate-delay-11">
+        <path class="icon" d="M304 240V16.6c0-9 7-16.6 16-16.6C443.7 0 544 100.3 544 224c0 9-7.6 16-16.6 16H304zM32 272C32 150.7 122.1 50.3 239 34.3c9.2-1.3 17 6.1 17 15.4V288L412.5 444.5c6.7 6.7 6.2 17.7-1.5 23.1C371.8 495.6 323.8 512 272 512C139.5 512 32 404.6 32 272zm526.4 16c9.3 0 16.6 7.8 15.4 17c-7.7 55.9-34.6 105.6-73.9 142.3c-6 5.6-15.4 5.2-21.2-.7L320 288H558.4z" transform="translate(5, -17) scale(0.04)"/>
+        <text x="40" y="0" class="label">Merged PRs %</text>
+        <text x="320" y="0" class="value" text-anchor="end">75.0</text>
+      </g>
+
+      <g transform="translate(30, 460)" class="animate animate-delay-5">
+        <!-- border -->
+        <path d="M 337,-5 L 337,8 L -10,8 L -10,-24 L 337,-24 L 337,-11" fill="none" stroke="#32cd32" stroke-width="2" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </path>
+        <!-- icon -->
+        <path class="icon" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z" transform="translate(5, -19) scale(1.4)"/>
+        <text x="40" y="0" class="label">Total Repos</text>
+        <!-- value -->
+        <text x="320" y="0" class="value" text-anchor="end">8</text>
+        <!-- node -->
+        <circle cx="337" cy="-8" r="3" fill="none" stroke="#00f0ff" stroke-width="1" opacity="0">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.45s" />
+        </circle>
+        <!-- connector -->
+        <path d="M 340,-8 L 360,-8 L 360,-247 L 406,-247" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0" stroke-dasharray="500" stroke-dashoffset="500">
+          <animate attributeName="opacity" from="0" to="1" dur="0.1s" fill="freeze" begin="1.55s" />
+          <animate attributeName="stroke-dashoffset" from="500" to="0" dur="0.5s" fill="freeze" begin="1.65s" />
+        </path>
+      </g>
+
+      <g transform="translate(30, 500)" class="animate animate-delay-4">
+        <path class="icon" d="M192 0c17.7 0 32 14.3 32 32V144H160V32c0-17.7 14.3-32 32-32zM64 64c0-17.7 14.3-32 32-32s32 14.3 32 32v80H64V64zm192 0c0-17.7 14.3-32 32-32s32 14.3 32 32v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V64zm96 64c0-17.7 14.3-32 32-32s32 14.3 32 32v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V128zm-96 88l0-.6c9.4 5.4 20.3 8.6 32 8.6c13.2 0 25.4-4 35.6-10.8c8.7 24.9 32.5 42.8 60.4 42.8c11.7 0 22.6-3.1 32-8.6V256c0 52.3-25.1 98.8-64 128v96c0 17.7-14.3 32-32 32H160c-17.7 0-32-14.3-32-32V401.6c-17.3-7.9-33.2-18.8-46.9-32.5L69.5 357.5C45.5 333.5 32 300.9 32 267V240c0-35.3 28.7-64 64-64h88c22.1 0 40 17.9 40 40s-17.9 40-40 40H128c-8.8 0-16 7.2-16 16s7.2 16 16 16h56c39.8 0 72-32.2 72-72z" transform="translate(6, -17) scale(0.045)"/>
+        <text x="40" y="0" class="label">Contributed to</text>
+        <text x="320" y="0" class="value" text-anchor="end">12</text>
+      </g>
+
+      <g transform="translate(30, 540)" class="animate animate-delay-12">
+        <path class="icon" d="M1.75 1h8.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 10.25 10H7.061l-2.574 2.573A1.458 1.458 0 0 1 2 11.543V10h-.25A1.75 1.75 0 0 1 0 8.25v-5.5C0 1.784.784 1 1.75 1ZM1.5 2.75v5.5c0 .138.112.25.25.25h1a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h3.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25Zm13 2a.25.25 0 0 0-.25-.25h-.5a.75.75 0 0 1 0-1.5h.5c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 14.25 12H14v1.543a1.458 1.458 0 0 1-2.487 1.03L9.22 12.28a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215l2.22 2.22v-2.19a.75.75 0 0 1 .75-.75h1a.25.25 0 0 0 .25-.25Z" transform="translate(5, -18) scale(1.4)"/>
+        <text x="40" y="0" class="label">Discussions Started</text>
+        <text x="320" y="0" class="value" text-anchor="end">2</text>
+      </g>
+
+      <g transform="translate(30, 580)" class="animate animate-delay-13">
+        <path class="icon" d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" transform="translate(4, -20) scale(1.6)"/>
+        <text x="40" y="0" class="label">Discussions Answered</text>
+        <text x="320" y="0" class="value" text-anchor="end">1</text>
+      </g>
+
+
+      <!-- Rank Ring -->
+      <!-- Rank Ring Background -->
+      <circle class="rank-circle-bg" cx="550" cy="204" r="80" stroke="#00484d" stroke-width="34" fill="none"></circle>
+
+      <!-- Rank Ring Progress (using circle instead of path) -->
+      <circle
+        class="rank-circle-progress"
+        cx="550" 
+        cy="204" 
+        r="80" 
+        stroke="#00f0ff" 
+        stroke-width="28" 
+        fill="none" 
+        stroke-dasharray="502.6548245743669 502.6548245743669" 
+        stroke-dashoffset="502.6548245743669" 
+        transform="rotate(90 550 204)"
+      />
+
+      <!-- Rank Ring Text -->
+      <text x="550" y="217" class="rank-letter"  text-anchor="middle">A-</text>
+      <text x="550" y="251" class="rank-percentage" text-anchor="middle" dx="0.1em">30.5%</text>
+
+      <!-- langauge ring center: image/gif/webp/whatever -->
+      <image href="data:…" x="487" y="397" height="126" class="blink"/>
+
+      <!-- Language Ring -->
+      
+      <circle cx="550" cy="460" r="80" 
+        stroke="#f1e05a" stroke-width="34" fill="none"
+        stroke-dasharray="201 302"
+        stroke-dashoffset="0"
+        transform="rotate(90 550 460)"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: 0.6s;" />
+    
+      <g transform="translate(694, 372)" class="animate" style="animation-delay: 0s;">
+        <rect x="0" y="0" width="16" height="16" fill="#f1e05a" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="#00f0ff">JavaScript</tspan>
+          <tspan fill="#f8e602" dx="5">40.00%</tspan>
+        </text>
+      </g>
+    
+      <circle cx="550" cy="460" r="80" 
+        stroke="#3572A5" stroke-width="34" fill="none"
+        stroke-dasharray="151 352"
+        stroke-dashoffset="-201"
+        transform="rotate(90 550 460)"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: 0.44999999999999996s;" />
+    
+      <g transform="translate(694, 391)" class="animate" style="animation-delay: 0.15s;">
+        <rect x="0" y="0" width="16" height="16" fill="#3572A5" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="#00f0ff">Python</tspan>
+          <tspan fill="#f8e602" dx="5">30.00%</tspan>
+        </text>
+      </g>
+    
+      <circle cx="550" cy="460" r="80" 
+        stroke="#00ADD8" stroke-width="34" fill="none"
+        stroke-dasharray="101 402"
+        stroke-dashoffset="-352"
+        transform="rotate(90 550 460)"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: 0.3s;" />
+    
+      <g transform="translate(694, 410)" class="animate" style="animation-delay: 0.3s;">
+        <rect x="0" y="0" width="16" height="16" fill="#00ADD8" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="#00f0ff">Go</tspan>
+          <tspan fill="#f8e602" dx="5">20.00%</tspan>
+        </text>
+      </g>
+    
+      <circle cx="550" cy="460" r="80" 
+        stroke="#89e051" stroke-width="34" fill="none"
+        stroke-dasharray="50 453"
+        stroke-dashoffset="-453"
+        transform="rotate(90 550 460)"
+        style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: 0.15s;" />
+    
+      <g transform="translate(694, 429)" class="animate" style="animation-delay: 0.44999999999999996s;">
+        <rect x="0" y="0" width="16" height="16" fill="#89e051" />
+        <text x="20" y="8" class="language-legend" dominant-baseline="central">
+          <tspan fill="#00f0ff">Shell</tspan>
+          <tspan fill="#f8e602" dx="5">10.00%</tspan>
+        </text>
+      </g>
+    
+
+      <!-- Language Ring card-like border -->
+      <!-- Main border with notch -->
+      <path d="M 424,340 L 650,340 L 660,350 L 1080,350 L 1080,540 L 1040,580 L 424,580 Z" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0">
+        <animate attributeName="stroke-dasharray" from="0, 3500" to="3500, 0" dur="3s" fill="freeze" begin="0.7s" />
+        <animate attributeName="opacity" values="0;0.3;0;1" dur="0.2s" fill="freeze" begin="0.4s" />
+      </path>
+
+      <!-- corner trangle -->
+      <path d="M 1080,555 L 1080,580 L 1055,580 Z" fill="#00f0ff" stroke="#00f0ff" stroke-width="2" >
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="5" />
+      </path>
+
+      <!-- left solid part -->
+      <path d="M 414,340 L 424,340 L 424,580 L 414,580 L 414,540 L 419,535 L 419,480 L 414,475 Z" fill="#00f0ff" stroke="#00f0ff" stroke-width="2">
+        <animate attributeName="opacity" values="0;1" dur="0.5s" fill="freeze" />
+      </path>
+
+      <!-- Rank ring line part -->
+      <!-- Initial dot as a circle with zero radius -->
+      <circle cx="550" cy="204" r="4" fill="#00f0ff">
+        <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" />
+        <animate attributeName="opacity" from="1" to="0" dur="0.2s" fill="freeze" begin="0.5s" />
+      </circle>
+
+      <!-- dot change to short dash line moving to left -->
+      <line x1="550" y1="204" x2="550" y2="204" stroke="#00f0ff" stroke-width="4">
+        <animate attributeName="x2" from="550" to="436" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="550" to="436" dur="0.2s" fill="freeze" begin="1s" />
+      </line>
+
+      <!-- dot change to short dash line moving to right -->
+      <line x1="550" y1="204" x2="550" y2="204" stroke="#00f0ff" stroke-width="4">
+        <animate attributeName="x2" from="550" to="664" dur="0.5s" fill="freeze" begin="0.5s" />
+        <animate attributeName="x1" from="550" to="664" dur="0.2s" fill="freeze" begin="1s" />
+      </line>
+
+      <!-- top left 1/8 circle path -->
+      <path d="M 436 204 A 114 114 0 0 1 469 123" stroke="#00f0ff" stroke-width="4" fill="transparent" stroke-dasharray="0, 179">
+        <animate attributeName="stroke-dasharray" from="0, 179" to="179, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- top right 1/8 circle path -->
+      <path d="M 664 204 A 114 114 0 0 0 631 123" stroke="#00f0ff" stroke-width="4" fill="transparent" stroke-dasharray="0, 179">
+        <animate attributeName="stroke-dasharray" from="0, 179" to="179, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- bottom left 1/8 circle path -->
+      <path d="M 436 204 A 114 114 0 0 0 469 285" stroke="#00f0ff" stroke-width="4" fill="transparent" stroke-dasharray="0, 179">
+        <animate attributeName="stroke-dasharray" from="0, 179" to="179, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      <!-- bottom right 1/8 circle path -->
+      <path d="M 664 204 A 114 114 0 0 1 631 285" stroke="#00f0ff" stroke-width="4" fill="transparent" stroke-dasharray="0, 179">
+        <animate attributeName="stroke-dasharray" from="0, 179" to="179, 0" dur="1s" fill="freeze" begin="1s"/>
+      </path>
+
+      
+  <g transform="translate(694, 108)" class="animate animate-delay-14">
+    <text x="386" y="-10" text-anchor="end" class="label">Daily Contributions (60 days)</text>
+    
+    <!-- border lines -->
+    <!-- bottom line -->
+    <line x1="0" y1="194" x2="0" y2="194" stroke="#00f0ff" stroke-width="1">
+      <animate attributeName="x1" from="0" to="388" dur="1.18s" fill="freeze" begin="0.5s"/>
+    </line>
+    <!-- top line -->
+    <line x1="388" y1="-2" x2="388" y2="-2" stroke="#00f0ff" stroke-width="1">
+      <animate attributeName="x2" from="388" to="22" dur="0.3s" fill="freeze" begin="1.88s"/>
+    </line>
+    <!-- side line -->
+    <line x1="388" y1="194" x2="388" y2="194" stroke="#00f0ff" stroke-width="1" opacity="1">
+      <animate attributeName="y2" from="194" to="-2" dur="0.2s" fill="freeze" begin="1.68s"/>
+    </line>
+
+    <!-- Candlesticks -->
+    
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="9.65" y1="69.81818181818183" x2="9.65" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="7.076666666666667" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.52s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="16.083333333333336" y1="69.81818181818183" x2="16.083333333333336" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="13.51" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.54s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="22.516666666666666" y1="17.454545454545467" x2="22.516666666666666" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="19.943333333333335" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.56s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="28.950000000000003" y1="17.454545454545467" x2="28.950000000000003" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="26.37666666666667" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.58s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="35.38333333333334" y1="87.27272727272728" x2="35.38333333333334" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="32.81" 
+            y="87.27272727272728" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.6s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="41.81666666666667" y1="34.909090909090935" x2="41.81666666666667" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="39.24333333333333" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.62s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="48.25" y1="34.909090909090935" x2="48.25" y2="104.72727272727273" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="45.67666666666666" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.64s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="54.68333333333334" y1="104.72727272727273" x2="54.68333333333334" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="52.11" 
+            y="104.72727272727273" 
+            width="5.146666666666667" 
+            height="69.81818181818183" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.66s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="61.116666666666674" y1="52.363636363636374" x2="61.116666666666674" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="58.54333333333334" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="122.18181818181819" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.6799999999999999s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="67.55000000000001" y1="52.363636363636374" x2="67.55000000000001" y2="122.18181818181819" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="64.97666666666667" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.7s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="73.98333333333333" y1="122.18181818181819" x2="73.98333333333333" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="71.41" 
+            y="122.18181818181819" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.72s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="80.41666666666667" y1="69.81818181818183" x2="80.41666666666667" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="77.84333333333333" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.74s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="86.85000000000001" y1="69.81818181818183" x2="86.85000000000001" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="84.27666666666667" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.76s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="93.28333333333333" y1="17.454545454545467" x2="93.28333333333333" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="90.71" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.78s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="99.71666666666667" y1="17.454545454545467" x2="99.71666666666667" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="97.14333333333333" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.8s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="106.15" y1="87.27272727272728" x2="106.15" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="103.57666666666667" 
+            y="87.27272727272728" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.8200000000000001s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="112.58333333333334" y1="34.909090909090935" x2="112.58333333333334" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="110.01" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.8400000000000001s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="119.01666666666668" y1="34.909090909090935" x2="119.01666666666668" y2="104.72727272727273" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="116.44333333333334" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.86s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="125.45" y1="104.72727272727273" x2="125.45" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="122.87666666666667" 
+            y="104.72727272727273" 
+            width="5.146666666666667" 
+            height="69.81818181818183" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.88s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="131.88333333333335" y1="52.363636363636374" x2="131.88333333333335" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="129.31000000000003" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="122.18181818181819" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.9s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="138.31666666666666" y1="52.363636363636374" x2="138.31666666666666" y2="122.18181818181819" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="135.74333333333334" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.9199999999999999s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="144.75" y1="122.18181818181819" x2="144.75" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="142.17666666666668" 
+            y="122.18181818181819" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.94s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="151.18333333333334" y1="69.81818181818183" x2="151.18333333333334" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="148.61" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.96s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="157.61666666666667" y1="69.81818181818183" x2="157.61666666666667" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="155.04333333333335" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="0.98s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="164.05" y1="17.454545454545467" x2="164.05" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="161.4766666666667" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="170.48333333333335" y1="17.454545454545467" x2="170.48333333333335" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="167.91000000000003" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.02s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="176.91666666666669" y1="87.27272727272728" x2="176.91666666666669" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="174.34333333333336" 
+            y="87.27272727272728" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.04s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="183.35" y1="34.909090909090935" x2="183.35" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="180.77666666666667" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.06s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="189.78333333333333" y1="34.909090909090935" x2="189.78333333333333" y2="104.72727272727273" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="187.21" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.08s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="196.21666666666667" y1="104.72727272727273" x2="196.21666666666667" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="193.64333333333335" 
+            y="104.72727272727273" 
+            width="5.146666666666667" 
+            height="69.81818181818183" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.1s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="202.65" y1="52.363636363636374" x2="202.65" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="200.07666666666668" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="122.18181818181819" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.12s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="209.08333333333334" y1="52.363636363636374" x2="209.08333333333334" y2="122.18181818181819" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="206.51000000000002" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.1400000000000001s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="215.51666666666668" y1="122.18181818181819" x2="215.51666666666668" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="212.94333333333336" 
+            y="122.18181818181819" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.1600000000000001s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="221.95000000000002" y1="69.81818181818183" x2="221.95000000000002" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="219.3766666666667" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.1800000000000002s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="228.38333333333335" y1="69.81818181818183" x2="228.38333333333335" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="225.81000000000003" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.2000000000000002s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="234.8166666666667" y1="17.454545454545467" x2="234.8166666666667" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="232.24333333333337" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.22s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="241.25" y1="17.454545454545467" x2="241.25" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="238.67666666666668" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.24s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="247.68333333333334" y1="87.27272727272728" x2="247.68333333333334" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="245.11" 
+            y="87.27272727272728" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.26s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="254.11666666666667" y1="34.909090909090935" x2="254.11666666666667" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="251.54333333333335" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.28s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="260.55" y1="34.909090909090935" x2="260.55" y2="104.72727272727273" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="257.9766666666667" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.3s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="266.9833333333333" y1="104.72727272727273" x2="266.9833333333333" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="264.40999999999997" 
+            y="104.72727272727273" 
+            width="5.146666666666667" 
+            height="69.81818181818183" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.32s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="273.41666666666663" y1="52.363636363636374" x2="273.41666666666663" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="270.8433333333333" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="122.18181818181819" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.3399999999999999s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="279.84999999999997" y1="52.363636363636374" x2="279.84999999999997" y2="122.18181818181819" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="277.27666666666664" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.3599999999999999s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="286.2833333333333" y1="122.18181818181819" x2="286.2833333333333" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="283.71" 
+            y="122.18181818181819" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.38s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="292.71666666666664" y1="69.81818181818183" x2="292.71666666666664" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="290.1433333333333" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.4s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="299.15" y1="69.81818181818183" x2="299.15" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="296.57666666666665" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.42s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="305.5833333333333" y1="17.454545454545467" x2="305.5833333333333" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="303.01" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.44s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="312.01666666666665" y1="17.454545454545467" x2="312.01666666666665" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="309.4433333333333" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.46s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="318.45" y1="87.27272727272728" x2="318.45" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="315.87666666666667" 
+            y="87.27272727272728" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.48s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="324.8833333333333" y1="34.909090909090935" x2="324.8833333333333" y2="157.0909090909091" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="322.31" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.5s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="331.31666666666666" y1="34.909090909090935" x2="331.31666666666666" y2="104.72727272727273" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="328.74333333333334" 
+            y="34.909090909090935" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.52s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="337.75" y1="104.72727272727273" x2="337.75" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="335.1766666666667" 
+            y="104.72727272727273" 
+            width="5.146666666666667" 
+            height="69.81818181818183" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.54s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="344.18333333333334" y1="52.363636363636374" x2="344.18333333333334" y2="174.54545454545456" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="341.61" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="122.18181818181819" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.56s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="350.6166666666667" y1="52.363636363636374" x2="350.6166666666667" y2="122.18181818181819" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="348.04333333333335" 
+            y="52.363636363636374" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.58s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="357.05" y1="122.18181818181819" x2="357.05" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="354.4766666666667" 
+            y="122.18181818181819" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.6s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="363.4833333333333" y1="69.81818181818183" x2="363.4833333333333" y2="192" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="360.90999999999997" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="122.18181818181817" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.62s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="369.91666666666663" y1="69.81818181818183" x2="369.91666666666663" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="367.3433333333333" 
+            y="69.81818181818183" 
+            width="5.146666666666667" 
+            height="69.8181818181818" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.6400000000000001s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="376.34999999999997" y1="17.454545454545467" x2="376.34999999999997" y2="139.63636363636363" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="373.77666666666664" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="122.18181818181816" 
+            fill="#32cd32" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.66s" fill="freeze" />
+        </g>
+      
+        <g opacity="0">
+          <!-- Wick -->
+          <line x1="382.7833333333333" y1="17.454545454545467" x2="382.7833333333333" y2="87.27272727272728" stroke="#00f0ff" stroke-width="1"/>
+
+          <!-- Body -->
+          <rect 
+            x="380.21" 
+            y="17.454545454545467" 
+            width="5.146666666666667" 
+            height="69.81818181818181" 
+            fill="#c5003c" 
+          />
+          <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.68s" fill="freeze" />
+        </g>
+      
+
+    <!-- Date labels (first and last) -->
+    <text x="0" y="215.34000000000003" text-anchor="start" class="label" font-size="4" opacity="0">
+      2026-09-25
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="0.5s"/>
+    </text>
+    <text x="390" y="215.34000000000003" class="label" text-anchor="end" font-size="4" opacity="0">
+      2026-11-23
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="1.68s"/>
+    </text>
+
+    <!-- Y-axis labels -->
+    <!-- max -->
+    <text x="-2" y="5" text-anchor="start" class="label" opacity="0"> 11
+      <animate attributeName="opacity" from="0" to="1" dur="0.2s" fill="freeze" begin="2.1799999999999997s"/>
+    </text>
+
+    </g>
+  
+      
+    </svg>
+  

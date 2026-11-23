@@ -10,7 +10,10 @@ const config = {
       textValue: "#f8e602",
       rankLetter: "#c5003c",
       rankPercentage: "#c5003c",
-      rankProgressBar: "#00f0ff"
+      rankProgressBar: "#00f0ff",
+      // Border of a stat row whose value is above / not above its threshold
+      thresholdPass: "#32cd32",
+      thresholdFail: "#c5003c"
     },
     rank: {
       ringBgDarkLevel: 30,
@@ -32,6 +35,13 @@ const config = {
       bar_display_time_delay: 1,
       bar_display_time_interval: 0.02,
       bar_display_time_duration: 0.2
+    },
+    cache: {
+      // How long browsers, GitHub's image proxy and the Vercel CDN may reuse a response.
+      // Repeat views are then served without calling the GitHub API again.
+      max_age_seconds: 3600,
+      // After max_age, the CDN may keep serving the old copy this long while it refreshes in the background.
+      stale_while_revalidate_seconds: 86400
     }
   }
 

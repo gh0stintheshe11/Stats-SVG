@@ -1,8 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/*.js": {
       "memory": 512,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "src/assets/**"
     }
   },
   "redirects": [
