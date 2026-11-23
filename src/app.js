@@ -3,10 +3,11 @@ import { CARDS } from './cards/index.js';
 import { HttpError } from './lib/errors.js';
 import { getWithRevalidation } from './lib/store.js';
 
-// When nothing is cached the visitor waits for the upstream API, so give it plenty of time:
-// even if the image request gives up, the result fills the cache for the next view.
-// Background refreshes don't block anyone. Both stay below maxDuration in vercel.json.
+// When nothing is cached, the request waits this long for the data to be collected...
 const FOREGROUND_BUDGET_MS = 25_000;
+// ...and collecting it may take this long. A load that outlasts its request (or a visitor who has
+// given up) carries on in the background and fills the cache for the next view. Background
+// refreshes get the same time. Must stay below maxDuration in vercel.json.
 const BACKGROUND_BUDGET_MS = 50_000;
 
 // Cards only need inline styles and data: fonts/images. Blocking everything else means
@@ -125,7 +126,7 @@ export async function handleRequest(request) {
 
     const dataStartedAt = performance.now();
     const cacheKey = `${cardName}:v${card.dataVersion}:${card.caseInsensitive ? username.toLowerCase() : username}`;
-    const result = await getWithRevalidation(cacheKey, ({ deadline }) => card.fetch(username, { deadline }), {
+    const result = await getWithRevalidation(cacheKey, ({ deadline, background }) => card.fetch(username, { deadline, background }), {
       freshMs: config.cache.max_age_seconds * 1000,
       maxAgeMs: config.cache.keep_stale_seconds * 1000,
       foregroundBudgetMs: FOREGROUND_BUDGET_MS,

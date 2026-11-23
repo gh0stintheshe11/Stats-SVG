@@ -120,11 +120,40 @@ describe('getWithRevalidation', () => {
     assert.ok(results.every((r) => r.value === 'value'));
   });
 
-  test('passes a deadline based on the foreground budget', async () => {
-    let received;
+  test('tells the loader its deadline and whether a request is waiting for it', async (t) => {
+    const clock = mockClock(t);
+    const key = uniqueKey();
+    const received = [];
+    const load = async (options) => { received.push(options); return 'value'; };
+
     const before = Date.now();
-    await getWithRevalidation(uniqueKey(), async ({ deadline }) => { received = deadline; }, OPTIONS);
-    assert.ok(received >= before + OPTIONS.foregroundBudgetMs && received <= Date.now() + OPTIONS.foregroundBudgetMs);
+    await getWithRevalidation(key, load, OPTIONS);
+    assert.deepEqual(received[0], { deadline: before + OPTIONS.backgroundBudgetMs, background: false });
+
+    clock.advance(31 * MINUTE);
+    await getWithRevalidation(key, load, OPTIONS); // stale: refreshed in the background
+    await settle();
+    assert.equal(received[1].background, true);
+  });
+
+  test('a load that takes longer than the request waits finishes in the background', async () => {
+    const key = uniqueKey();
+    let loads = 0;
+    const slowLoad = async () => {
+      loads++;
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      return 'loaded in the background';
+    };
+    const impatient = { ...OPTIONS, foregroundBudgetMs: 20 };
+
+    await assert.rejects(getWithRevalidation(key, slowLoad, impatient), { status: 504 });
+    // A second request while the load is still running joins it instead of starting another one.
+    await assert.rejects(getWithRevalidation(key, slowLoad, impatient), { status: 504 });
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const result = await getWithRevalidation(key, slowLoad, impatient);
+    assert.deepEqual([result.status, result.value], ['hit', 'loaded in the background']);
+    assert.equal(loads, 1);
   });
 });
 

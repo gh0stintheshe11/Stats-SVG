@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { createTtlCache } from './cache.js';
+import { HttpError } from './errors.js';
 
 /**
  * Loads getCache and waitUntil from @vercel/functions.
@@ -85,11 +86,11 @@ async function readEntry(key, freshMs) {
  * Runs `load` and stores the result. Concurrent calls for the same key on this instance
  * share one load, so a burst of requests causes a single upstream fetch.
  */
-function refresh(key, load, { budgetMs, maxAgeMs }) {
+function refresh(key, load, { budgetMs, maxAgeMs, background }) {
   if (inFlight.has(key)) return inFlight.get(key);
 
   const promise = (async () => {
-    const value = await load({ deadline: Date.now() + budgetMs });
+    const value = await load({ deadline: Date.now() + budgetMs, background });
     const entry = { value, storedAt: Date.now() };
     memory.set(key, entry);
     await writeShared(key, entry, maxAgeMs);
@@ -100,6 +101,15 @@ function refresh(key, load, { budgetMs, maxAgeMs }) {
   return promise;
 }
 
+/** Resolves like `promise`, unless that takes longer than `ms`: then it rejects with a 504. */
+function waitAtMost(promise, ms) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new HttpError(504, 'Still collecting the data for this card, please try again in a moment')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 /**
  * Stale-while-revalidate: returns cached data right away whenever possible and keeps it
  * fresh in the background.
@@ -108,15 +118,19 @@ function refresh(key, load, { budgetMs, maxAgeMs }) {
  * - younger than `maxAgeMs`: returned at once while a background refresh runs (status "stale").
  *   If that refresh fails (rate limit, GitHub down), the old data keeps being served and the
  *   next attempt waits a few minutes.
- * - missing or older: loaded now and the caller waits (status "miss")
+ * - missing or older: loaded now and the caller waits (status "miss"). The caller waits at most
+ *   `foregroundBudgetMs`; a load that needs longer carries on in the background and its result
+ *   is there for the next request.
  *
  * @param {string} key Cache key. Include a version so a change in the data's shape starts fresh.
- * @param {(options: { deadline: number }) => Promise<any>} load Fetches fresh data; must finish by `deadline` (epoch ms).
+ * @param {(options: { deadline: number, background: boolean }) => Promise<any>} load Fetches fresh
+ *   data; must finish by `deadline` (epoch ms). `background` is false when a request is waiting
+ *   for the result, so the load can favour speed over the number of upstream requests.
  * @param {object} options
  * @param {number} options.freshMs
  * @param {number} options.maxAgeMs
- * @param {number} options.foregroundBudgetMs Time a waiting request gives `load`.
- * @param {number} options.backgroundBudgetMs Time a background refresh gives `load`.
+ * @param {number} options.foregroundBudgetMs How long a request waits for a load.
+ * @param {number} options.backgroundBudgetMs How long a load may take, whether or not a request waits for it.
  * @returns {Promise<{ value: any, status: 'hit' | 'stale' | 'miss', ageMs: number }>}
  */
 export async function getWithRevalidation(key, load, { freshMs, maxAgeMs, foregroundBudgetMs, backgroundBudgetMs }) {
@@ -129,7 +143,7 @@ export async function getWithRevalidation(key, load, { freshMs, maxAgeMs, foregr
 
   if (ageMs < maxAgeMs) {
     if (!failedRefreshes.get(key)) {
-      const background = refresh(key, load, { budgetMs: backgroundBudgetMs, maxAgeMs }).catch((error) => {
+      const background = refresh(key, load, { budgetMs: backgroundBudgetMs, maxAgeMs, background: true }).catch((error) => {
         failedRefreshes.set(key, true);
         console.warn(`Background refresh of ${key} failed, serving cached data: ${error.message}`);
       });
@@ -138,8 +152,13 @@ export async function getWithRevalidation(key, load, { freshMs, maxAgeMs, foregr
     return { value: entry.value, status: 'stale', ageMs };
   }
 
+  // Nothing usable is cached, so this request waits for the load. The load is kept alive
+  // independently of the request (waitUntil): if it needs longer than the request waits, or the
+  // visitor gives up first (GitHub's image proxy does after 4 seconds), it still finishes.
+  const loading = refresh(key, load, { budgetMs: backgroundBudgetMs, maxAgeMs, background: false });
+  waitUntil(loading.catch(() => {}));
   try {
-    const fresh = await refresh(key, load, { budgetMs: foregroundBudgetMs, maxAgeMs });
+    const fresh = await waitAtMost(loading, foregroundBudgetMs);
     return { value: fresh.value, status: 'miss', ageMs: 0 };
   } catch (error) {
     // Very old data still beats an error image.

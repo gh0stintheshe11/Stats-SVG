@@ -8,7 +8,8 @@ import fetchSteamStatus from './steam/fetch.js';
  *
  * - `usernamePattern`: what a valid `username` looks like. Anything else gets a 400
  *   before any upstream API is called.
- * - `fetch(username, { deadline })`: loads the card's data. Throw an HttpError
+ * - `fetch(username, { deadline, background })`: loads the card's data and must finish by
+ *   `deadline`. `background` is true for a refresh nobody is waiting for. Throw an HttpError
  *   (src/lib/errors.js) for expected failures such as "user not found".
  * - `render(data)`: returns the SVG markup. Cards without `render` answer with the
  *   fetched data as JSON, which is handy while a card's design is still in progress.

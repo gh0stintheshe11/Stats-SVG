@@ -1,6 +1,7 @@
 import config from '../../../config.js';
 import { HttpError } from '../../lib/errors.js';
 import { fetchJson } from '../../lib/http.js';
+import { createLimiter } from '../../lib/limit.js';
 import { withRetry } from '../../lib/retry.js';
 import { getOrLoad } from '../../lib/store.js';
 import { calculateLanguagePercentage } from './languages.js';
@@ -36,10 +37,24 @@ const GRAPHQL_QUERY_USER_INFO = `
   }
 `;
 
-const GRAPHQL_QUERY_REPOSITORIES = `
-  query userRepositories($login: String!, $after: String) {
+// The account's creation date on its own: GitHub answers this at once, while the full user
+// info above takes it a second or two.
+const GRAPHQL_QUERY_USER_CREATED_AT = `
+  query userCreatedAt($login: String!) {
     user(login: $login) {
-      repositories(first: 100, after: $after, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}) {
+      createdAt
+    }
+  }
+`;
+
+// Both repository queries page through the same list in the same order, so a cursor from one
+// can be used with the other.
+const REPOSITORIES_ARGUMENTS = 'first: $first, after: $after, ownerAffiliations: OWNER, isFork: false, orderBy: {field: CREATED_AT, direction: DESC}';
+
+const GRAPHQL_QUERY_REPOSITORIES = `
+  query userRepositories($login: String!, $first: Int!, $after: String) {
+    user(login: $login) {
+      repositories(${REPOSITORIES_ARGUMENTS}) {
         pageInfo {
           hasNextPage
           endCursor
@@ -58,6 +73,22 @@ const GRAPHQL_QUERY_REPOSITORIES = `
               }
             }
           }
+        }
+      }
+    }
+  }
+`;
+
+// Only says where a page ends. GitHub answers this in a fraction of a second,
+// while a full page takes it several seconds.
+const GRAPHQL_QUERY_REPOSITORY_CURSORS = `
+  query userRepositoryCursors($login: String!, $first: Int!, $after: String) {
+    user(login: $login) {
+      repositories(${REPOSITORIES_ARGUMENTS}) {
+        totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
         }
       }
     }
@@ -97,6 +128,18 @@ const GRAPHQL_QUERY_CONTRIBUTIONS_TOTALS = `
 // Contribution totals of past years practically never change, so they are cached for a month;
 // only the current year is asked from GitHub on every refresh.
 const PAST_YEARS_TTL_MS = 30 * 24 * 3600 * 1000;
+
+// GitHub allows at most 100 repositories per page.
+const MAX_PAGE_SIZE = 100;
+// How many repository pages are requested from GitHub at the same time.
+const MAX_PARALLEL_PAGES = 12;
+
+/**
+ * Page size for loading repositories while a visitor is waiting. Smaller pages come back sooner
+ * (GitHub needs roughly 50 ms per repository) but need more cursor steps, which run one after
+ * another. These sizes were the fastest in measurements against the GitHub API.
+ */
+const pageSizeWhileWaiting = (totalRepositories) => (totalRepositories > 600 ? 100 : totalRepositories > 250 ? 50 : 34);
 
 /**
  * Turns a list of GraphQL errors into an HttpError.
@@ -159,17 +202,74 @@ async function fetchUserInfo(login, options) {
   return githubGraphQL(GRAPHQL_QUERY_USER_INFO, { login }, options);
 }
 
-async function fetchRepositories(login, options) {
+/** Loads the pages one after another, each from the cursor of the page before it. */
+async function fetchRepositoriesInSequence(login, options) {
   const repositories = [];
   let after = null;
 
   do {
-    const user = await githubGraphQL(GRAPHQL_QUERY_REPOSITORIES, { login, after }, options);
+    const user = await githubGraphQL(GRAPHQL_QUERY_REPOSITORIES, { login, first: MAX_PAGE_SIZE, after }, options);
     repositories.push(...user.repositories.nodes);
     after = user.repositories.pageInfo.hasNextPage ? user.repositories.pageInfo.endCursor : null;
   } while (after);
 
   return repositories;
+}
+
+/**
+ * Loads all repositories the user owns (forks excluded).
+ *
+ * GitHub only hands out one page after another, because each page needs the cursor of the page
+ * before it, and a full page of 100 takes it 4-6 seconds. Loaded that way, an account with 400
+ * repositories took 20 seconds. So a second, cursor-only query walks through the account (each
+ * step takes a fraction of a second), and the full pages are requested side by side as soon as
+ * their cursors are known.
+ *
+ * @param {string} login
+ * @param {object} options
+ * @param {number} options.deadline
+ * @param {boolean} options.visitorIsWaiting True when a visitor waits for the result (the first
+ *   load of an account): uses smaller pages and starts the cursor walk right away. Otherwise (a
+ *   background refresh) it uses as few requests as possible: one for accounts up to 100 repositories.
+ */
+async function fetchRepositories(login, { visitorIsWaiting, ...options }) {
+  const limit = createLimiter(MAX_PARALLEL_PAGES);
+  const pages = [];
+  const requestPage = (after, first) => {
+    const page = limit(() => githubGraphQL(GRAPHQL_QUERY_REPOSITORIES, { login, first, after }, options)).then((user) => user.repositories);
+    page.catch(() => {}); // a failure is reported by Promise.all below; this keeps it from counting as unhandled until then
+    pages.push({ after, page });
+    return page;
+  };
+  const whereThePageEnds = async (after, first) =>
+    (await githubGraphQL(GRAPHQL_QUERY_REPOSITORY_CURSORS, { login, first, after }, options)).repositories;
+
+  let pageSize = visitorIsWaiting ? pageSizeWhileWaiting(0) : MAX_PAGE_SIZE;
+  const firstPage = requestPage(null, pageSize);
+  // Where does the first page end? The cursor-only query knows sooner. When nobody is waiting,
+  // the page itself tells, and an account that fits on one page needs no further request.
+  let position = visitorIsWaiting ? await whereThePageEnds(null, pageSize) : await firstPage;
+  if (visitorIsWaiting) pageSize = pageSizeWhileWaiting(position.totalCount);
+
+  while (position.pageInfo.hasNextPage) {
+    const after = position.pageInfo.endCursor;
+    requestPage(after, pageSize);
+    position = await whereThePageEnds(after, pageSize);
+  }
+
+  const loaded = await Promise.all(pages.map(({ page }) => page));
+
+  // Every page must end exactly where the next one starts. If a repository was created or deleted
+  // while the pages were loading, they no longer line up; then load them the plain way.
+  const linedUp = loaded.every((page, i) => (i + 1 < pages.length
+    ? page.pageInfo.hasNextPage && page.pageInfo.endCursor === pages[i + 1].after
+    : !page.pageInfo.hasNextPage));
+  if (!linedUp) {
+    console.warn(`Repositories of ${login} changed while loading; loading them again one page at a time`);
+    return fetchRepositoriesInSequence(login, options);
+  }
+
+  return loaded.flatMap((page) => page.nodes);
 }
 
 /** Returns daily contribution counts as { 'YYYY-MM-DD': { total } }. */
@@ -242,8 +342,10 @@ function calculateTopLanguages(repositories) {
  * @param {string} username GitHub login (already validated by the API handler).
  * @param {object} [options]
  * @param {number} [options.deadline] Epoch ms by which all GitHub calls must finish.
+ * @param {boolean} [options.background] True for a refresh nobody waits for: it then uses as few
+ *   GitHub requests as possible. Otherwise a visitor is waiting and speed comes first.
  */
-async function fetchGitHubData(username, { deadline = Date.now() + 25000 } = {}) {
+async function fetchGitHubData(username, { deadline = Date.now() + 25000, background = false } = {}) {
   const options = { deadline };
   const now = new Date();
   const currentYearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
@@ -251,15 +353,21 @@ async function fetchGitHubData(username, { deadline = Date.now() + 25000 } = {})
   calendarFrom.setUTCDate(now.getUTCDate() - config.contribution_distribution.days_to_show + 1);
 
   const startedAt = Date.now();
-  // Everything starts at once. Only the past years' totals wait for the account creation date
-  // from the user info, and those usually come from the cache.
+  // Everything starts at once. Only the past years' totals need something first: the account's
+  // creation date. On a refresh they come from the cache and the date is taken from the user
+  // info. When a visitor is waiting they have to be fetched, one request per year, and that is
+  // the slowest part for an old account; so the date is asked for separately, which takes a
+  // fraction of the time the user info does.
   const userInfoPromise = fetchUserInfo(username, options);
+  const createdAtPromise = background
+    ? userInfoPromise.then((user) => user.createdAt)
+    : githubGraphQL(GRAPHQL_QUERY_USER_CREATED_AT, { login: username }, options).then((user) => user.createdAt);
   const [userInfo, repositories, contributionsCalendar, currentYear, pastYears] = await Promise.all([
     userInfoPromise,
-    fetchRepositories(username, options),
+    fetchRepositories(username, { ...options, visitorIsWaiting: !background }),
     fetchContributionsCalendar(username, calendarFrom, now, options),
     fetchContributionTotals(username, { from: currentYearStart, to: now }, options),
-    userInfoPromise.then((user) => fetchPastYearsContributions(username, user.createdAt, currentYearStart, options)),
+    createdAtPromise.then((createdAt) => fetchPastYearsContributions(username, createdAt, currentYearStart, options)),
   ]);
   console.log(`GitHub API calls (${username}): ${Date.now() - startedAt}ms`);
 

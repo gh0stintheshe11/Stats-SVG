@@ -88,6 +88,8 @@ Cards are cached in layers, so a visitor almost never waits for the GitHub API:
 
 Only the very first request for a username waits for GitHub. A card that hasn't been viewed for a while shows its last known numbers immediately, and the current ones when it is viewed again a minute later.
 
+That first request takes 2-4 seconds for most accounts; repository pages and contribution years are requested from GitHub side by side. GitHub's image proxy waits 4 seconds for an image, so for a very large account (several hundred repositories) the first view in a README can still fail. The data is collected in the background regardless, and the card is there on the next view.
+
 **Browsers and GitHub's image proxy are told not to keep a copy** (`Cache-Control: no-store`), so every page view fetches the card from the CDN. This is on purpose: a card's animation starts when the image is loaded, and a browser that reuses a copy it already has does not play the animation from the start again.
 
 Responses include a `Server-Timing` header (visible in the browser's dev tools) showing whether the data was a cache `hit`, `stale` or `miss`, and how long each step took. Runtime Cache is free on the Hobby plan within its monthly limits.

@@ -4,6 +4,7 @@ import { createTtlCache } from '../src/lib/cache.js';
 import { HttpError, upstreamStatusError } from '../src/lib/errors.js';
 import { escapeXml, safeHexColor } from '../src/lib/escape.js';
 import { fetchJson } from '../src/lib/http.js';
+import { createLimiter } from '../src/lib/limit.js';
 import { timeLeft, withRetry } from '../src/lib/retry.js';
 import { svg } from '../src/lib/svg.js';
 import { httpStatus, mockFetch } from './helpers/mock-fetch.js';
@@ -107,6 +108,34 @@ describe('withRetry', () => {
 
   test('timeLeft throws a 504 once the deadline has passed', () => {
     assert.throws(() => timeLeft(Date.now() - 1), { status: 504 });
+  });
+});
+
+describe('createLimiter', () => {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  test('runs at most the given number of tasks at a time, in order', async () => {
+    const limit = createLimiter(3);
+    let running = 0, most = 0;
+    const started = [];
+    const results = await Promise.all(Array.from({ length: 10 }, (_, i) => limit(async () => {
+      started.push(i);
+      most = Math.max(most, ++running);
+      await sleep(5);
+      running--;
+      return i * 2;
+    })));
+    assert.equal(most, 3);
+    assert.deepEqual(started, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    assert.deepEqual(results, [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]);
+  });
+
+  test('a failing task frees its slot for the next one', async () => {
+    const limit = createLimiter(1);
+    const failing = limit(async () => { throw new Error('boom'); });
+    const next = limit(async () => 'still runs');
+    await assert.rejects(failing, /boom/);
+    assert.equal(await next, 'still runs');
   });
 });
 
