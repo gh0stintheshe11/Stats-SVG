@@ -5,3 +5,4 @@ node_modules/
 .vs
 .vscode
 test.md
+opencode.json
