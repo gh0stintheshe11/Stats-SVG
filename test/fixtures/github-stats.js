@@ -24,11 +24,12 @@ export default {
   total_discussions_answered: 1,
   merged_prs_percentage: 75,
   rank: { level: 'A-', percentile: 30.5 },
-  language_percentages: [
-    { name: 'JavaScript', percentage: 40, color: '#f1e05a' },
-    { name: 'Python', percentage: 30, color: '#3572A5' },
-    { name: 'Go', percentage: 20, color: '#00ADD8' },
-    { name: 'Shell', percentage: 10, color: '#89e051' },
-  ],
+  // Shown as 40%, 30%, 20% and 10%: each language's weight is sqrt(size * count).
+  languages: {
+    JavaScript: { size: 1600, count: 1, color: '#f1e05a' },
+    Python: { size: 900, count: 1, color: '#3572A5' },
+    Go: { size: 400, count: 1, color: '#00ADD8' },
+    Shell: { size: 100, count: 1, color: '#89e051' },
+  },
   contribution_distribution,
 };

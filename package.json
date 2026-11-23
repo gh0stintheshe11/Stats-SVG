@@ -13,6 +13,7 @@
     "test": "node --test test/*.test.js",
     "test:update-snapshots": "UPDATE_SNAPSHOTS=1 node --test test/*.test.js",
     "build:fonts": "node scripts/build-fonts.js",
+    "build:language-aliases": "node scripts/build-language-aliases.js",
     "check:deps": "knip --dependencies",
     "prepare": "husky"
   },
@@ -23,6 +24,7 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "knip": "^6.48.0",
-    "subset-font": "^2.9.0"
+    "subset-font": "^2.9.0",
+    "yaml": "^2.9.1"
   }
 }

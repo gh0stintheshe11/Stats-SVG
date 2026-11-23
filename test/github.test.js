@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import fetchGitHubData from '../src/cards/github/fetch.js';
-import { calculateLanguagePercentage } from '../src/cards/github/languages.js';
+import { calculateLanguagePercentage, parseIgnoredLanguages } from '../src/cards/github/languages.js';
 import { calculateRank } from '../src/cards/github/rank.js';
 import { ACCOUNT_CREATED_YEAR, githubApi, graphQLError } from './fixtures/github-api.js';
 import { httpStatus, mockFetch } from './helpers/mock-fetch.js';
@@ -37,6 +37,60 @@ describe('calculateLanguagePercentage', () => {
     assert.deepEqual(calculateLanguagePercentage({}), []);
     assert.deepEqual(calculateLanguagePercentage({ Empty: { size: 0, count: 1 } }), []);
   });
+
+  test('leaves out ignored languages: the next one moves up and the rest share 100%', () => {
+    const languages = Object.fromEntries(Array.from({ length: 25 }, (_, i) => [`L${i}`, { size: 100 * (25 - i), count: 1, color: '#000' }]));
+    const result = calculateLanguagePercentage(languages, { ignore: new Set(['l0', 'l5']) });
+    assert.deepEqual(result.map((l) => l.name), ['L1', 'L2', 'L3', 'L4', ...Array.from({ length: 16 }, (_, i) => `L${i + 6}`)]);
+    assert.ok(Math.abs(result.reduce((sum, l) => sum + l.percentage, 0) - 100) < 1e-9);
+  });
+
+  test('ignoring every language leaves an empty ring', () => {
+    assert.deepEqual(calculateLanguagePercentage({ Go: { size: 1, count: 1 } }, { ignore: new Set(['go']) }), []);
+  });
+});
+
+describe('parseIgnoredLanguages', () => {
+  const LANGUAGES = Object.fromEntries(['C', 'C++', 'C#', 'HTML', 'CSS', 'Go', 'Jupyter Notebook', 'Vim Script'].map((name) => [name, { size: 1, count: 1, color: '#000' }]));
+  const ALL = ['C', 'C++', 'C#', 'HTML', 'CSS', 'Go', 'Jupyter', 'Vim Script'];
+  /** The languages left on the card for a request with this query string. */
+  const shown = (query) => calculateLanguagePercentage(LANGUAGES, { ignore: parseIgnoredLanguages(new URL(`https://card.test/api/github-status?username=x&${query}`)) })
+    .map((l) => l.name);
+  const without = (...names) => ALL.filter((name) => !names.includes(name));
+
+  test("a language's default alias: its name in lower case, with hyphens for spaces", () => {
+    assert.deepEqual(shown('ignore_languages=html,css'), without('HTML', 'CSS'));
+    assert.deepEqual(shown('ignore_languages=jupyter-notebook,vim-script'), without('Jupyter', 'Vim Script'));
+    assert.deepEqual(shown('ignore_languages=c'), without('C'));
+  });
+
+  test('the aliases GitHub Linguist lists', () => {
+    assert.deepEqual(shown('ignore_languages=csharp,cpp'), without('C#', 'C++'));
+    assert.deepEqual(shown('ignore_languages=golang,ipython%20notebook'), without('Go', 'Jupyter'));
+  });
+
+  test('case does not matter, as in GitHub search', () => {
+    assert.deepEqual(shown('ignore_languages=HTML,CSharp,Jupyter-Notebook'), without('HTML', 'C#', 'Jupyter'));
+  });
+
+  test('the parameter may be repeated', () => {
+    assert.deepEqual(shown('ignore_languages=go&ignore_languages=css'), without('Go', 'CSS'));
+  });
+
+  test('anything else matches nothing, and never another language', () => {
+    for (const query of [
+      'ignore_languages=Jupyter', // the card's short name
+      'ignore_languages=Jupyter%20Notebook', // the display name, with a space
+      'ignore_languages=C++', // a + in a URL is a space: this is "c  "
+      'ignore_languages=html,%20css', // spaces are not trimmed
+      'ignore_languages=rust,constructor,__proto__,toString', // unknown, or properties every object has
+      'ignore_languages=%E0%A4%A', // a malformed escape
+      'ignore_languages=,,&hide=go',
+    ]) {
+      const expected = query.includes('html') ? without('HTML') : ALL;
+      assert.deepEqual(shown(query), expected, query);
+    }
+  });
 });
 
 describe('calculateRank', () => {
@@ -66,8 +120,10 @@ describe('fetchGitHubData', () => {
     assert.equal(stats.total_forks, 60);
     assert.equal(stats.total_contributes_to, 12);
     assert.equal(stats.merged_prs_percentage, 90); // 45 merged of 50 PRs, both from user.pullRequests
-    assert.equal(stats.language_percentages.length, 20);
-    assert.ok(stats.language_percentages.some((l) => l.name === 'Jupyter'));
+    // All 25 languages are kept (the card picks its top 20 when it is rendered), summed over the
+    // repositories: each one is in two of the four.
+    assert.equal(Object.keys(stats.languages).length, 25);
+    assert.deepEqual(stats.languages['Jupyter Notebook'], { size: 50000, count: 2, color: '#123456' });
     assert.ok(Object.keys(stats.contribution_distribution).length >= 60);
     assert.match(stats.rank.level, /^(S|A\+|A|A-|B\+|B|B-|C\+|C)$/);
   });

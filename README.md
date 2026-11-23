@@ -58,6 +58,11 @@ Since the GitHub API only allows 5k requests per hour, the api provided by this 
   ```
   https://your-project.vercel.app/api/github-status?username=YOUR_GITHUB_USERNAME
   ```
+- To leave languages out of the language ring, list them in `ignore_languages`, separated by commas. The remaining languages share the 100%, and the next one moves up into the top 20:
+  ```
+  https://your-project.vercel.app/api/github-status?username=YOUR_GITHUB_USERNAME&ignore_languages=html,css,jupyter-notebook
+  ```
+  Name languages the way GitHub search does (`language:csharp`), by their [Linguist](https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml) aliases: the name in lower case with hyphens for spaces (`html`, `jupyter-notebook`), or an alias listed there (`csharp` for C#, `cpp` for C++). Case doesn't matter; don't put spaces after the commas.
 
 #### Optional: only release deployments that pass the tests
 By default Vercel releases every build of `main`, even if the tests fail. Two GitHub Actions workflows can gate it: **CI** runs the unit tests, and **Smoke test** requests a real card from each new deployment. To make production wait for them:
@@ -111,6 +116,7 @@ npm test
 | `npm test` | Runs all tests. No network or tokens needed: the GitHub, LeetCode and Steam APIs are mocked. |
 | `npm run test:update-snapshots` | Accepts an intentional change to a card's look (see below). |
 | `npm run build:fonts` | Re-embeds the files in `/fonts` after you change them. |
+| `npm run build:language-aliases` | Regenerates the table of GitHub's language aliases (for `ignore_languages`) from a [Linguist](https://github.com/github-linguist/linguist/releases) release; pass a newer release tag to update it: `npm run build:language-aliases -- v9.8.0`. |
 | `npm run check:deps` | Checks with [knip](https://knip.dev) that `package.json` lists exactly the packages the code uses: none unused, none missing. Also runs before every commit. |
 
 ### Snapshot tests
@@ -133,9 +139,9 @@ src/
     leetcode/             LeetCode endpoint (JSON for now)
   lib/                    Shared building blocks: svg template tag, fonts, HTTP client, errors, retries,
                           store.js (cache with background refresh)
-  assets/                 Embedded fonts (generated) and the center image
+  assets/                 Embedded fonts and GitHub's language aliases (both generated), the center image
 fonts/                    Source font files (also served publicly at /fonts/)
-scripts/                  Local dev server and the font embedding script
+scripts/                  Local dev server, and the scripts generating the embedded fonts and the alias table
 test/                     Tests, fixtures, mocks and snapshots
 .github/                  CI (tests), smoke test of each Vercel deployment, Dependabot
 ```

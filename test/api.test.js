@@ -116,6 +116,24 @@ describe('GET /api/github-status', () => {
     assert.ok(calls.length > callsAfterFirst, 'the refresh asked GitHub again');
   });
 
+  test('ignore_languages leaves languages out of the card; the data is fetched only once', async (t) => {
+    withEnv(t, { GITHUB_TOKEN: TOKEN });
+    const calls = mockFetch(t, githubApi());
+    const user = uniqueUser();
+    // The test account has 25 languages, ranked Jupyter Notebook, Lang1, Lang2, ... Lang24.
+    const legend = (svg) => [...svg.matchAll(/<tspan fill="[^"]+">([^<]+)<\/tspan>\s*<tspan[^>]*>[\d.]+%<\/tspan>/g)].map((match) => match[1]);
+
+    const all = legend(await (await get(`/api/github-status?username=${user}`)).text());
+    assert.deepEqual(all, ['Jupyter', ...Array.from({ length: 19 }, (_, i) => `Lang${i + 1}`)]);
+    const callsAfterFirst = calls.length;
+
+    const response = await get(`/api/github-status?username=${user}&ignore_languages=jupyter-notebook,lang3`);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('server-timing'), /^cache;desc="hit/);
+    assert.deepEqual(legend(await response.text()), [1, 2, ...Array.from({ length: 18 }, (_, i) => i + 4)].map((n) => `Lang${n}`));
+    assert.equal(calls.length, callsAfterFirst, 'the cached data was used');
+  });
+
   test('escapes a hostile display name end to end', async (t) => {
     withEnv(t, { GITHUB_TOKEN: TOKEN });
     mockFetch(t, githubApi({ name: '</text><script>alert(1)</script>', languageColor: 'red" onload="x' }));

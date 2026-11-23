@@ -4,7 +4,6 @@ import { fetchJson } from '../../lib/http.js';
 import { createLimiter } from '../../lib/limit.js';
 import { withRetry } from '../../lib/retry.js';
 import { getOrLoad } from '../../lib/store.js';
-import { calculateLanguagePercentage } from './languages.js';
 import { calculateRank } from './rank.js';
 
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
@@ -323,8 +322,12 @@ const sumContributions = (years) => years.reduce((totals, year) => ({
   issues: totals.issues + year.totalIssueContributions,
 }), { commits: 0, prs: 0, reviews: 0, issues: 0 });
 
-/** Aggregates language size and repo count across repositories, keyed by language name. */
-function calculateTopLanguages(repositories) {
+/**
+ * Aggregates language size and repo count across repositories, keyed by language name.
+ * All languages are kept: which ones the card shows, and their percentages, are decided when it
+ * is rendered (see ./languages.js), because a card can leave some out.
+ */
+function sumLanguages(repositories) {
   const languages = {};
   for (const repo of repositories) {
     for (const { size, node } of repo.languages.edges) {
@@ -372,8 +375,6 @@ async function fetchGitHubData(username, { deadline = Date.now() + 25000, backgr
   console.log(`GitHub API calls (${username}): ${Date.now() - startedAt}ms`);
 
   const allTimeContributions = sumContributions([...pastYears, currentYear]);
-  const languages = calculateTopLanguages(repositories);
-
   const stats = {
     login: userInfo.login,
     name: userInfo.name || userInfo.login,
@@ -390,6 +391,7 @@ async function fetchGitHubData(username, { deadline = Date.now() + 25000, backgr
     total_discussions_started: userInfo.repositoryDiscussions.totalCount,
     total_discussions_answered: userInfo.repositoryDiscussionComments.totalCount,
     contribution_distribution: contributionsCalendar,
+    languages: sumLanguages(repositories),
   };
 
   // Merged and total PRs both come from `user.pullRequests`, so the ratio is consistent
@@ -407,8 +409,6 @@ async function fetchGitHubData(username, { deadline = Date.now() + 25000, backgr
     stars: stats.total_stars,
     followers: stats.followers,
   });
-
-  stats.language_percentages = calculateLanguagePercentage(languages);
 
   return stats;
 }

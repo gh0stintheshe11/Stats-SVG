@@ -123,6 +123,7 @@ export async function handleRequest(request) {
     if (!isAllowed(username)) {
       throw new HttpError(403, 'This instance does not serve that username');
     }
+    const options = card.parseOptions?.(url) ?? {};
 
     const dataStartedAt = performance.now();
     const cacheKey = `${cardName}:v${card.dataVersion}:${card.caseInsensitive ? username.toLowerCase() : username}`;
@@ -145,7 +146,7 @@ export async function handleRequest(request) {
     }
 
     const renderStartedAt = performance.now();
-    const svg = card.render(result.value);
+    const svg = card.render(result.value, options);
     const renderMs = performance.now() - renderStartedAt;
 
     return new Response(svg, {

@@ -24,7 +24,7 @@ test('text from the API is escaped', (t) => {
   const svg = render(t, {
     ...stats,
     name: 'Tom & Jerry</text><script>alert(1)</script>',
-    language_percentages: [{ name: '<b>Lang</b>', percentage: 100, color: 'red" onload="alert(1)' }],
+    languages: { '<b>Lang</b>': { size: 1, count: 1, color: 'red" onload="alert(1)' } },
   });
   assert.ok(!svg.includes('<script>'));
   assert.ok(!svg.includes('<b>'));

@@ -7,6 +7,7 @@ import { safeHexColor } from '../../lib/escape.js';
 import { fontFaces } from '../../lib/fonts.js';
 import { svg } from '../../lib/svg.js';
 import Icons from './icons.js';
+import { calculateLanguagePercentage } from './languages.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -377,9 +378,11 @@ function renderContributionChart(contributionDistribution, rankRingConfig) {
  * Renders the GitHub stats card.
  *
  * @param {object} stats Output of fetchGitHubData (see ./fetch.js).
+ * @param {object} [options] From the request URL (see parseOptions in ../index.js).
+ * @param {Set<string>} [options.ignoreLanguages] Languages to leave out of the language ring.
  * @returns {string} The complete SVG document.
  */
-function renderStats(stats) {
+function renderStats(stats, { ignoreLanguages } = {}) {
   const svg_width = config.svg.width;
   const svg_height = config.svg.height;
   const colors = config.colors;
@@ -389,7 +392,8 @@ function renderStats(stats) {
   const imagePosition = calculateImagePosition(languageRingConfig);
 
   const stat_rows = STAT_ROWS.map((row, index) => renderStatRow(row, index, stats, rankRingConfig));
-  const language_percentage_ring = renderLanguageRing(stats.language_percentages, languageRingConfig);
+  const languagePercentages = calculateLanguagePercentage(stats.languages, { ignore: ignoreLanguages });
+  const language_percentage_ring = renderLanguageRing(languagePercentages, languageRingConfig);
   const contribution_chart = renderContributionChart(stats.contribution_distribution, rankRingConfig);
 
   return String(svg`
