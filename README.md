@@ -109,7 +109,7 @@ npm test
 | `npm test` | Runs all tests. No network or tokens needed: the GitHub, LeetCode and Steam APIs are mocked. |
 | `npm run test:update-snapshots` | Accepts an intentional change to a card's look (see below). |
 | `npm run build:fonts` | Re-embeds the files in `/fonts` after you change them. |
-| `npm run check:deps` | Lists dependencies in `package.json` that the code no longer uses. Also runs before every commit. |
+| `npm run check:deps` | Checks with [knip](https://knip.dev) that `package.json` lists exactly the packages the code uses: none unused, none missing. Also runs before every commit. |
 
 ### Snapshot tests
 

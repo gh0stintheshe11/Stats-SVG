@@ -13,7 +13,7 @@
     "test": "node --test test/*.test.js",
     "test:update-snapshots": "UPDATE_SNAPSHOTS=1 node --test test/*.test.js",
     "build:fonts": "node scripts/build-fonts.js",
-    "check:deps": "depcheck",
+    "check:deps": "knip --dependencies",
     "prepare": "husky"
   },
   "dependencies": {
@@ -21,8 +21,8 @@
     "image-size": "^2.1.0"
   },
   "devDependencies": {
-    "depcheck": "^1.4.7",
     "husky": "^9.1.7",
+    "knip": "^6.48.0",
     "subset-font": "^2.9.0"
   }
 }

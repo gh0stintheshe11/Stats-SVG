@@ -1,6 +1,6 @@
-# Fail the commit if package.json lists dependencies the code doesn't use.
-# This only reports; it never uninstalls packages or stages files for you.
+# Fail the commit if package.json and the code disagree about dependencies.
+# This only reports; it never changes package.json or stages files for you.
 npm run --silent check:deps || {
-  echo "Unused dependencies found (see above). Remove them with 'npm uninstall <name>', or commit with --no-verify if this is a false positive."
+  echo "Dependency check failed (see above). Remove unused packages with 'npm uninstall <name>', add missing ones with 'npm install <name>', or commit with --no-verify if this is a false positive."
   exit 1
 }
