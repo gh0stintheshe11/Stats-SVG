@@ -1,9 +1,13 @@
 import config from '../config.js';
 import { CARDS } from './cards/index.js';
 import { HttpError } from './lib/errors.js';
+import { getWithRevalidation } from './lib/store.js';
 
-// vercel.json stops the function after 10s; keep upstream calls well inside that.
-const UPSTREAM_BUDGET_MS = 8000;
+// When nothing is cached the visitor waits for the upstream API, so give it plenty of time:
+// even if the image request gives up, the result fills the cache for the next view.
+// Background refreshes don't block anyone. Both stay below maxDuration in vercel.json.
+const FOREGROUND_BUDGET_MS = 25_000;
+const BACKGROUND_BUDGET_MS = 50_000;
 
 // Cards only need inline styles and data: fonts/images. Blocking everything else means
 // injected markup could not run scripts even if escaping ever missed something.
@@ -16,10 +20,10 @@ const DEFAULT_ERROR_MESSAGES = {
   504: 'Upstream API timed out',
 };
 
-/** Returns the card registered for /api/<name>, or undefined. */
+/** Returns [name, card] for /api/<name>, or []. */
 function findCard(pathname) {
   const name = pathname.match(/^\/api\/([\w-]+)\/?$/)?.[1];
-  return name && Object.hasOwn(CARDS, name) ? CARDS[name] : undefined;
+  return name && Object.hasOwn(CARDS, name) ? [name, CARDS[name]] : [];
 }
 
 /**
@@ -32,9 +36,32 @@ function isAllowed(username) {
   return allowList.split(',').some((name) => name.trim().toLowerCase() === username.toLowerCase());
 }
 
-function cacheControl() {
-  const { max_age_seconds, stale_while_revalidate_seconds } = config.cache;
-  return `public, max-age=${max_age_seconds}, s-maxage=${max_age_seconds}, stale-while-revalidate=${stale_while_revalidate_seconds}`;
+/**
+ * Cache-Control for a card, based on how old its data is.
+ *
+ * - Fresh data: cacheable until the data turns `max_age_seconds` old. After that the CDN may hand
+ *   out the old card once more while it asks the function again in the background.
+ * - Stale data (a background refresh has just been started): cacheable only briefly and without
+ *   that grace period, so the next request reaches the function and gets the refreshed data.
+ *
+ * Either way the CDN falls back to the last card if the function fails.
+ */
+function cacheControl({ status, ageMs }) {
+  const { max_age_seconds, stale_max_age_seconds, keep_stale_seconds } = config.cache;
+  if (status === 'stale') {
+    return `public, max-age=${stale_max_age_seconds}, s-maxage=${stale_max_age_seconds}, stale-if-error=${keep_stale_seconds}`;
+  }
+  const remaining = Math.max(stale_max_age_seconds, Math.round(max_age_seconds - ageMs / 1000));
+  return `public, max-age=${remaining}, s-maxage=${remaining}, ` +
+    `stale-while-revalidate=${keep_stale_seconds}, stale-if-error=${keep_stale_seconds}`;
+}
+
+/** Server-Timing header: shows in the browser's dev tools how the response was produced. */
+function serverTiming({ status, ageMs }, dataMs, renderMs) {
+  const age = status === 'miss' ? '' : ` age ${Math.round(ageMs / 1000)}s`;
+  const metrics = [`cache;desc="${status}${age}"`, `data;dur=${dataMs.toFixed(1)}`];
+  if (renderMs !== undefined) metrics.push(`render;dur=${renderMs.toFixed(1)}`);
+  return metrics.join(', ');
 }
 
 function errorResponse(error) {
@@ -62,6 +89,9 @@ function errorResponse(error) {
 /**
  * Serves /api/<card>?username=<name>.
  *
+ * Card data comes from a two-level cache with background refresh (src/lib/store.js), and the
+ * response itself is cacheable by the CDN, so most views never wait for an upstream API.
+ *
  * Takes a standard Request and returns a standard Response, so the same code runs on
  * Vercel (api/index.js), in the local dev server (scripts/dev-server.js) and in tests.
  *
@@ -75,7 +105,7 @@ export async function handleRequest(request) {
     }
 
     const url = new URL(request.url);
-    const card = findCard(url.pathname);
+    const [cardName, card] = findCard(url.pathname);
     if (!card) throw new HttpError(404, 'Not found');
 
     const usernames = url.searchParams.getAll('username');
@@ -87,20 +117,35 @@ export async function handleRequest(request) {
       throw new HttpError(403, 'This instance does not serve that username');
     }
 
-    const data = await card.fetch(username, { deadline: Date.now() + UPSTREAM_BUDGET_MS });
+    const dataStartedAt = performance.now();
+    const cacheKey = `${cardName}:v${card.dataVersion}:${card.caseInsensitive ? username.toLowerCase() : username}`;
+    const result = await getWithRevalidation(cacheKey, ({ deadline }) => card.fetch(username, { deadline }), {
+      freshMs: config.cache.max_age_seconds * 1000,
+      maxAgeMs: config.cache.keep_stale_seconds * 1000,
+      foregroundBudgetMs: FOREGROUND_BUDGET_MS,
+      backgroundBudgetMs: BACKGROUND_BUDGET_MS,
+    });
+    const dataMs = performance.now() - dataStartedAt;
+
     const headers = {
-      'Cache-Control': cacheControl(),
+      'Cache-Control': cacheControl(result),
       'X-Content-Type-Options': 'nosniff',
     };
 
     if (!card.render) {
-      return Response.json(data, { headers });
+      return Response.json(result.value, { headers: { ...headers, 'Server-Timing': serverTiming(result, dataMs) } });
     }
-    return new Response(card.render(data), {
+
+    const renderStartedAt = performance.now();
+    const svg = card.render(result.value);
+    const renderMs = performance.now() - renderStartedAt;
+
+    return new Response(svg, {
       headers: {
         ...headers,
         'Content-Type': 'image/svg+xml; charset=utf-8',
         'Content-Security-Policy': SVG_CONTENT_SECURITY_POLICY,
+        'Server-Timing': serverTiming(result, dataMs, renderMs),
       },
     });
   } catch (error) {

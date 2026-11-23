@@ -13,6 +13,25 @@ const uniqueUser = () => `api-user-${++userCounter}`;
 
 const get = (path, init) => handleRequest(new Request(`http://localhost${path}`, init));
 
+const MINUTE = 60_000;
+
+/** Lets a test move the clock forward. */
+function mockClock(t) {
+  let now = Date.now();
+  t.mock.method(Date, 'now', () => now);
+  return { advance: (ms) => { now += ms; } };
+}
+
+/** Calls `attempt` until it returns something truthy, and returns that. For background work. */
+async function waitFor(attempt) {
+  for (let i = 0; i < 200; i++) {
+    const result = await attempt();
+    if (result) return result;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+  throw new Error('waitFor: gave up after 200 attempts');
+}
+
 /** Sets environment variables for one test and restores them afterwards. */
 function withEnv(t, vars) {
   const saved = Object.fromEntries(Object.keys(vars).map((key) => [key, process.env[key]]));
@@ -34,9 +53,61 @@ describe('GET /api/github-status', () => {
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('content-type'), 'image/svg+xml; charset=utf-8');
     assert.match(response.headers.get('content-security-policy'), /default-src 'none'/);
-    assert.match(response.headers.get('cache-control'), /^public, max-age=\d+, s-maxage=\d+/);
+    assert.equal(response.headers.get('cache-control'), 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=604800, stale-if-error=604800');
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.match(response.headers.get('server-timing'), /^cache;desc="miss", data;dur=[\d.]+, render;dur=[\d.]+$/);
     assert.match(await response.text(), /^\s*<svg /);
+  });
+
+  test('repeat requests are served from the cache without calling GitHub', async (t) => {
+    withEnv(t, { GITHUB_TOKEN: TOKEN });
+    const calls = mockFetch(t, githubApi());
+    const user = uniqueUser();
+    await get(`/api/github-status?username=${user}`);
+    const callsAfterFirst = calls.length;
+
+    const response = await get(`/api/github-status?username=${user.toUpperCase()}`); // logins are case-insensitive
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('server-timing'), /^cache;desc="hit age \d+s"/);
+    assert.equal(calls.length, callsAfterFirst);
+  });
+
+  test('a card is cacheable until its data turns one hour old', async (t) => {
+    withEnv(t, { GITHUB_TOKEN: TOKEN });
+    const clock = mockClock(t);
+    mockFetch(t, githubApi());
+    const user = uniqueUser();
+    await get(`/api/github-status?username=${user}`);
+
+    clock.advance(10 * MINUTE);
+    const response = await get(`/api/github-status?username=${user}`);
+    assert.match(response.headers.get('server-timing'), /^cache;desc="hit age 600s"/);
+    assert.match(response.headers.get('cache-control'), /^public, max-age=3000, s-maxage=3000, stale-while-revalidate=/);
+  });
+
+  test('older data is served at once, cached only briefly, and refreshed for the next request', async (t) => {
+    withEnv(t, { GITHUB_TOKEN: TOKEN });
+    const clock = mockClock(t);
+    const calls = mockFetch(t, githubApi());
+    const user = uniqueUser();
+    await get(`/api/github-status?username=${user}`);
+    const callsAfterFirst = calls.length;
+
+    clock.advance(61 * MINUTE);
+    const stale = await get(`/api/github-status?username=${user}`);
+    assert.equal(stale.status, 200);
+    assert.match(stale.headers.get('server-timing'), /^cache;desc="stale age 3660s"/);
+    // No stale-while-revalidate here: once the minute is over, the CDN must ask the function again.
+    assert.equal(stale.headers.get('cache-control'), 'public, max-age=60, s-maxage=60, stale-if-error=604800');
+
+    // The refresh runs in the background; ask again until its result is used.
+    const refreshed = await waitFor(async () => {
+      const response = await get(`/api/github-status?username=${user}`);
+      return response.headers.get('server-timing').startsWith('cache;desc="hit') && response;
+    });
+    assert.match(refreshed.headers.get('server-timing'), /^cache;desc="hit age 0s"/);
+    assert.match(refreshed.headers.get('cache-control'), /^public, max-age=3600, /);
+    assert.ok(calls.length > callsAfterFirst, 'the refresh asked GitHub again');
   });
 
   test('escapes a hostile display name end to end', async (t) => {
@@ -164,6 +235,21 @@ test('secrets never reach the logs, even when every upstream call fails', async 
   assert.ok(logged.length > 0);
   assert.ok(!output.includes(TOKEN));
   assert.ok(!output.includes(STEAM_KEY));
+});
+
+test('the Vercel handler rejects odd requests without failing', async () => {
+  const send = async (req) => {
+    const res = { headers: {}, setHeader(key, value) { this.headers[key.toLowerCase()] = value; }, end(body) { this.body = String(body); } };
+    await vercelHandler(req, res);
+    return res.statusCode;
+  };
+  // A standard Request can't be created with these methods or this URL.
+  assert.equal(await send({ url: '/api/github-status?username=x', method: 'TRACE' }), 400);
+  assert.equal(await send({ url: '/api/github-status?username=x', method: 'CONNECT' }), 400);
+  assert.equal(await send({ url: ':not-a-port', method: 'GET' }), 400);
+  // "//host/path" must not be read as a URL with another host.
+  assert.equal(await send({ url: '//example.com/api/github-status?username=x', method: 'GET' }), 404);
+  assert.equal(await send({ url: '//', method: 'GET' }), 404);
 });
 
 test('the Vercel handler translates Node req/res', async (t) => {

@@ -46,8 +46,11 @@ Since the GitHub API only allows 5k requests per hour, the api provided by this 
    - Add a new variable:
      - Name: `GITHUB_TOKEN`
      - Value: Your GitHub PAT from step 1
+     - Environments: Production **and** Preview, so preview deployments (and the smoke test) work too
    - Optional, recommended for personal instances: add `ALLOWED_USERNAMES` with a comma-separated list of usernames (e.g., `your-username`). Requests for any other username get a `403`, so strangers can't use up your token's API quota.
 2. Click `Deploy`
+
+`vercel.json` turns on [Fluid compute](https://vercel.com/docs/fluid-compute), which pre-warms the function and caches its compiled code, so cold starts are rare and short. The Node.js version comes from `engines` in `package.json`.
 
 #### 4. Using Your Instance
 - Once deployed, Vercel will provide you with a domain (e.g., `your-project.vercel.app`)
@@ -55,6 +58,14 @@ Since the GitHub API only allows 5k requests per hour, the api provided by this 
   ```
   https://your-project.vercel.app/api/github-status?username=YOUR_GITHUB_USERNAME
   ```
+
+#### Optional: only release deployments that pass the tests
+By default Vercel releases every build of `main`, even if the tests fail. Two GitHub Actions workflows can gate it: **CI** runs the unit tests, and **Smoke test** requests a real card from each new deployment. To make production wait for them:
+1. **Give the smoke test access** (skip if Deployment Protection is off): in Vercel, open Project Settings → Deployment Protection → *Protection Bypass for Automation*, create a secret, and add it to your GitHub repository as the Actions secret `VERCEL_AUTOMATION_BYPASS_SECRET`. Until then the smoke test only prints a warning and reports nothing.
+2. If `ALLOWED_USERNAMES` doesn't include your GitHub username, set the GitHub Actions variable `SMOKE_TEST_USERNAME` to a username it does include.
+3. Push to `main` once, so both workflows have run, then open Project Settings → Build and Deployment → *Deployment Checks* → *Add Checks* → GitHub, and select **test** and **Smoke test (production)**.
+
+From then on, a production deployment only goes live after both checks pass; otherwise the previous deployment stays live.
 
 #### Troubleshooting
 - For issues, check Vercel's deployment logs or open an issue in this repository
@@ -65,13 +76,23 @@ Since the GitHub API only allows 5k requests per hour, the api provided by this 
 
 You can customize the appearance of the SVG by modifying the `config.js` file. This includes changing colors, dimensions, and other visual aspects of the generated image. If you want to modify the SVG code, you can do so in the `src/cards/github/render.js` file.
 
-Responses are cached for one hour by browsers, GitHub's image proxy and the Vercel CDN, so repeat views don't call the GitHub API. Change `cache.max_age_seconds` in `config.js` to adjust this. A new deployment clears the Vercel CDN cache.
+If you change the fonts in `/fonts`, regenerate the embedded copies with `npm run build:fonts`. Cards embed a WOFF2 subset with Latin characters (including Vietnamese); text in other scripts is drawn with a fallback font.
 
-If you change the fonts in `/fonts`, regenerate the embedded copies with `npm run build:fonts`.
+### Caching
+
+Cards are cached in layers, so a visitor almost never waits for the GitHub API:
+
+1. **Card data** is kept in the [Vercel Runtime Cache](https://vercel.com/docs/runtime-cache), which survives deployments. It counts as fresh for `cache.max_age_seconds` (1 hour) after it was fetched from GitHub. Older data, up to `cache.keep_stale_seconds` (7 days), is still shown right away while fresh data is fetched in the background. If GitHub is down or rate-limited, the last data simply keeps being shown.
+2. **Cards** are cached by browsers, GitHub's image proxy and Vercel's CDN until their data turns 1 hour old. A card built from older data is cached for only `cache.stale_max_age_seconds` (1 minute), so the next view shows the refreshed numbers. If the function fails, the CDN keeps serving the last card.
+3. **Past years' contribution totals** are cached for 30 days, so a refresh only asks GitHub about the current year.
+
+Only the very first request for a username waits for GitHub. A card that hasn't been viewed for a while shows its last known numbers immediately, and the current ones when it is viewed again a minute later.
+
+Responses include a `Server-Timing` header (visible in the browser's dev tools) showing whether the data was a cache `hit`, `stale` or `miss`, and how long each step took. Runtime Cache is free on the Hobby plan within its monthly limits.
 
 ## Development
 
-Requires Node.js 20.12 or newer.
+Requires Node.js 24, the version used on Vercel and in CI (`engines` in `package.json`). Node.js 20.12+ also works locally.
 
 ```sh
 npm install
@@ -106,11 +127,13 @@ src/
     github/               GitHub card: fetch.js (GitHub API), render.js (SVG), rank.js, languages.js, icons.js
     steam/                Steam endpoint (JSON for now; card design in progress)
     leetcode/             LeetCode endpoint (JSON for now)
-  lib/                    Shared building blocks: svg template tag, fonts, HTTP client, errors, retries, cache
+  lib/                    Shared building blocks: svg template tag, fonts, HTTP client, errors, retries,
+                          store.js (cache with background refresh)
   assets/                 Embedded fonts (generated) and the center image
 fonts/                    Source font files (also served publicly at /fonts/)
 scripts/                  Local dev server and the font embedding script
 test/                     Tests, fixtures, mocks and snapshots
+.github/                  CI (tests), smoke test of each Vercel deployment, Dependabot
 ```
 
 ### Adding a card

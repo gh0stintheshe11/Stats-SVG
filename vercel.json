@@ -1,16 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": true,
   "functions": {
     "api/*.js": {
-      "memory": 512,
-      "maxDuration": 10,
+      "maxDuration": 60,
       "includeFiles": "src/assets/**"
     }
   },
   "redirects": [
     {
       "source": "/",
-      "destination": "https://github.com/gh0stintheshe11/github-stats-svg"
+      "destination": "https://github.com/gh0stintheshe11/Stats-SVG"
     }
   ],
   "rewrites": [

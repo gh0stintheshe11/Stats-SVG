@@ -1,4 +1,3 @@
-import { createTtlCache } from '../../lib/cache.js';
 import { HttpError } from '../../lib/errors.js';
 import { fetchJson } from '../../lib/http.js';
 import { withRetry } from '../../lib/retry.js';
@@ -7,8 +6,6 @@ const STEAM_API_BASE_URL = 'https://api.steampowered.com';
 const steamCDNBaseUrl = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/';
 
 const PERSONA_STATES = ['Offline', 'Online', 'Busy', 'Away', 'Snooze', 'Looking to trade', 'Looking to play'];
-
-const cache = createTtlCache({ ttlMs: 2 * 60 * 1000, maxEntries: 500 });
 
 /**
  * Calls a Steam Web API method over HTTPS and returns its `response` object.
@@ -35,10 +32,7 @@ async function steamApi(path, params, { deadline }) {
  * @param {object} [options]
  * @param {number} [options.deadline] Epoch ms by which all Steam calls must finish.
  */
-const fetchSteamStatus = async (steamID, { deadline = Date.now() + 8000 } = {}) => {
-  const cached = cache.get(steamID);
-  if (cached) return cached;
-
+const fetchSteamStatus = async (steamID, { deadline = Date.now() + 25000 } = {}) => {
   const options = { deadline };
   const startedAt = Date.now();
   const [userProfile, recentGames, ownedGames, badges, animatedAvatar] = await Promise.all([
@@ -108,7 +102,6 @@ const fetchSteamStatus = async (steamID, { deadline = Date.now() + 8000 } = {}) 
       .filter((item) => Object.values(item)[0] > 0);
   }
 
-  cache.set(steamID, steamData);
   return steamData;
 };
 

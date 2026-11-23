@@ -5,6 +5,9 @@
   "description": "Animated, cyberpunk-styled SVG stats cards for GitHub profiles",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "start": "node scripts/dev-server.js",
     "test": "node --test test/*.test.js",
@@ -14,10 +17,12 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@vercel/functions": "^3.11.3",
     "image-size": "^2.1.0"
   },
   "devDependencies": {
     "depcheck": "^1.4.7",
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "subset-font": "^2.9.0"
   }
 }

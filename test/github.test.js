@@ -80,14 +80,19 @@ describe('fetchGitHubData', () => {
     assert.ok(calls.every((call) => call.headers.Authorization === 'bearer ghp_test_token'));
   });
 
-  test('caches per username, case-insensitively', async (t) => {
+  test('caches past years\' contribution totals, but always fetches the current year', async (t) => {
     withToken(t);
     const calls = mockFetch(t, githubApi());
     const user = uniqueUser();
-    await fetchGitHubData(user);
-    const callsAfterFirst = calls.length;
-    await fetchGitHubData(user.toUpperCase());
-    assert.equal(calls.length, callsAfterFirst);
+    const totalsQueries = () => calls.filter((call) => call.body.query.includes('userContributionTotals'));
+
+    const first = await fetchGitHubData(user);
+    const pastYears = new Date().getUTCFullYear() - ACCOUNT_CREATED_YEAR;
+    assert.equal(totalsQueries().length, pastYears + 1);
+
+    const second = await fetchGitHubData(user);
+    assert.equal(totalsQueries().length, pastYears + 2); // only the current year again
+    assert.equal(second.total_commits, first.total_commits);
   });
 
   test('fails fast without a token', async (t) => {
@@ -109,7 +114,7 @@ describe('fetchGitHubData', () => {
       withToken(t);
       const calls = mockFetch(t, () => response.clone?.() ?? response);
       await assert.rejects(fetchGitHubData(uniqueUser()), { status });
-      assert.ok(calls.length <= 3, `expected one call per parallel query, got ${calls.length}`);
+      assert.ok(calls.length <= 4, `expected one call per parallel query, got ${calls.length}`);
     });
   }
 
@@ -129,6 +134,6 @@ describe('fetchGitHubData', () => {
     await assert.rejects(fetchGitHubData(user), { status: 502 });
     // Wait for the parallel queries to finish their own retries before counting.
     await new Promise((resolve) => setTimeout(resolve, 1_500));
-    assert.equal(calls.length, 9); // user info, repositories and calendar: 3 attempts each
+    assert.equal(calls.length, 12); // user info, repositories, calendar, current year: 3 attempts each
   });
 });

@@ -1,11 +1,8 @@
-import { createTtlCache } from '../../lib/cache.js';
 import { HttpError } from '../../lib/errors.js';
 import { fetchJson } from '../../lib/http.js';
 import { withRetry } from '../../lib/retry.js';
 
 const LEETCODE_API_ENDPOINT = 'https://leetcode.com/graphql';
-
-const cache = createTtlCache({ ttlMs: 2 * 60 * 1000, maxEntries: 500 });
 
 const skill_query = `
   query skillStats($username: String!) {
@@ -124,10 +121,7 @@ const mapSkills = (skills) => skills.map((skill) => ({
  * @param {object} [options]
  * @param {number} [options.deadline] Epoch ms by which all LeetCode calls must finish.
  */
-async function fetchLeetCodeStats(username, { deadline = Date.now() + 8000 } = {}) {
-  const cached = cache.get(username);
-  if (cached) return cached;
-
+async function fetchLeetCodeStats(username, { deadline = Date.now() + 25000 } = {}) {
   const options = { deadline };
   const startedAt = Date.now();
   const [user_data, skill_data, language_data, contest_data] = await Promise.all([
@@ -163,7 +157,6 @@ async function fetchLeetCodeStats(username, { deadline = Date.now() + 8000 } = {
     },
   };
 
-  cache.set(username, leetcode_stats);
   return leetcode_stats;
 }
 

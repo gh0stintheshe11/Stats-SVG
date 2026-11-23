@@ -1,0 +1,22 @@
+# Weekly pull requests that keep dependencies and GitHub Actions up to date.
+# CI runs on each of them. Security updates also need "Dependabot security updates"
+# turned on in the repository's Settings → Code security.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      production:
+        dependency-type: production
+      development:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

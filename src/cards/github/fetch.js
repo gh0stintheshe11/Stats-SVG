@@ -1,8 +1,8 @@
 import config from '../../../config.js';
-import { createTtlCache } from '../../lib/cache.js';
 import { HttpError } from '../../lib/errors.js';
 import { fetchJson } from '../../lib/http.js';
 import { withRetry } from '../../lib/retry.js';
+import { getOrLoad } from '../../lib/store.js';
 import { calculateLanguagePercentage } from './languages.js';
 import { calculateRank } from './rank.js';
 
@@ -94,7 +94,9 @@ const GRAPHQL_QUERY_CONTRIBUTIONS_TOTALS = `
   }
 `;
 
-const cache = createTtlCache({ ttlMs: 2 * 60 * 1000, maxEntries: 500 });
+// Contribution totals of past years practically never change, so they are cached for a month;
+// only the current year is asked from GitHub on every refresh.
+const PAST_YEARS_TTL_MS = 30 * 24 * 3600 * 1000;
 
 /**
  * Turns a list of GraphQL errors into an HttpError.
@@ -192,24 +194,34 @@ async function fetchContributionsCalendar(login, from, to, options) {
   return calendar;
 }
 
-/** Sums commit, PR, review and issue contributions from account creation until now. */
-async function fetchAllTimeContributions(login, createdAt, options) {
-  const yearly = await Promise.all(splitByYear(new Date(createdAt), new Date()).map(async (range) => {
-    const user = await githubGraphQL(GRAPHQL_QUERY_CONTRIBUTIONS_TOTALS, {
-      login,
-      from: range.from.toISOString(),
-      to: range.to.toISOString(),
-    }, options);
-    return user.contributionsCollection;
-  }));
-
-  return yearly.reduce((totals, year) => ({
-    commits: totals.commits + year.totalCommitContributions,
-    prs: totals.prs + year.totalPullRequestContributions,
-    reviews: totals.reviews + year.totalPullRequestReviewContributions,
-    issues: totals.issues + year.totalIssueContributions,
-  }), { commits: 0, prs: 0, reviews: 0, issues: 0 });
+async function fetchContributionTotals(login, range, options) {
+  const user = await githubGraphQL(GRAPHQL_QUERY_CONTRIBUTIONS_TOTALS, {
+    login,
+    from: range.from.toISOString(),
+    to: range.to.toISOString(),
+  }, options);
+  return user.contributionsCollection;
 }
+
+/** Contribution totals for each year before `currentYearStart`, from the long-lived cache when possible. */
+async function fetchPastYearsContributions(login, createdAt, currentYearStart, options) {
+  const accountCreated = new Date(createdAt);
+  if (accountCreated >= currentYearStart) return [];
+
+  const ranges = splitByYear(accountCreated, new Date(currentYearStart.getTime() - 1));
+  return Promise.all(ranges.map((range) => getOrLoad(
+    `github:v1:contributions:${login.toLowerCase()}:${range.from.getUTCFullYear()}`,
+    () => fetchContributionTotals(login, range, options),
+    { ttlMs: PAST_YEARS_TTL_MS },
+  )));
+}
+
+const sumContributions = (years) => years.reduce((totals, year) => ({
+  commits: totals.commits + year.totalCommitContributions,
+  prs: totals.prs + year.totalPullRequestContributions,
+  reviews: totals.reviews + year.totalPullRequestReviewContributions,
+  issues: totals.issues + year.totalIssueContributions,
+}), { commits: 0, prs: 0, reviews: 0, issues: 0 });
 
 /** Aggregates language size and repo count across repositories, keyed by language name. */
 function calculateTopLanguages(repositories) {
@@ -231,28 +243,28 @@ function calculateTopLanguages(repositories) {
  * @param {object} [options]
  * @param {number} [options.deadline] Epoch ms by which all GitHub calls must finish.
  */
-async function fetchGitHubData(username, { deadline = Date.now() + 8000 } = {}) {
-  // Logins are case-insensitive, so "Octocat" and "octocat" share a cache entry.
-  const cacheKey = username.toLowerCase();
-  const cached = cache.get(cacheKey);
-  if (cached) return cached;
-
+async function fetchGitHubData(username, { deadline = Date.now() + 25000 } = {}) {
   const options = { deadline };
   const now = new Date();
+  const currentYearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
   const calendarFrom = new Date(now);
   calendarFrom.setUTCDate(now.getUTCDate() - config.contribution_distribution.days_to_show + 1);
 
   const startedAt = Date.now();
-  // The all-time totals need the account creation date, so they start as soon as user info arrives,
-  // in parallel with the repository and calendar requests.
+  // Everything starts at once. Only the past years' totals wait for the account creation date
+  // from the user info, and those usually come from the cache.
   const userInfoPromise = fetchUserInfo(username, options);
-  const [userInfo, repositories, contributionsCalendar, allTimeContributions] = await Promise.all([
+  const [userInfo, repositories, contributionsCalendar, currentYear, pastYears] = await Promise.all([
     userInfoPromise,
     fetchRepositories(username, options),
     fetchContributionsCalendar(username, calendarFrom, now, options),
-    userInfoPromise.then((user) => fetchAllTimeContributions(username, user.createdAt, options)),
+    fetchContributionTotals(username, { from: currentYearStart, to: now }, options),
+    userInfoPromise.then((user) => fetchPastYearsContributions(username, user.createdAt, currentYearStart, options)),
   ]);
   console.log(`GitHub API calls (${username}): ${Date.now() - startedAt}ms`);
+
+  const allTimeContributions = sumContributions([...pastYears, currentYear]);
+  const languages = calculateTopLanguages(repositories);
 
   const stats = {
     login: userInfo.login,
@@ -267,7 +279,6 @@ async function fetchGitHubData(username, { deadline = Date.now() + 8000 } = {}) 
     total_stars: repositories.reduce((sum, repo) => sum + repo.stargazers.totalCount, 0),
     total_forks: repositories.reduce((sum, repo) => sum + repo.forkCount, 0),
     total_contributes_to: userInfo.repositoriesContributedTo.totalCount,
-    top_languages: calculateTopLanguages(repositories),
     total_discussions_started: userInfo.repositoryDiscussions.totalCount,
     total_discussions_answered: userInfo.repositoryDiscussionComments.totalCount,
     contribution_distribution: contributionsCalendar,
@@ -289,9 +300,8 @@ async function fetchGitHubData(username, { deadline = Date.now() + 8000 } = {}) 
     followers: stats.followers,
   });
 
-  stats.language_percentages = calculateLanguagePercentage(stats.top_languages);
+  stats.language_percentages = calculateLanguagePercentage(languages);
 
-  cache.set(cacheKey, stats);
   return stats;
 }
 

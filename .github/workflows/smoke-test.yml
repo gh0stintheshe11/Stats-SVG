@@ -1,0 +1,98 @@
+name: Smoke test
+
+# Requests a real card from every Vercel deployment once it is built, and reports the result as a
+# commit status that Vercel Deployment Checks can require. Unlike `npm test`, this exercises the
+# actual deployment: bundling, environment variables, the Vercel runtime and the GitHub API.
+#
+# Vercel sends the repository_dispatch event (it only reaches workflows on the default branch).
+# Use "Run workflow" in the Actions tab to test any deployment URL by hand.
+#
+# If Vercel Deployment Protection blocks the request and no bypass secret is set, the run prints
+# a warning and reports no status. See "only release deployments that pass the tests" in the README.
+on:
+  repository_dispatch:
+    types: [vercel.deployment.ready]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Deployment URL, e.g. https://my-project-abc123.vercel.app
+        required: true
+
+run-name: Smoke test (${{ github.event.client_payload.environment || 'manual' }})
+
+permissions:
+  actions: read # the status action looks up this job to link to it
+  statuses: write # for the commit status
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      DEPLOYMENT_URL: ${{ github.event.client_payload.url || inputs.url }}
+      # Lets the requests through Vercel Deployment Protection; see the README.
+      BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Check access to the deployment
+        id: access
+        run: |
+          set -euo pipefail
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https://[A-Za-z0-9.-]+/?$ ]]; then
+            echo "::error::Unexpected deployment URL: $DEPLOYMENT_URL"
+            exit 1
+          fi
+          auth=()
+          if [ -n "$BYPASS_SECRET" ]; then auth=(-H "x-vercel-protection-bypass: $BYPASS_SECRET"); fi
+
+          # Without a username the API answers 400. A redirect or a 401 comes from Vercel's
+          # Deployment Protection instead.
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "${auth[@]}" "${DEPLOYMENT_URL%/}/api/github-status" || true)
+          case "$status" in
+            401 | 3??)
+              if [ -n "$BYPASS_SECRET" ]; then
+                echo "::error::Vercel Deployment Protection rejected VERCEL_AUTOMATION_BYPASS_SECRET (HTTP $status). It must match the project's Protection Bypass for Automation secret."
+                exit 1
+              fi
+              echo "::warning::Smoke test skipped: Vercel Deployment Protection blocks this deployment. Add the VERCEL_AUTOMATION_BYPASS_SECRET secret to enable it (see the README)."
+              echo "blocked=true" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      # Reports this job's result on the deployed commit (repository_dispatch runs are otherwise
+      # attached to the latest commit on main). The name includes the environment, so preview
+      # and production deployments of one commit don't overwrite each other's status.
+      - name: Report the result as a commit status
+        if: steps.access.outputs.blocked != 'true' && github.event_name == 'repository_dispatch'
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: Smoke test (${{ github.event.client_payload.environment }})
+
+      - name: Request a card from the deployment
+        if: steps.access.outputs.blocked != 'true'
+        env:
+          # A GitHub username the deployment is allowed to serve (see ALLOWED_USERNAMES).
+          CARD_USERNAME: ${{ vars.SMOKE_TEST_USERNAME || github.repository_owner }}
+        run: |
+          set -euo pipefail
+          base="${DEPLOYMENT_URL%/}"
+          auth=()
+          if [ -n "$BYPASS_SECRET" ]; then auth=(-H "x-vercel-protection-bypass: $BYPASS_SECRET"); fi
+
+          echo "::group::GET /api/github-status?username=$CARD_USERNAME"
+          status=$(curl -sS -o card.svg -D headers.txt -w '%{http_code}' --max-time 90 "${auth[@]}" \
+            "$base/api/github-status?username=$CARD_USERNAME")
+          cat headers.txt
+          echo "::endgroup::"
+
+          if [ "$status" != 200 ]; then
+            echo "::error::Expected HTTP 200, got $status: $(head -c 300 card.svg)"
+            exit 1
+          fi
+          grep -qi '^content-type: image/svg+xml' headers.txt || { echo "::error::Response is not an SVG"; exit 1; }
+          python3 -I -c 'import sys, xml.etree.ElementTree as ET; root = ET.parse(sys.argv[1]).getroot(); assert root.tag.endswith("svg"), root.tag' card.svg \
+            || { echo "::error::Response is not well-formed SVG"; exit 1; }
+          echo "Card OK: $(wc -c < card.svg) bytes, $(grep -i '^server-timing' headers.txt | tr -d '\r')"
+
+          # Invalid input must be rejected before any GitHub API call.
+          status=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "${auth[@]}" "$base/api/github-status?username=%3Cbad%3E")
+          [ "$status" = 400 ] || { echo "::error::Expected HTTP 400 for an invalid username, got $status"; exit 1; }

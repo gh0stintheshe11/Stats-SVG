@@ -5,15 +5,15 @@
         <!-- Fonts -->
         @font-face {
           font-family: 'Rajdhani';
-          src: url('data:…') format('truetype');
+          src: url('data:…') format('woff2');
         }
         @font-face {
           font-family: 'ChakraPetch';
-          src: url('data:…') format('truetype');
+          src: url('data:…') format('woff2');
         }
         @font-face {
           font-family: 'LibreBarcode128';
-          src: url('data:…') format('truetype');
+          src: url('data:…') format('woff2');
         }
         
         <!-- Animation Styles -->

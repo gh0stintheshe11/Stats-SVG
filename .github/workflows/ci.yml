@@ -5,24 +5,27 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push to the same pull request makes the older run pointless.
+# Runs on main are never cancelled, so every production commit gets a result.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22, 24]
+    timeout-minutes: 10
     env:
       HUSKY: 0 # git hooks are for local commits only
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: package.json # engines.node, the same version Vercel runs
           cache: npm
       - run: npm ci
       - run: npm test
       - run: npm run check:deps
-      - run: npm audit --omit=dev

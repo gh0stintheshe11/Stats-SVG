@@ -16,7 +16,7 @@ test('GitHub card output matches the snapshot', (t) => {
 
 test('GitHub card embeds the fonts and the center image', (t) => {
   const svg = render(t, stats);
-  assert.equal(svg.match(/src: url\('data:font\/truetype;charset=utf-8;base64,[A-Za-z0-9+/=]{1000,}'\)/g)?.length, 3);
+  assert.equal(svg.match(/src: url\('data:font\/woff2;base64,[A-Za-z0-9+/=]{1000,}'\) format\('woff2'\)/g)?.length, 3);
   assert.match(svg, /<image href="data:image\/gif;base64,[A-Za-z0-9+/=]{1000,}"/);
 });
 

@@ -37,11 +37,15 @@ const config = {
       bar_display_time_duration: 0.2
     },
     cache: {
-      // How long browsers, GitHub's image proxy and the Vercel CDN may reuse a response.
-      // Repeat views are then served without calling the GitHub API again.
+      // How long card data counts as fresh after it was fetched (from GitHub etc.). Until then
+      // browsers, GitHub's image proxy and the Vercel CDN reuse the card, and nothing is fetched again.
       max_age_seconds: 3600,
-      // After max_age, the CDN may keep serving the old copy this long while it refreshes in the background.
-      stale_while_revalidate_seconds: 86400
+      // Older data is still shown right away while fresh data is fetched in the background. A card
+      // built from such data is cached only this long, so the next view shows the fresh data.
+      stale_max_age_seconds: 60,
+      // How long old data and old cards may still be shown: while a refresh is running, and when
+      // the upstream API or the function fails.
+      keep_stale_seconds: 604800
     }
   }
 
