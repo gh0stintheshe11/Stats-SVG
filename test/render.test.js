@@ -118,26 +118,28 @@ test('the barcode is uncovered from right to left, from when a sweep from the le
   for (const { end } of [short, long]) assert.ok(Math.abs(end - 1080 / 1100) < 0.015, `and finishes when the sweep reaches its right end: ${end}`);
 });
 
-test('the title is typed like a terminal command: prompt, cursor, the login one character at a time, Enter', (t) => {
+test('the title is typed like a terminal command: prompt, cursor, the login one character at a time, a blink, Enter', (t) => {
   const svg = render(t, { ...stats, login: 'octocat' });
   const title = svg.slice(0, svg.indexOf('<!-- The rest of the card'));
   const typed = [...title.matchAll(/<tspan visibility="hidden">(.)<set attributeName="visibility" to="visible" begin="([\d.]+)s"/g)].map(([, character, begin]) => [character, Number(begin)]);
-  const cursors = [...title.matchAll(/<tspan fill-opacity="0">&gt; ([^<]*)<\/tspan>_<set attributeName="visibility" to="visible" begin="([\d.]+)s" \/><set attributeName="visibility" to="hidden" begin="([\d.]+)s"/g)]
-    .map(([, before, from, to]) => ({ before, from: Number(from), to: Number(to) }));
+  // Each cursor: the text it stands behind, and when it is switched on and off.
+  const cursors = [...title.matchAll(/<tspan fill-opacity="0">&gt; ([^<]*)<\/tspan>_((?:<set [^>]*\/>)+)<\/text>/g)]
+    .map(([, before, sets]) => ({ before, switches: [...sets.matchAll(/to="(\w+)" begin="([\d.]+)s"/g)].map(([, to, begin]) => [to, Number(begin)]) }));
 
   assert.match(title, /<text [^>]*class="title title-prompt">&gt;<\/text>/, 'the prompt flickers in like the old title');
   assert.equal(typed.map(([character]) => character).join(''), 'octocat');
   typed.forEach(([, begin], i) => assert.equal(begin, Number((2.2 + i * 0.06).toFixed(2))));
 
-  // The cursor stands after what has been typed so far, and moves on as each character appears.
+  // While typing, the cursor stands after what has been typed so far, and moves on with each character.
   assert.deepEqual(cursors.map((cursor) => cursor.before), ['', 'o', 'oc', 'oct', 'octo', 'octoc', 'octoca', 'octocat']);
-  assert.equal(cursors[0].from, 1.8, 'the cursor appears once the prompt is there');
-  cursors.slice(1).forEach((cursor, i) => assert.equal(cursor.from, typed[i][1], `moves on when "${typed[i][0]}" is typed`));
-  cursors.slice(0, -1).forEach((cursor, i) => assert.equal(cursor.to, cursors[i + 1].from, 'one cursor at a time'));
+  assert.deepEqual(cursors[0].switches, [['visible', 1.8], ['hidden', 2.2]], 'it appears once the prompt is there');
+  cursors.slice(1, -1).forEach((cursor, i) => assert.deepEqual(cursor.switches, [['visible', typed[i][1]], ['hidden', typed[i + 1][1]]], `moves on when "${typed[i + 1][0]}" is typed`));
 
-  // Enter: half a second after the last character the cursor goes, and the rest of the card starts.
-  assert.equal(cursors.at(-1).to, Number((typed.at(-1)[1] + 0.5).toFixed(2)));
-  assert.equal(bodyStart(svg), cursors.at(-1).to);
+  // Done typing: it stays on, blinks once (off, on), and goes, as if Enter was pressed; then the rest of the card starts.
+  const last = typed.at(-1)[1];
+  const at = (seconds) => Number((last + seconds).toFixed(2));
+  assert.deepEqual(cursors.at(-1).switches, [['visible', last], ['hidden', at(0.3)], ['visible', at(0.6)], ['hidden', at(0.9)]]);
+  assert.equal(bodyStart(svg), at(0.9));
 });
 
 test('nothing in the rest of the card starts before the title has been typed', (t) => {

@@ -160,29 +160,33 @@ function calculateLanguageRing(svg_width, svg_height) {
 
 /**
  * The title, typed like a command in a terminal: the prompt ">" flickers in, a cursor "_" appears
- * behind it and types the login one character at a time, then waits a moment, as if Enter was
- * pressed, and disappears. Returns the markup, and the time it is done: the rest of the card
- * starts then.
+ * behind it and types the login one character at a time. Like a real cursor it stays on while
+ * typing and blinks once it is done; after one blink it disappears, as if Enter was pressed.
+ * Returns the markup, and the time it is done: the rest of the card starts then.
  *
  * The cursor is drawn after an invisible copy of the text typed so far, so the browser puts it
  * exactly where the next character goes, whatever the widths of the characters.
  * x=35 puts the prompt's left edge (1px into the glyph) in line with the stat icons below (x≈36).
  */
 function renderTitle(login) {
-  const { cursor_appears, typing_starts, typing_interval, enter_pause } = config.title;
+  const { cursor_appears, typing_starts, typing_interval, cursor_blink } = config.title;
   const round = (value) => Number(value.toFixed(2));
   const characters = [...login];
   const typedAt = (index) => round(typing_starts + index * typing_interval);
-  const done = round(typedAt(characters.length - 1) + enter_pause);
+  const typed_all = typedAt(characters.length - 1);
+  const done = round(typed_all + 3 * cursor_blink); // on, off, on: then Enter
 
   const typed = characters.map((character, index) => svg`<tspan visibility="hidden">${character}<set attributeName="visibility" to="visible" begin="${typedAt(index)}s" fill="freeze" /></tspan>`);
 
   // One cursor for each number of characters typed so far, shown until the next one is typed.
+  // The last one blinks: it goes off and comes on again before it goes for good.
   const cursors = characters.map((_, index) => index).concat(characters.length).map((count) => {
     const from = count === 0 ? cursor_appears : typedAt(count - 1);
-    const to = count < characters.length ? typedAt(count) : done;
+    const switches = count < characters.length
+      ? [['hidden', typedAt(count)]]
+      : [['hidden', round(typed_all + cursor_blink)], ['visible', round(typed_all + 2 * cursor_blink)], ['hidden', done]];
     return svg`
-      <text x="35" y="40" class="title" visibility="hidden"><tspan fill-opacity="0">&gt; ${characters.slice(0, count).join('')}</tspan>_<set attributeName="visibility" to="visible" begin="${from}s" /><set attributeName="visibility" to="hidden" begin="${to}s" /></text>`;
+      <text x="35" y="40" class="title" visibility="hidden"><tspan fill-opacity="0">&gt; ${characters.slice(0, count).join('')}</tspan>_<set attributeName="visibility" to="visible" begin="${from}s" />${switches.map(([to, begin]) => svg`<set attributeName="visibility" to="${to}" begin="${begin}s" />`)}</text>`;
   });
 
   const markup = svg`
