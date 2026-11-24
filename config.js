@@ -18,8 +18,10 @@ const config = {
     rank: {
       ringBgDarkLevel: 30,
       ringRadius: 80,
-      ringThickness: 34,
-      progressBarThickness: 28
+      ringThickness: 34, // the brackets on both sides of the ring are ringRadius + ringThickness from its center
+      progressBarThickness: 28, // how long a lit tick is, from the inner to the outer edge of the ring
+      progressSegments: 40, // the ring is divided into this many ticks
+      progressSegmentWidth: 0.6 // how much of each tick's slot is tick (the rest is the gap)
     },
     language: {
       ringRadius: 80,
@@ -28,13 +30,16 @@ const config = {
     contribution_distribution: {
       days_to_show: 60, // best to set to 60 days, if more than 60 days, the chart will be too crowded
       border_color: "#00f0ff",
-      bullish_color: "#32cd32",
-      bearish_color: "#c5003c",
-      neutral_color: "#f8e602",
+      bar_color_up: "#32cd32", // a day with at least as many contributions as the day before
+      bar_color_down: "#c5003c", // a day with fewer contributions than the day before
       global_display_time_delay: 0.5,
       bar_display_time_delay: 1,
-      bar_display_time_interval: 0.02,
-      bar_display_time_duration: 0.2
+      bar_display_time_interval: 0.02, // each bar starts rising this much later than the one before
+      bar_display_time_duration: 0.5, // how long a bar takes to rise from zero to its height
+      // Background grid. With 60 days, a column every day and 30 rows make square cells.
+      grid_days: 1, // a vertical line every this many days
+      grid_rows: 30, // horizontal lines split the chart into this many rows
+      grid_opacity: 0.2
     },
     cache: {
       // How long card data counts as fresh after it was fetched (from GitHub etc.). Until then

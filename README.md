@@ -41,7 +41,7 @@ stats-svg.vercel.app is a shared instance: everyone who uses it shares one GitHu
   - Commits, pull requests, issues and reviews are GitHub's contribution counts, added up over every year since the account was created.
 - **Rank.** A level from S, A+, A, A- … down to C, and a percentile: the lower, the better. It is based on the rank of [github-readme-stats](https://github.com/anuraghazra/github-readme-stats), with the number of repositories as an additional factor. The stats that count toward it are wired to the rank ring; a stat's frame turns green when it is above a typical user's value.
 - **Languages.** Your top 20 languages, ranked by √(bytes of code × number of repositories). That's github-readme-stats' language ranking with `size_weight=0.5&count_weight=0.5`.
-- **Daily contributions.** The last 60 days as candlesticks: each day opens at the previous day's count and closes at its own.
+- **Daily contributions.** The last 60 days, one bar per day: green when a day has at least as many contributions as the day before, red when it has fewer.
 
 Private repositories are left out, unless the instance's token is allowed to read them (see the token step below).
 

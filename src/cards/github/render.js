@@ -106,9 +106,8 @@ function calculateRankRing(stats, svg_width, svg_height) {
   const rank_ring_bottom_left_x = rank_ring_center_x - displacement;
   const rank_ring_bottom_left_y = rank_ring_center_y + displacement;
   const arc_length = Math.round(Math.PI * rank_ring_circle_radius / 2);
-  const rank_circumference = 2 * Math.PI * rank_ring_radius;
-  // Calculate the length of the visible progress bar
-  const visibleLength = rank_circumference * (1 - rank_percentile / 100);
+  // The share of the ring the rank fills: all of it for the top percentile
+  const rank_progress = 1 - rank_percentile / 100;
   const rank_ring_left_line_end = rank_ring_center_x - rank_ring_radius*1.7;
   const rank_ring_right_line_end = rank_ring_center_x + rank_ring_radius*1.7;
   return {
@@ -131,8 +130,7 @@ function calculateRankRing(stats, svg_width, svg_height) {
     rank_percentage_color,
     rank_ring_bg_dark_level,
     arc_length,
-    rank_circumference,
-    visibleLength,
+    rank_progress,
     rank_progress_bar_thickness,
     rank_progress_bar_color,
     rank_ring_left_line_end,
@@ -164,6 +162,56 @@ function calculateImagePosition(languageRing) {
   const image_y = Math.round(languageRing.language_ring_center_y - target_height / 2);
   const image_x = Math.round(languageRing.language_ring_center_x - (target_height / dimensions.height * dimensions.width / 2));
   return { target_height, image_y, image_x };
+}
+
+/**
+ * The rank ring as a gauge of `progressSegments` ticks.
+ *
+ * Every tick is a trapezoid whose sides run along the radius, so it is wider further out, like a
+ * slice of the ring. Unlit, a tick is just a small dark square at the inner edge of the ring; the
+ * squares blink in while the brackets on both sides open. Then the ticks for the share the rank
+ * fills light up one after another, starting at the bottom and going counterclockwise, quickly at
+ * first and slowing down (ease-out), each one growing outward from its square to the full tick.
+ */
+function renderRankTicks(rankRing) {
+  const { rank_ring_center_x: cx, rank_ring_center_y: cy, rank_ring_radius: radius } = rankRing;
+  const { progressSegments: segments, progressSegmentWidth } = config.rank;
+  const round = (value) => Number(value.toFixed(2));
+  const step = (2 * Math.PI) / segments;
+  const halfAngle = (step * progressSegmentWidth) / 2;
+  const inner = radius - rankRing.rank_progress_bar_thickness / 2;
+  const outer = radius + rankRing.rank_progress_bar_thickness / 2;
+  const square = 2 * inner * Math.sin(halfAngle); // as long as the tick is wide at its inner edge
+
+  const point = (angle, distance) => `${round(cx + distance * Math.cos(angle))},${round(cy + distance * Math.sin(angle))}`;
+  const trapezoid = (index, from, to) => {
+    const middle = Math.PI / 2 - (index + 0.5) * step; // from the bottom, counterclockwise
+    const [a, b] = [middle - halfAngle, middle + halfAngle];
+    return `${point(a, from)} ${point(b, from)} ${point(b, to)} ${point(a, to)}`;
+  };
+  const unlit = (index) => trapezoid(index, inner, inner + square);
+
+  // The squares appear with the brackets, which open from 1s to 2s: on, off, on, off, on.
+  const squares = Array.from({ length: segments }, (_, index) => svg`
+        <polygon points="${unlit(index)}" />`);
+
+  // Tick k of n lights when an ease-out gauge filling from 2.4s for 1.5s would be k/n full.
+  const lit = Math.round(segments * rankRing.rank_progress);
+  const ticks = Array.from({ length: lit }, (_, index) => {
+    const begin = round(2.4 + 1.5 * (1 - Math.sqrt(1 - (index + 1) / lit)));
+    return svg`
+        <polygon points="${unlit(index)}" opacity="0">
+          <set attributeName="opacity" to="1" begin="${begin}s" fill="freeze" />
+          <animate attributeName="points" from="${unlit(index)}" to="${trapezoid(index, inner, outer)}" dur="0.15s" begin="${begin}s" fill="freeze" />
+        </polygon>`;
+  });
+
+  return svg`<!-- Rank Ring: dark squares, and the ticks for the rank -->
+      <g fill="${darkenHexColor(rankRing.rank_progress_bar_color, rankRing.rank_ring_bg_dark_level)}" opacity="0">
+        <animate attributeName="opacity" values="1;0;1;0;1" keyTimes="0;0.2;0.4;0.6;0.8" calcMode="discrete" dur="0.75s" begin="1s" fill="freeze" />${squares}
+      </g>
+      <g fill="${rankRing.rank_progress_bar_color}">${ticks}
+      </g>`;
 }
 
 function renderStatRow(row, index, stats, rankRing) {
@@ -257,23 +305,56 @@ function renderLanguageRing(languagePercentages, languageRingConfig) {
   });
 }
 
+/**
+ * The background grid of the contribution chart: a vertical line every `grid_days` days and
+ * `grid_rows` rows, 1px thin. The chart's border draws it: each vertical
+ * line grows upward when the bottom line reaches it, and each horizontal line is drawn from right
+ * to left, like the top line, once the side line has passed it.
+ */
+function renderContributionGrid({ days, barWidth, chartWidth, chartHeight, totalBarDisplayTime }) {
+  const chartConfig = config.contribution_distribution;
+  const round = (value) => Number(value.toFixed(2));
+  const sweepStart = chartConfig.global_display_time_delay; // the bottom line starts...
+  const sideLineStart = sweepStart + totalBarDisplayTime; // ...then the side line (0.2s, from chartHeight+3 up to -3)
+
+  const vertical = [];
+  for (let day = chartConfig.grid_days; day < days; day += chartConfig.grid_days) {
+    const x = round(day * barWidth);
+    const begin = sweepStart + totalBarDisplayTime * (x / (chartWidth + 2));
+    vertical.push(svg`
+      <line x1="${x}" y1="${chartHeight + 1}" x2="${x}" y2="${chartHeight + 1}">
+        <animate attributeName="y2" from="${chartHeight + 1}" to="-1" dur="0.2s" fill="freeze" begin="${round(begin)}s"/>
+      </line>`);
+  }
+
+  const horizontal = [];
+  for (let row = 1; row < chartConfig.grid_rows; row++) {
+    const y = round((row * chartHeight) / chartConfig.grid_rows);
+    const begin = sideLineStart + 0.2 * ((chartHeight + 3 - y) / (chartHeight + 6));
+    horizontal.push(svg`
+      <line x1="${chartWidth + 1}" y1="${y}" x2="${chartWidth + 1}" y2="${y}">
+        <animate attributeName="x2" from="${chartWidth + 1}" to="0" dur="0.3s" fill="freeze" begin="${round(begin)}s"/>
+      </line>`);
+  }
+
+  // One group opacity, so crossing lines don't add up to brighter dots.
+  return svg`
+    <!-- grid -->
+    <g stroke="${chartConfig.border_color}" stroke-width="1" opacity="${chartConfig.grid_opacity}">${vertical}${horizontal}
+    </g>`;
+}
+
 function renderContributionChart(contributionDistribution, rankRingConfig) {
   const chartConfig = config.contribution_distribution;
 
   // Sort the dates
   const sortedDates = Object.keys(contributionDistribution).sort().slice(-chartConfig.days_to_show);
-  const data = sortedDates.map((date, i, arr) => {
-    const total = contributionDistribution[date].total;
-    const prevTotal = i > 0 ? contributionDistribution[arr[i - 1]].total : total;
-    
-    return {
-      date,
-      open: prevTotal,   // Simulate open as the previous day's total
-      close: total,      // Use the current day's total as the close
-      high: Math.max(total, prevTotal), // High is the max of current and previous totals
-      low: Math.min(total, prevTotal)   // Low is the min of current and previous totals
-    };
-  });
+  const data = sortedDates.map((date, i, dates) => ({
+    date,
+    total: contributionDistribution[date].total,
+    // The first day has no day before it in the chart, so it counts as unchanged.
+    previous: contributionDistribution[dates[Math.max(i - 1, 0)]].total,
+  }));
 
   // Chart dimensions and position
   const chartX = rankRingConfig.rank_ring_center_x + rankRingConfig.rank_ring_radius * 1.8;
@@ -292,67 +373,56 @@ function renderContributionChart(contributionDistribution, rankRingConfig) {
   }
 
   // Calculate scales
-  const maxTotal = Math.max(...data.map(d => d.high)) + 1; // Add 1 to create space for the label
+  const maxTotal = Math.max(...data.map(d => d.total)) + 1; // Add 1 to create space for the label
   const barWidth = chartWidth / data.length;
   const yScale = chartHeight / maxTotal;
   const totalBarDisplayTime = (data.length - 1) * chartConfig.bar_display_time_interval;
   const top_border_line_x = maxTotal > 100 ? 33 : maxTotal > 10 ? 22 : 11;
+  const grid = renderContributionGrid({ days: data.length, barWidth, chartWidth, chartHeight, totalBarDisplayTime });
 
-  const candlesticks = data.map((d, i) => {
-    // Only render if not both open and close are zero
-    if (d.open === 0 && d.close === 0) return null;
+  // One bar per day, from zero: a day's contributions don't build on the day before. The color
+  // still compares them: green for at least as many as the day before, red for fewer.
+  // Each bar rises from the bottom line, slowing down as it gets there (ease-out). They start one
+  // after another as the bottom line sweeps past, so neighbouring bars rise together, slightly
+  // staggered.
+  const bars = data.map((d, i) => {
+    if (d.total === 0) return null;
 
     const x = i * barWidth;
-    const highY = chartHeight - (d.high * yScale);
-    const lowY = chartHeight - (d.low * yScale);
-    const openY = chartHeight - (d.open * yScale);
-    const closeY = chartHeight - (d.close * yScale);
-
-    // Same-level days get the neutral color and a 1px body; otherwise green when rising, red when falling
-    const sameLevel = Math.abs(openY - closeY) < 0.1;
-    const color = sameLevel
-      ? chartConfig.neutral_color
-      : d.close > d.open ? chartConfig.bullish_color : chartConfig.bearish_color;
-    const bodyHeight = sameLevel ? 1 : Math.abs(openY - closeY);
+    const height = d.total * yScale;
+    const color = d.total < d.previous ? chartConfig.bar_color_down : chartConfig.bar_color_up;
+    const dur = chartConfig.bar_display_time_duration;
+    const begin = addSeconds(chartConfig.global_display_time_delay, i * chartConfig.bar_display_time_interval);
 
     return svg`
-        <g opacity="0">
-          <!-- Wick -->
-          <line x1="${x + barWidth / 2}" y1="${highY}" x2="${x + barWidth / 2}" y2="${lowY}" stroke="${chartConfig.border_color}" stroke-width="1"/>
-
-          <!-- Body -->
-          <rect 
-            x="${x + barWidth * 0.1}" 
-            y="${Math.min(openY, closeY)}" 
-            width="${barWidth * 0.8}" 
-            height="${bodyHeight}" 
-            fill="${color}" 
-          />
-          <animate attributeName="opacity" from="0" to="1" dur="${chartConfig.bar_display_time_duration}s" begin="${chartConfig.global_display_time_delay + i * chartConfig.bar_display_time_interval}s" fill="freeze" />
-        </g>
-      `;
+        <rect x="${x + barWidth * 0.1}" y="${chartHeight}" width="${barWidth * 0.8}" height="0" fill="${color}">
+          <animate attributeName="y" from="${chartHeight}" to="${chartHeight - height}" dur="${dur}s" begin="${begin}s" calcMode="spline" keyTimes="0;1" keySplines="0 0 0.58 1" fill="freeze" />
+          <animate attributeName="height" from="0" to="${height}" dur="${dur}s" begin="${begin}s" calcMode="spline" keyTimes="0;1" keySplines="0 0 0.58 1" fill="freeze" />
+        </rect>`;
   });
 
   return svg`
   <g transform="translate(${chartX}, ${chartY})" class="animate animate-delay-14">
     <text x="${chartWidth}" y="-10" text-anchor="end" class="label">Daily Contributions (${chartConfig.days_to_show} days)</text>
     
-    <!-- border lines -->
+    ${grid}
+
+    <!-- border lines, as thick as the border of the language card -->
     <!-- bottom line -->
-    <line x1="0" y1="${chartHeight+2}" x2="0" y2="${chartHeight+2}" stroke="${chartConfig.border_color}" stroke-width="1">
+    <line x1="0" y1="${chartHeight+2}" x2="0" y2="${chartHeight+2}" stroke="${chartConfig.border_color}" stroke-width="2">
       <animate attributeName="x1" from="0" to="${chartWidth+2}" dur="${totalBarDisplayTime}s" fill="freeze" begin="${chartConfig.global_display_time_delay}s"/>
     </line>
     <!-- top line -->
-    <line x1="${chartWidth+2}" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="${chartConfig.border_color}" stroke-width="1">
+    <line x1="${chartWidth+2}" y1="-2" x2="${chartWidth+2}" y2="-2" stroke="${chartConfig.border_color}" stroke-width="2">
       <animate attributeName="x2" from="${chartWidth+2}" to="${top_border_line_x}" dur="0.3s" fill="freeze" begin="${chartConfig.global_display_time_delay + totalBarDisplayTime + 0.2}s"/>
     </line>
-    <!-- side line -->
-    <line x1="${chartWidth+2}" y1="${chartHeight+2}" x2="${chartWidth+2}" y2="${chartHeight+2}" stroke="${chartConfig.border_color}" stroke-width="1" opacity="1">
-      <animate attributeName="y2" from="${chartHeight+2}" to="-2" dur="0.2s" fill="freeze" begin="${chartConfig.global_display_time_delay + totalBarDisplayTime}s"/>
+    <!-- side line: 1px longer at each end, so it fills the corners with the top and bottom lines -->
+    <line x1="${chartWidth+2}" y1="${chartHeight+3}" x2="${chartWidth+2}" y2="${chartHeight+3}" stroke="${chartConfig.border_color}" stroke-width="2" opacity="1">
+      <animate attributeName="y2" from="${chartHeight+3}" to="-3" dur="0.2s" fill="freeze" begin="${chartConfig.global_display_time_delay + totalBarDisplayTime}s"/>
     </line>
 
-    <!-- Candlesticks -->
-    ${candlesticks}
+    <!-- Bars -->
+    ${bars}
 
     <!-- Date labels (first and last) -->
     <text x="0" y="${(chartHeight+2)*1.11}" text-anchor="start" class="label" font-size="4" opacity="0">
@@ -427,11 +497,6 @@ function renderStats(stats, { ignoreLanguages } = {}) {
         .animate-delay-12 {animation-delay: 1.68s, 1.88s;}
         .animate-delay-13 {animation-delay: 1.76s, 1.97s;}
 
-        @keyframes fillProgress {
-          0% { stroke-dashoffset: ${rankRingConfig.rank_circumference}; }
-          100% { stroke-dashoffset: ${rankRingConfig.rank_circumference + rankRingConfig.visibleLength}; }
-        }
-
         @keyframes blinking {
           0%, 100% { opacity: 1; }
           25%, 75% { opacity: 0; }
@@ -501,19 +566,6 @@ function renderStats(stats, { ignoreLanguages } = {}) {
           opacity: 0; 
           animation: change-opacity 0.8s ease-out 2.4s forwards;
         }
-        .rank-circle-bg { 
-          fill: none; 
-          opacity: 0; 
-          animation: change-opacity 0.3s ease-out 1.2s forwards; 
-        }
-        .rank-circle-progress { 
-          fill: none; 
-          opacity: 0; 
-          animation: 
-            fillProgress 1.5s ease-out 2.4s forwards, 
-            change-opacity 0s 2.4s forwards; 
-          stroke-linecap: round; 
-        }
         
         <!-- Language Ring Styles -->
         .language-legend { 
@@ -553,22 +605,7 @@ function renderStats(stats, { ignoreLanguages } = {}) {
       ${stat_rows}
 
       <!-- Rank Ring -->
-      <!-- Rank Ring Background -->
-      <circle class="rank-circle-bg" cx="${rankRingConfig.rank_ring_center_x}" cy="${rankRingConfig.rank_ring_center_y}" r="${rankRingConfig.rank_ring_radius}" stroke="${darkenHexColor(rankRingConfig.rank_progress_bar_color, rankRingConfig.rank_ring_bg_dark_level)}" stroke-width="${rankRingConfig.rank_ring_thickness}" fill="none"></circle>
-
-      <!-- Rank Ring Progress (using circle instead of path) -->
-      <circle
-        class="rank-circle-progress"
-        cx="${rankRingConfig.rank_ring_center_x}" 
-        cy="${rankRingConfig.rank_ring_center_y}" 
-        r="${rankRingConfig.rank_ring_radius}" 
-        stroke="${rankRingConfig.rank_progress_bar_color}" 
-        stroke-width="${rankRingConfig.rank_progress_bar_thickness}" 
-        fill="none" 
-        stroke-dasharray="${rankRingConfig.rank_circumference} ${rankRingConfig.rank_circumference}" 
-        stroke-dashoffset="${rankRingConfig.rank_circumference}" 
-        transform="rotate(90 ${rankRingConfig.rank_ring_center_x} ${rankRingConfig.rank_ring_center_y})"
-      />
+      ${renderRankTicks(rankRingConfig)}
 
       <!-- Rank Ring Text -->
       <text x="${rankRingConfig.rank_ring_center_x}" y="${rankRingConfig.rank_ring_center_y+Math.round(rankRingConfig.rank_ring_radius/6)}" class="rank-letter"  text-anchor="middle">${stats.rank.level}</text>
