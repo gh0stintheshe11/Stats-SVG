@@ -21,7 +21,9 @@ const config = {
       ringThickness: 34, // the brackets on both sides of the ring are ringRadius + ringThickness from its center
       progressBarThickness: 28, // how long a lit tick is, from the inner to the outer edge of the ring
       progressSegments: 40, // the ring is divided into this many ticks
-      progressSegmentWidth: 0.6 // how much of each tick's slot is tick (the rest is the gap)
+      progressSegmentWidth: 0.6, // how much of each tick's slot is tick (the rest is the gap)
+      progressSegmentUnlitLength: 0.33, // an unlit tick is this share of a lit one, at the inner edge
+      progressSegmentCornerRadius: 2 // rounds the corners of the ticks, in px
     },
     language: {
       ringRadius: 80,

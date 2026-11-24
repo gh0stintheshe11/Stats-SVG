@@ -157,6 +157,18 @@ function calculateLanguageRing(svg_width, svg_height) {
   };
 }
 
+/**
+ * When the barcode in the top right corner is uncovered, and for how long. It is uncovered from
+ * right to left at `svg_width` pixels per second, starting when a sweep that fast from the card's
+ * left edge would reach the barcode's left end: around 0.7s, later for a shorter username.
+ */
+function calculateBarcodeReveal(text, svg_width) {
+  // Every character of the barcode font is 0.33em wide; the barcode is 30px and ends 20px from the right.
+  const width = text.length * 0.33 * 30;
+  const left = svg_width - 20 - width;
+  return { begin: Number((left / svg_width).toFixed(2)), dur: Number((width / svg_width).toFixed(2)) };
+}
+
 function calculateImagePosition(languageRing) {
   const target_height = Math.round(languageRing.language_ring_radius * 2 - languageRing.language_ring_thickness);
   const image_y = Math.round(languageRing.language_ring_center_y - target_height / 2);
@@ -168,49 +180,64 @@ function calculateImagePosition(languageRing) {
  * The rank ring as a gauge of `progressSegments` ticks.
  *
  * Every tick is a trapezoid whose sides run along the radius, so it is wider further out, like a
- * slice of the ring. Unlit, a tick is just a small dark square at the inner edge of the ring; the
- * squares blink in while the brackets on both sides open. Then the ticks for the share the rank
- * fills light up one after another, starting at the bottom and going counterclockwise, quickly at
- * first and slowing down (ease-out), each one growing outward from its square to the full tick.
+ * slice of the ring, with slightly rounded corners. Unlit, a tick is just its inner part
+ * (`progressSegmentUnlitLength` of it), in a dark color; these blink in while the brackets on
+ * both sides open. Then the ticks for the share the rank fills light up one after another,
+ * starting at the bottom and going counterclockwise, quickly at first and slowing down
+ * (ease-out), each one growing outward from its unlit part to the full tick.
  */
 function renderRankTicks(rankRing) {
   const { rank_ring_center_x: cx, rank_ring_center_y: cy, rank_ring_radius: radius } = rankRing;
-  const { progressSegments: segments, progressSegmentWidth } = config.rank;
+  const { progressSegments: segments, progressSegmentWidth, progressSegmentUnlitLength, progressSegmentCornerRadius } = config.rank;
   const round = (value) => Number(value.toFixed(2));
   const step = (2 * Math.PI) / segments;
   const halfAngle = (step * progressSegmentWidth) / 2;
-  const inner = radius - rankRing.rank_progress_bar_thickness / 2;
-  const outer = radius + rankRing.rank_progress_bar_thickness / 2;
-  const square = 2 * inner * Math.sin(halfAngle); // as long as the tick is wide at its inner edge
+  const length = rankRing.rank_progress_bar_thickness;
+  const inner = radius - length / 2;
+  const outer = radius + length / 2;
 
-  const point = (angle, distance) => `${round(cx + distance * Math.cos(angle))},${round(cy + distance * Math.sin(angle))}`;
-  const trapezoid = (index, from, to) => {
+  const corner = (angle, distance) => [cx + distance * Math.cos(angle), cy + distance * Math.sin(angle)];
+  const xy = ([x, y]) => `${round(x)},${round(y)}`;
+  // A tick from `from` to `to` (distances from the center), as a path whose corners are rounded:
+  // each corner is cut `progressSegmentCornerRadius` back along both of its edges and bent round
+  // with a curve through the corner. Every tick's path has the same commands, so one can be
+  // animated into another.
+  const tick = (index, from, to) => {
     const middle = Math.PI / 2 - (index + 0.5) * step; // from the bottom, counterclockwise
-    const [a, b] = [middle - halfAngle, middle + halfAngle];
-    return `${point(a, from)} ${point(b, from)} ${point(b, to)} ${point(a, to)}`;
+    const corners = [corner(middle - halfAngle, from), corner(middle + halfAngle, from), corner(middle + halfAngle, to), corner(middle - halfAngle, to)];
+    const toward = ([x, y], [toX, toY]) => {
+      const distance = Math.hypot(toX - x, toY - y);
+      return [x + ((toX - x) * progressSegmentCornerRadius) / distance, y + ((toY - y) * progressSegmentCornerRadius) / distance];
+    };
+    const rounded = corners.map((point, i) => ({
+      point,
+      enter: toward(point, corners[(i + 3) % 4]),
+      leave: toward(point, corners[(i + 1) % 4]),
+    }));
+    return `M ${xy(rounded[0].leave)} ${[1, 2, 3, 0].map((i) => `L ${xy(rounded[i].enter)} Q ${xy(rounded[i].point)} ${xy(rounded[i].leave)}`).join(' ')} Z`;
   };
-  const unlit = (index) => trapezoid(index, inner, inner + square);
+  const unlit = (index) => tick(index, inner, inner + length * progressSegmentUnlitLength);
 
-  // The squares appear with the brackets, which open from 1s to 2s: on, off, on, off, on.
-  const squares = Array.from({ length: segments }, (_, index) => svg`
-        <polygon points="${unlit(index)}" />`);
+  // The unlit ticks appear with the brackets, which open from 1s to 2s: on, off, on, off, on.
+  const unlitTicks = Array.from({ length: segments }, (_, index) => svg`
+        <path d="${unlit(index)}" />`);
 
   // Tick k of n lights when an ease-out gauge filling from 2.4s for 1.5s would be k/n full.
   const lit = Math.round(segments * rankRing.rank_progress);
-  const ticks = Array.from({ length: lit }, (_, index) => {
+  const litTicks = Array.from({ length: lit }, (_, index) => {
     const begin = round(2.4 + 1.5 * (1 - Math.sqrt(1 - (index + 1) / lit)));
     return svg`
-        <polygon points="${unlit(index)}" opacity="0">
+        <path d="${unlit(index)}" opacity="0">
           <set attributeName="opacity" to="1" begin="${begin}s" fill="freeze" />
-          <animate attributeName="points" from="${unlit(index)}" to="${trapezoid(index, inner, outer)}" dur="0.15s" begin="${begin}s" fill="freeze" />
-        </polygon>`;
+          <animate attributeName="d" from="${unlit(index)}" to="${tick(index, inner, outer)}" dur="0.15s" begin="${begin}s" fill="freeze" />
+        </path>`;
   });
 
-  return svg`<!-- Rank Ring: dark squares, and the ticks for the rank -->
+  return svg`<!-- Rank Ring: dark unlit ticks, and the lit ticks for the rank -->
       <g fill="${darkenHexColor(rankRing.rank_progress_bar_color, rankRing.rank_ring_bg_dark_level)}" opacity="0">
-        <animate attributeName="opacity" values="1;0;1;0;1" keyTimes="0;0.2;0.4;0.6;0.8" calcMode="discrete" dur="0.75s" begin="1s" fill="freeze" />${squares}
+        <animate attributeName="opacity" values="1;0;1;0;1" keyTimes="0;0.2;0.4;0.6;0.8" calcMode="discrete" dur="0.75s" begin="1s" fill="freeze" />${unlitTicks}
       </g>
-      <g fill="${rankRing.rank_progress_bar_color}">${ticks}
+      <g fill="${rankRing.rank_progress_bar_color}">${litTicks}
       </g>`;
 }
 
@@ -461,6 +488,7 @@ function renderStats(stats, { ignoreLanguages } = {}) {
   const languageRingConfig = calculateLanguageRing(svg_width, svg_height);
   const imagePosition = calculateImagePosition(languageRingConfig);
 
+  const barcodeReveal = calculateBarcodeReveal(githubUrl, svg_width);
   const stat_rows = STAT_ROWS.map((row, index) => renderStatRow(row, index, stats, rankRingConfig));
   const languagePercentages = calculateLanguagePercentage(stats.languages, { ignore: ignoreLanguages });
   const language_percentage_ring = renderLanguageRing(languagePercentages, languageRingConfig);
@@ -581,10 +609,11 @@ function renderStats(stats, { ignoreLanguages } = {}) {
 
       <text x="50" y="40" class="title" font-size="36">${stats.name}'s GitHub Stats</text>
 
-      <clipPath id="clipPathReveal">
-        <rect x="0" y="0" height="100" width="0">
-          <!-- Animate the width of the rectangle -->
-          <animate attributeName="width" begin="0s" dur="1s" from="0" to="${svg_width}" fill="freeze" />
+      <!-- Uncovers the barcode from right to left; in units of the barcode's own size, so it always covers exactly the barcode -->
+      <clipPath id="clipPathReveal" clipPathUnits="objectBoundingBox">
+        <rect x="1" y="-0.5" height="2" width="0">
+          <animate attributeName="x" from="1" to="0" dur="${barcodeReveal.dur}s" begin="${barcodeReveal.begin}s" fill="freeze" />
+          <animate attributeName="width" from="0" to="1" dur="${barcodeReveal.dur}s" begin="${barcodeReveal.begin}s" fill="freeze" />
         </rect>
       </clipPath>
 
