@@ -5,6 +5,7 @@ import { imageSize } from 'image-size';
 import config from '../../../config.js';
 import { safeHexColor } from '../../lib/escape.js';
 import { fontFaces } from '../../lib/fonts.js';
+import { delayAnimations } from '../../lib/animation.js';
 import { svg } from '../../lib/svg.js';
 import Icons from './icons.js';
 import { calculateLanguagePercentage } from './languages.js';
@@ -158,9 +159,48 @@ function calculateLanguageRing(svg_width, svg_height) {
 }
 
 /**
+ * The title, typed like a command in a terminal: the prompt ">" flickers in, a cursor "_" appears
+ * behind it and types the login one character at a time, then waits a moment, as if Enter was
+ * pressed, and disappears. Returns the markup, and the time it is done: the rest of the card
+ * starts then.
+ *
+ * The cursor is drawn after an invisible copy of the text typed so far, so the browser puts it
+ * exactly where the next character goes, whatever the widths of the characters.
+ * x=35 puts the prompt's left edge (1px into the glyph) in line with the stat icons below (x≈36).
+ */
+function renderTitle(login) {
+  const { cursor_appears, typing_starts, typing_interval, enter_pause } = config.title;
+  const round = (value) => Number(value.toFixed(2));
+  const characters = [...login];
+  const typedAt = (index) => round(typing_starts + index * typing_interval);
+  const done = round(typedAt(characters.length - 1) + enter_pause);
+
+  const typed = characters.map((character, index) => svg`<tspan visibility="hidden">${character}<set attributeName="visibility" to="visible" begin="${typedAt(index)}s" fill="freeze" /></tspan>`);
+
+  // One cursor for each number of characters typed so far, shown until the next one is typed.
+  const cursors = characters.map((_, index) => index).concat(characters.length).map((count) => {
+    const from = count === 0 ? cursor_appears : typedAt(count - 1);
+    const to = count < characters.length ? typedAt(count) : done;
+    return svg`
+      <text x="35" y="40" class="title" visibility="hidden"><tspan fill-opacity="0">&gt; ${characters.slice(0, count).join('')}</tspan>_<set attributeName="visibility" to="visible" begin="${from}s" /><set attributeName="visibility" to="hidden" begin="${to}s" /></text>`;
+  });
+
+  const markup = svg`
+      <style>
+        .title-prompt { opacity: 0; animation: flikering 0.4s 2, change-opacity 1s ease-in-out 0.8s forwards; }
+      </style>
+      <!-- The title: a terminal prompt, and the login typed behind it by a cursor -->
+      <text x="35" y="40" class="title title-prompt">&gt;</text>
+      <text x="35" y="40" class="title"><tspan fill-opacity="0">&gt; </tspan>${typed}</text>${cursors}`;
+
+  return { markup, done };
+}
+
+/**
  * When the barcode in the top right corner is uncovered, and for how long. It is uncovered from
  * right to left at `svg_width` pixels per second, starting when a sweep that fast from the card's
- * left edge would reach the barcode's left end: around 0.7s, later for a shorter username.
+ * left edge would reach the barcode's left end: around 0.7s after the rest of the card starts,
+ * later for a shorter username.
  */
 function calculateBarcodeReveal(text, svg_width) {
   // Every character of the barcode font is 0.33em wide; the barcode is 30px and ends 20px from the right.
@@ -494,8 +534,11 @@ function renderStats(stats, { ignoreLanguages } = {}) {
   const language_percentage_ring = renderLanguageRing(languagePercentages, languageRingConfig);
   const contribution_chart = renderContributionChart(stats.contribution_distribution, rankRingConfig);
 
-  return String(svg`
-    <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
+  const title = renderTitle(stats.login);
+
+  // Everything but the title. Its animation times count from 0, and it is all shifted to start
+  // once the title has been typed.
+  const body = svg`
       <style>
 
         <!-- Fonts -->${fontFaces()}
@@ -552,8 +595,6 @@ function renderStats(stats, { ignoreLanguages } = {}) {
           fill: ${colors.textTitle}; 
           font-size: 30px; 
           font-weight: bold; 
-          Opacity: 0; 
-          animation: flikering 0.4s 2, change-opacity 1s ease-in-out 0.8s forwards; 
         }
 
         <!-- Label Styles -->
@@ -607,7 +648,6 @@ function renderStats(stats, { ignoreLanguages } = {}) {
 
       <rect class="background" width="100%" height="100%" />
 
-      <text x="50" y="40" class="title" font-size="36">${stats.name}'s GitHub Stats</text>
 
       <!-- Uncovers the barcode from right to left; in units of the barcode's own size, so it always covers exactly the barcode -->
       <clipPath id="clipPathReveal" clipPathUnits="objectBoundingBox">
@@ -703,7 +743,17 @@ function renderStats(stats, { ignoreLanguages } = {}) {
       </path>
 
       ${contribution_chart}
-      
+  `;
+
+  return String(svg`
+    <svg width="${svg_width}" height="${svg_height}" xmlns="http://www.w3.org/2000/svg">
+      ${title.markup}
+
+      <!-- The rest of the card: hidden, and every animation in it waiting, until the title has been typed -->
+      <g opacity="0">
+        <set attributeName="opacity" to="1" begin="${title.done}s" fill="freeze" />
+        ${delayAnimations(body, title.done)}
+      </g>
     </svg>
   `);
 }

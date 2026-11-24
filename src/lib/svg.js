@@ -37,3 +37,16 @@ export function svg(strings, ...values) {
   }
   return new SvgFragment(markup);
 }
+
+/**
+ * Applies `transform` to the markup of an `svg` fragment and returns the result as a fragment.
+ * Only for transforms that keep the markup safe, such as changing animation times: the input is
+ * already trusted markup, never data.
+ *
+ * @param {SvgFragment} fragment
+ * @param {(markup: string) => string} transform
+ */
+export function transformMarkup(fragment, transform) {
+  if (!(fragment instanceof SvgFragment)) throw new TypeError('transformMarkup needs an svg fragment');
+  return new SvgFragment(transform(fragment.markup));
+}

@@ -10,6 +10,9 @@ const render = (t, input) => {
   return renderStats(input);
 };
 
+/** When the rest of the card starts: everything but the title is shifted by this much. */
+const bodyStart = (svg) => Number(svg.match(/<!-- The rest of the card[^]*?<set attributeName="opacity" to="1" begin="([\d.]+)s"/)[1]);
+
 test('GitHub card output matches the snapshot', (t) => {
   assertMatchesSnapshot('github-card', render(t, stats));
 });
@@ -23,13 +26,15 @@ test('GitHub card embeds the fonts and the center image', (t) => {
 test('text from the API is escaped', (t) => {
   const svg = render(t, {
     ...stats,
-    name: 'Tom & Jerry</text><script>alert(1)</script>',
+    login: 'Tom & Jerry</text><script>alert(1)</script>', // the title and the barcode show the login
     languages: { '<b>Lang</b>': { size: 1, count: 1, color: 'red" onload="alert(1)' } },
   });
   assert.ok(!svg.includes('<script>'));
   assert.ok(!svg.includes('<b>'));
   assert.ok(!svg.includes('onload'));
   assert.ok(svg.includes('Tom &amp; Jerry&lt;/text&gt;&lt;script&gt;'));
+  assert.ok(svg.includes('<tspan fill-opacity="0">&gt; Tom &amp; Jerry&lt;/text&gt;&lt;script&gt;alert(1)&lt;/script&gt;</tspan>_'), 'the title is the login, after a prompt');
+  assert.ok(svg.includes('<tspan visibility="hidden">&lt;<set'), 'typed one escaped character at a time');
   assert.ok(svg.includes('fill="#cccccc"'), 'an unsafe language color falls back to grey');
 });
 
@@ -56,6 +61,7 @@ test('contributions: one bar per day rising from zero, red when a day has fewer 
 test('rank ring: 40 short unlit ticks, and trapezoid ticks for the share the rank fills, lit one after another', (t) => {
   const ring = (percentile) => {
     const svg = render(t, { ...stats, rank: { level: 'B', percentile } });
+    const start = bodyStart(svg);
     const markup = svg.slice(svg.indexOf('<!-- Rank Ring: '), svg.indexOf('<!-- Rank Ring Text -->'));
     const [unlit, lit] = markup.split('</g>');
     // A tick is a path with rounded corners; the control point of each corner's curve is the corner
@@ -66,9 +72,9 @@ test('rank ring: 40 short unlit ticks, and trapezoid ticks for the share the ran
     };
     return {
       unlit: [...unlit.matchAll(/<path d="([^"]+)" \/>/g)].map((match) => match[1]),
-      blink: unlit.match(/<animate attributeName="opacity" values="([^"]+)"[^>]* begin="([\d.]+)s"/).slice(1),
+      blink: unlit.match(/<animate attributeName="opacity" values="([^"]+)"[^>]* begin="([\d.]+)s"/).slice(1).map((value, i) => (i === 1 ? String(Number((value - start).toFixed(2))) : value)),
       lit: [...lit.matchAll(/<set attributeName="opacity" to="1" begin="([\d.]+)s"[^]*?attributeName="d" from="([^"]+)" to="([^"]+)"/g)]
-        .map(([, begin, from, to]) => ({ begin: Number(begin), from, to: corners(to) })),
+        .map(([, begin, from, to]) => ({ begin: Number((begin - start).toFixed(2)), from, to: corners(to) })),
       corners,
     };
   };
@@ -101,7 +107,8 @@ test('the barcode is uncovered from right to left, from when a sweep from the le
     const clip = svg.slice(svg.indexOf('<clipPath id="clipPathReveal"'), svg.indexOf('</clipPath>'));
     const [, x, xBegin] = clip.match(/attributeName="x" (from="1" to="0") dur="[\d.]+s" begin="([\d.]+)s"/);
     const [, dur] = clip.match(/attributeName="width" from="0" to="1" dur="([\d.]+)s"/);
-    return { rightToLeft: x === 'from="1" to="0"', begin: Number(xBegin), end: Number(xBegin) + Number(dur) };
+    const begin = xBegin - bodyStart(svg); // counted from when the rest of the card starts
+    return { rightToLeft: x === 'from="1" to="0"', begin, end: begin + Number(dur) };
   };
   const short = reveal('octocat'); // https://github.com/octocat: 26 characters, 257px of barcode
   const long = reveal('a-much-longer-username'); // 41 characters, 406px
@@ -109,6 +116,47 @@ test('the barcode is uncovered from right to left, from when a sweep from the le
   assert.ok(Math.abs(short.begin - (1080 - 257.4) / 1100) < 0.01, `begins when the sweep reaches its left end: ${short.begin}`);
   assert.ok(long.begin < short.begin, 'a longer barcode reaches further left, so it starts earlier');
   for (const { end } of [short, long]) assert.ok(Math.abs(end - 1080 / 1100) < 0.015, `and finishes when the sweep reaches its right end: ${end}`);
+});
+
+test('the title is typed like a terminal command: prompt, cursor, the login one character at a time, Enter', (t) => {
+  const svg = render(t, { ...stats, login: 'octocat' });
+  const title = svg.slice(0, svg.indexOf('<!-- The rest of the card'));
+  const typed = [...title.matchAll(/<tspan visibility="hidden">(.)<set attributeName="visibility" to="visible" begin="([\d.]+)s"/g)].map(([, character, begin]) => [character, Number(begin)]);
+  const cursors = [...title.matchAll(/<tspan fill-opacity="0">&gt; ([^<]*)<\/tspan>_<set attributeName="visibility" to="visible" begin="([\d.]+)s" \/><set attributeName="visibility" to="hidden" begin="([\d.]+)s"/g)]
+    .map(([, before, from, to]) => ({ before, from: Number(from), to: Number(to) }));
+
+  assert.match(title, /<text [^>]*class="title title-prompt">&gt;<\/text>/, 'the prompt flickers in like the old title');
+  assert.equal(typed.map(([character]) => character).join(''), 'octocat');
+  typed.forEach(([, begin], i) => assert.equal(begin, Number((2.2 + i * 0.06).toFixed(2))));
+
+  // The cursor stands after what has been typed so far, and moves on as each character appears.
+  assert.deepEqual(cursors.map((cursor) => cursor.before), ['', 'o', 'oc', 'oct', 'octo', 'octoc', 'octoca', 'octocat']);
+  assert.equal(cursors[0].from, 1.8, 'the cursor appears once the prompt is there');
+  cursors.slice(1).forEach((cursor, i) => assert.equal(cursor.from, typed[i][1], `moves on when "${typed[i][0]}" is typed`));
+  cursors.slice(0, -1).forEach((cursor, i) => assert.equal(cursor.to, cursors[i + 1].from, 'one cursor at a time'));
+
+  // Enter: half a second after the last character the cursor goes, and the rest of the card starts.
+  assert.equal(cursors.at(-1).to, Number((typed.at(-1)[1] + 0.5).toFixed(2)));
+  assert.equal(bodyStart(svg), cursors.at(-1).to);
+});
+
+test('nothing in the rest of the card starts before the title has been typed', (t) => {
+  const svg = render(t, stats);
+  const start = bodyStart(svg);
+  const body = svg.slice(svg.indexOf('<!-- The rest of the card'));
+  const smil = [...body.matchAll(/<(?:animate|set|animateTransform|animateMotion)\b[^>]*>/g)].map((match) => match[0]);
+  assert.ok(smil.length > 100);
+  for (const element of smil) {
+    const begin = element.match(/begin="([\d.]+)s"/);
+    assert.ok(begin && Number(begin[1]) >= start, `starts too early: ${element}`);
+  }
+  const css = [...body.matchAll(/<style>([^]*?)<\/style>|\sstyle="([^"]*)"/g)].map((match) => match[1] ?? match[2]).join(';');
+  const delays = [
+    ...[...css.matchAll(/animation-delay\s*:\s*([^;"}]+)/g)].flatMap((match) => match[1].split(',')),
+    ...[...css.matchAll(/animation\s*:\s*([^;"}]+)/g)].flatMap((match) => match[1].split(',').map((one) => one.trim().split(/\s+/).filter((part) => /^[\d.]+s$/.test(part))[1])),
+  ];
+  assert.ok(delays.length > 20);
+  for (const delay of delays) assert.ok(delay !== undefined && parseFloat(delay) >= start, `a CSS animation starts too early: ${delay}`);
 });
 
 test('a card without contribution data shows a placeholder', (t) => {

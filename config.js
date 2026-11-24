@@ -3,6 +3,15 @@ const config = {
       width: 1100,
       height: 600
     },
+    title: {
+      // The title is typed like a command in a terminal: the prompt ">" flickers in, a cursor "_"
+      // appears behind it and types the username, waits a moment as if Enter was pressed, and goes.
+      // Only then does the rest of the card start. In seconds:
+      cursor_appears: 1.8, // the prompt has faded in by then
+      typing_starts: 2.2,
+      typing_interval: 0.06, // per character
+      enter_pause: 0.5 // after the last character
+    },
     colors: {
       icon: "#00f0ff",
       textTitle: "#00f0ff",

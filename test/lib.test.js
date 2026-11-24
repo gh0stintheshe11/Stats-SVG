@@ -5,8 +5,9 @@ import { HttpError, upstreamStatusError } from '../src/lib/errors.js';
 import { escapeXml, safeHexColor } from '../src/lib/escape.js';
 import { fetchJson } from '../src/lib/http.js';
 import { createLimiter } from '../src/lib/limit.js';
+import { delayAnimations } from '../src/lib/animation.js';
 import { timeLeft, withRetry } from '../src/lib/retry.js';
-import { svg } from '../src/lib/svg.js';
+import { svg, transformMarkup } from '../src/lib/svg.js';
 import { httpStatus, mockFetch } from './helpers/mock-fetch.js';
 
 describe('escapeXml', () => {
@@ -108,6 +109,37 @@ describe('withRetry', () => {
 
   test('timeLeft throws a 504 once the deadline has passed', () => {
     assert.throws(() => timeLeft(Date.now() - 1), { status: 504 });
+  });
+});
+
+describe('delayAnimations', () => {
+  const delay = (markup, seconds) => String(delayAnimations(svg([markup]), seconds));
+
+  test('SMIL: shifts every begin, and gives the ones without a begin one', () => {
+    assert.equal(delay('<set attributeName="opacity" to="1" begin="2.43s" fill="freeze" />', 3), '<set attributeName="opacity" to="1" begin="5.43s" fill="freeze" />');
+    assert.equal(delay('<animate attributeName="x" from="1" to="0" dur="0.31s" begin="0.68s" fill="freeze"/>', 1.5), '<animate attributeName="x" from="1" to="0" dur="0.31s" begin="2.18s" fill="freeze"/>');
+    assert.equal(delay('<animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" />', 3.6), '<animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="1" begin="3.6s" />');
+    assert.equal(delay('<animateTransform attributeName="transform" type="rotate" dur="1s"/>', 2), '<animateTransform attributeName="transform" type="rotate" dur="1s" begin="2s" />');
+  });
+
+  test('CSS: shifts delays in the shorthand and in animation-delay, and adds the missing ones', () => {
+    const css = (rules) => `<style>${rules}</style>`;
+    assert.equal(delay(css('.a { animation: change-opacity 0.8s ease-out 2.6s forwards; }'), 1), css('.a { animation: change-opacity 0.8s ease-out 3.6s forwards; }'));
+    assert.equal(delay(css('.b { animation: blinking 1.5s ease-out; }'), 1), css('.b { animation: blinking 1.5s 1s ease-out; }'));
+    assert.equal(delay(css('.c { animation: flikering 0.4s 2, change-opacity 1s ease-in-out 0.8s forwards; }'), 1), css('.c { animation: flikering 0.4s 1s 2, change-opacity 1s ease-in-out 1.8s forwards; }'));
+    assert.equal(delay(css('.d {animation-delay: 0.8s, 0.9s;}'), 1), css('.d {animation-delay: 1.8s, 1.9s;}'));
+    assert.equal(delay('<g style="opacity: 0; animation: change-opacity 0.5s ease-out forwards; animation-delay: 0.45s;">', 2), '<g style="opacity: 0; animation: change-opacity 0.5s 2s ease-out forwards; animation-delay: 2.45s;">');
+  });
+
+  test('leaves everything else alone, text included, and refuses times it does not understand', () => {
+    const untouched = '<rect width="100" height="0" opacity="0.5"/><text class="label">animation: 2s</text>';
+    assert.equal(delay(untouched, 3), untouched);
+    assert.throws(() => delay('<set attributeName="opacity" to="1" begin="intro.end"/>', 1), /can't delay/);
+  });
+
+  test('only takes svg fragments, so it can never turn data into markup', () => {
+    assert.throws(() => delayAnimations('<script>alert(1)</script>', 1), TypeError);
+    assert.throws(() => transformMarkup('<script>', (markup) => markup), TypeError);
   });
 });
 
