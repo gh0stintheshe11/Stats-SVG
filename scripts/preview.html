@@ -1,0 +1,198 @@
+<!doctype html>
+<!-- The page of the design preview (scripts/preview.js). -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Stats SVG · design preview</title>
+  <style>
+    /* GitHub's colors, measured on a profile page: page background, text, borders. */
+    :root[data-theme="dark"] { --bg: #0d1117; --fg: #f0f6fc; --muted: #9198a1; --border: #3d444d; --control: #212830; --accent: #4493f8; }
+    :root[data-theme="dark_dimmed"] { --bg: #212830; --fg: #d1d7e0; --muted: #9198a1; --border: #3d444d; --control: #2a313c; --accent: #478be6; }
+    :root[data-theme="dark_high_contrast"] { --bg: #010409; --fg: #ffffff; --muted: #b7bdc8; --border: #b7bdc8; --control: #151b23; --accent: #74b9ff; }
+    :root[data-theme="light"] { --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0; --control: #f6f8fa; --accent: #0969da; }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    }
+    header {
+      position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center;
+      padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .group { display: flex; align-items: center; gap: 6px; }
+    .group > span { color: var(--muted); font-size: 12px; }
+    .segmented { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .segmented button { border: 0; border-radius: 0; }
+    .segmented button + button { border-left: 1px solid var(--border); }
+    button, input {
+      font: inherit; font-size: 12px; color: var(--fg); background: var(--control);
+      border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; height: 28px;
+    }
+    button { cursor: pointer; }
+    button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+    input { width: 150px; background: var(--bg); }
+    input:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
+    kbd { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+    #status { width: 100%; color: var(--muted); font-size: 12px; }
+    #status.error { color: #f85149; }
+    #connection::before { content: "●"; margin-right: 4px; }
+    #connection.live::before { color: #3fb950; }
+    #connection.down::before { color: #f85149; }
+
+    main { padding: 24px 16px 64px; display: flex; justify-content: center; }
+    /* Like the box around a profile README: 1px border, 6px corners, 24px padding. */
+    .readme-box { border: 1px solid var(--border); border-radius: 6px; padding: 24px; background: var(--bg); }
+    .readme-box img { display: block; max-width: 100%; }
+    pre#error { white-space: pre-wrap; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: #f85149; margin: 0; max-width: 1100px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="group"><span>GitHub theme</span>
+      <div class="segmented" id="theme">
+        <button data-value="dark">Dark</button>
+        <button data-value="dark_dimmed">Dark dimmed</button>
+        <button data-value="dark_high_contrast">High contrast</button>
+        <button data-value="light">Light</button>
+      </div>
+    </div>
+    <div class="group"><span>Shown at</span>
+      <!-- The width GitHub scales the card to on a profile page, measured per screen size. -->
+      <div class="segmented" id="width">
+        <button data-value="846" title="Screens 1440 px and wider">Desktop · 846</button>
+        <button data-value="831" title="A 1280 px screen">Laptop · 831</button>
+        <button data-value="563" title="A 1012 px screen">Tablet · 563</button>
+        <button data-value="308" title="A phone, 390 px">Phone · 308</button>
+        <button data-value="1100" title="The card's own size">Actual · 1100</button>
+      </div>
+    </div>
+    <form class="group" id="data">
+      <span>Account</span>
+      <input name="username" placeholder="sample data" autocomplete="off" spellcheck="false">
+      <span>ignore_languages</span>
+      <input name="ignore_languages" placeholder="e.g. html,css" autocomplete="off" spellcheck="false">
+      <button type="submit">Show</button>
+      <button type="button" id="refresh" title="Fetch this account's stats from GitHub again">Reload data</button>
+    </form>
+    <div class="group">
+      <button type="button" id="replay">Replay animation <kbd>R</kbd></button>
+    </div>
+    <div id="status"><span id="connection" class="down">connecting</span> · <span id="details"></span></div>
+  </header>
+
+  <main>
+    <div class="readme-box" id="box">
+      <img id="card" alt="GitHub stats card">
+      <pre id="error" hidden></pre>
+    </div>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    const state = {
+      theme: params.get('theme') || 'dark',
+      width: params.get('width') || '846',
+      username: params.get('username') || '',
+      ignore_languages: params.get('ignore_languages') || '',
+    };
+    let blob = null;
+
+    function saveState() {
+      const query = new URLSearchParams(Object.entries(state).filter(([, value]) => value));
+      history.replaceState(null, '', `?${query}`);
+    }
+
+    function applyLayout() {
+      document.documentElement.dataset.theme = state.theme;
+      // The box is as wide as GitHub's; the image fills it, scaled down like on GitHub.
+      $('box').style.width = `${Number(state.width) + 2 * 24 + 2}px`;
+      for (const group of ['theme', 'width']) {
+        for (const button of $(group).querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.value === state[group]));
+      }
+      $('data').username.value = state.username;
+      $('data').ignore_languages.value = state.ignore_languages;
+    }
+
+    /** Shows the card from `blob` as a fresh image, so its animation starts from the beginning. */
+    function show() {
+      if (!blob) return;
+      const old = $('card').src;
+      $('card').src = URL.createObjectURL(blob);
+      if (old) URL.revokeObjectURL(old);
+    }
+
+    async function load({ refresh = false } = {}) {
+      const query = new URLSearchParams();
+      if (state.username) query.set('username', state.username);
+      if (state.ignore_languages) query.set('ignore_languages', state.ignore_languages);
+      if (refresh) query.set('refresh', '');
+      $('details').textContent = state.username ? `loading ${state.username}…` : 'loading…';
+      $('status').classList.remove('error');
+
+      try {
+        const response = await fetch(`/card.svg?${query}`);
+        if (!response.ok) throw new Error(await response.text());
+        blob = await response.blob();
+        $('error').hidden = true;
+        $('card').hidden = false;
+        show();
+        const scale = Math.round((Math.min(Number(state.width), 1100) / 1100) * 100);
+        $('details').textContent = [
+          decodeURIComponent(response.headers.get('X-Preview-Source')),
+          `rendered in ${response.headers.get('X-Preview-Render-Ms')} ms`,
+          `${Math.round(blob.size / 1024)} KB`,
+          `shown at ${scale}%`,
+        ].join(' · ');
+      } catch (error) {
+        $('card').hidden = true;
+        $('error').hidden = false;
+        $('error').textContent = error.message;
+        $('details').textContent = 'the card could not be rendered';
+        $('status').classList.add('error');
+      }
+    }
+
+    for (const group of ['theme', 'width']) {
+      $(group).addEventListener('click', (event) => {
+        const value = event.target.closest('button')?.dataset.value;
+        if (!value) return;
+        state[group] = value;
+        saveState();
+        applyLayout();
+      });
+    }
+    $('data').addEventListener('submit', (event) => {
+      event.preventDefault();
+      state.username = $('data').username.value.trim();
+      state.ignore_languages = $('data').ignore_languages.value.trim();
+      saveState();
+      load();
+    });
+    $('refresh').addEventListener('click', () => load({ refresh: true }));
+    $('replay').addEventListener('click', show);
+    document.addEventListener('keydown', (event) => {
+      if (event.key.toLowerCase() === 'r' && !event.ctrlKey && !event.metaKey && event.target.tagName !== 'INPUT') show();
+    });
+
+    // The server restarts when a file the card is built from is saved; then load the card again.
+    let bootId = null;
+    const events = new EventSource('/events');
+    events.onmessage = (event) => {
+      $('connection').className = 'live';
+      $('connection').textContent = 'redraws when you save';
+      if (bootId !== null && event.data !== bootId) load();
+      bootId = event.data;
+    };
+    events.onerror = () => {
+      $('connection').className = 'down';
+      $('connection').textContent = 'server restarting (if this stays, see the terminal for an error)';
+    };
+
+    applyLayout();
+    load();
+  </script>
+</body>
+</html>

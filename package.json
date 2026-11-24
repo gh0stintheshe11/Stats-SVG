@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node scripts/dev-server.js",
+    "preview": "node --watch-path=src --watch-path=config.js --watch-path=scripts scripts/preview.js",
     "test": "node --test test/*.test.js",
     "test:update-snapshots": "UPDATE_SNAPSHOTS=1 node --test test/*.test.js",
     "build:fonts": "node scripts/build-fonts.js",

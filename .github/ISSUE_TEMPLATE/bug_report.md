@@ -1,38 +1,22 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: A card shows something wrong, or doesn't load
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Card URL**
+The full URL of the card, e.g. `https://stats-svg.vercel.app/api/github-status?username=octocat`
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**What's wrong**
+What you see, and what you expected instead. If the card doesn't load at all, open its URL directly in the browser: the error message is shown there.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Where you see it**
+- [ ] In a GitHub README
+- [ ] Opened directly in the browser
+- Browser and version:
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+**Screenshot**
+If it helps, add a screenshot.
